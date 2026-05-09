@@ -1,0 +1,38 @@
+# Data files (large, generated)
+data/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# Generated figures
+figures/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Paper-related (maintained separately in IEEE template dir)
+*.tex
+*.pdf
+
+# Checkpoint files
+*.pt
+*.pth
+*.ckpt
+
+# Temporary scripts
+tmp_*.py
+temp_*.py

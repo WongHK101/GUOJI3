@@ -1,0 +1,18 @@
+{
+  "concat_baseline_loss": 0.0011183955939486623,
+  "istf_baseline_loss": 0.001251605455763638,
+  "concat_mask_x_only_loss": 1.684859037399292,
+  "concat_mask_x_only_delta": 1.6837406158447266,
+  "concat_mask_c_only_loss": 0.4364025294780731,
+  "concat_mask_c_only_delta": 0.4352841377258301,
+  "concat_mask_both_loss": 1.6630864143371582,
+  "concat_mask_both_delta": 1.6619679927825928,
+  "istf_mask_loss": 29.154481887817383,
+  "istf_mask_delta": 29.153230667114258,
+  "concat_shuffle_loss": 3.036137580871582,
+  "concat_shuffle_delta": 3.0350191593170166,
+  "istf_shuffle_loss": 2.8803281784057617,
+  "istf_shuffle_delta": 2.8790764808654785,
+  "concat_gc_auroc": 0.9011627906976745,
+  "istf_gc_auroc": 0.9040697674418605
+}
