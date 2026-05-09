@@ -90,7 +90,7 @@ def main():
     log("\n--- NSVAR d=50 PlanA (TCN, 3 seeds) ---")
     all_results["NSVAR_d50_PlanA"] = {}
     for seed in range(3):
-        p = f"" + os.path.join(_PROJ_ROOT, "data", "nonstationary_var_planA/num_nodes_50/true_lag_14/noise_scale_1/seed_{seed}"
+        p = os.path.join(_PROJ_ROOT, "data", "nonstationary_var_planA", "num_nodes_50", "true_lag_14", "noise_scale_1", "seed_{seed}")
         x = np.load(os.path.join(p, "_x.npy"))
         gc = np.load(os.path.join(p, "_gc.npy"))
         all_results["NSVAR_d50_PlanA"][f"seed_{seed}"] = {
@@ -102,7 +102,7 @@ def main():
     # 3. CausalTime traffic
     # ============================================================
     log("\n--- CausalTime traffic (TCN) ---")
-    p = "" + os.path.join(JRNGC_DATA, "causaltime", "traffic"
+    p = os.path.join(JRNGC_DATA, "causaltime"), "traffic"
     x = np.load(os.path.join(p, "_x.npy"))
     gc = np.load(os.path.join(p, "_gc.npy"))
     d = x.shape[0]
@@ -116,7 +116,7 @@ def main():
     # ============================================================
     log("\n--- fMRI d=15 (TCN, 3 subjects) ---")
     all_results["fMRI_d15"] = {}
-    fmri_base = "" + os.path.join(JRNGC_DATA, "fmri", "num_nodes_15"
+    fmri_base = os.path.join(JRNGC_DATA, "fmri"), "num_nodes_15"
     for subj in range(3):
         p = os.path.join(fmri_base, f"subject_{subj}", "seed_0")
         x = np.load(os.path.join(p, "_x.npy"))

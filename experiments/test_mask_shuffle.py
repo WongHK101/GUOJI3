@@ -47,7 +47,7 @@ def main():
     log("=" * 60)
 
     # Load NSVAR d=10 seed_0
-    p = "" + os.path.join(_PROJ_ROOT, "data", "nonstationary_var/num_nodes_10/true_lag_7/noise_scale_1/seed_0"
+    p = os.path.join(_PROJ_ROOT, "data", "nonstationary_var", "num_nodes_10", "true_lag_7", "noise_scale_1", "seed_0")
     x_orig = np.load(os.path.join(p, "_x.npy"))
     gc = np.load(os.path.join(p, "_gc.npy"))
     d, T = x_orig.shape

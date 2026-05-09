@@ -67,7 +67,7 @@ def main():
         all_results[seed_key] = {}
 
         # Load NSVAR data
-        p = f"" + os.path.join(_PROJ_ROOT, "data", "nonstationary_var/num_nodes_10/true_lag_7/noise_scale_1/seed_{seed}"
+        p = os.path.join(_PROJ_ROOT, "data", "nonstationary_var", "num_nodes_10", "true_lag_7", "noise_scale_1", "seed_{seed}")
         x_lin = np.load(os.path.join(p, "_x.npy"))
         gc = np.load(os.path.join(p, "_gc.npy"))
 

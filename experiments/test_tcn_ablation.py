@@ -21,7 +21,7 @@ print("=" * 60)
 print("TCN ABLATION: NSVAR d=10 P=7 (5 seeds)")
 nsvar_aurocs = {}
 for seed in range(5):
-    data_path = f"" + os.path.join(_PROJ_ROOT, "data", "nonstationary_var/num_nodes_10/true_lag_7/noise_scale_1/seed_{seed}"
+    data_path = os.path.join(_PROJ_ROOT, "data", "nonstationary_var", "num_nodes_10", "true_lag_7", "noise_scale_1", "seed_{seed}")
     x = np.load(os.path.join(data_path, "_x.npy"))
     gc = np.load(os.path.join(data_path, "_gc.npy"))
     d = x.shape[0]

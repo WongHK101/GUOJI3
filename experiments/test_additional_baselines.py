@@ -54,7 +54,7 @@ def load_lorenz_data(d=10, F=40, seed=0):
     return x, gc
 
 def load_nsvar_data(d=10, seed=0):
-    p = f"" + os.path.join(_PROJ_ROOT, "data", "nonstationary_var/num_nodes_{d}/true_lag_7/noise_scale_1/seed_{seed}"
+    p = os.path.join(_PROJ_ROOT, "data", "nonstationary_var", "num_nodes_{d}", "true_lag_7", "noise_scale_1", "seed_{seed}")
     x = np.load(os.path.join(p, "_x.npy"))
     gc = np.load(os.path.join(p, "_gc.npy"))
     return x, gc

@@ -61,7 +61,7 @@ def load_stat_nonlinear(d=10, F=40, seed=0):
 
 def load_ns_linear(d=10, seed=0):
     """Cell 3: Non-stationary Linear VAR. Existing NSVAR data."""
-    p = f"" + os.path.join(_PROJ_ROOT, "data", "nonstationary_var/num_nodes_{d}/true_lag_7/noise_scale_1/seed_{seed}"
+    p = os.path.join(_PROJ_ROOT, "data", "nonstationary_var", "num_nodes_{d}", "true_lag_7", "noise_scale_1", "seed_{seed}")
     x = np.load(os.path.join(p, "_x.npy"))
     gc = np.load(os.path.join(p, "_gc.npy"))
     return x, gc
@@ -70,7 +70,7 @@ def load_ns_linear(d=10, seed=0):
 def load_ns_nonlinear(d=10, seed=0):
     """Cell 4: Non-stationary Nonlinear. Load NSVAR data, apply tanh link."""
     # Load NSVAR data (linear generation)
-    p = f"" + os.path.join(_PROJ_ROOT, "data", "nonstationary_var/num_nodes_{d}/true_lag_7/noise_scale_1/seed_{seed}"
+    p = os.path.join(_PROJ_ROOT, "data", "nonstationary_var", "num_nodes_{d}", "true_lag_7", "noise_scale_1", "seed_{seed}")
     x_lin = np.load(os.path.join(p, "_x.npy"))
     gc = np.load(os.path.join(p, "_gc.npy"))
 

@@ -41,7 +41,7 @@ def test_perturbation_sweep():
     print("=" * 60)
 
     # Load small dataset
-    data_dir = "" + os.path.join(_PROJ_ROOT, "data", "nonstationary_var"
+    data_dir = os.path.join(_PROJ_ROOT, "data", "nonstationary_var")
     x = np.load(os.path.join(data_dir, "num_nodes_10", "true_lag_7",
                              "noise_scale_1", "seed_0", "_x.npy"))
     gc = np.load(os.path.join(data_dir, "num_nodes_10", "true_lag_7",
@@ -247,7 +247,7 @@ def test_orthogonality_certificate():
     print("TEST 3: Orthogonality Certificate (Theorem 3)")
     print("=" * 60)
 
-    data_dir = "" + os.path.join(_PROJ_ROOT, "data", "nonstationary_var"
+    data_dir = os.path.join(_PROJ_ROOT, "data", "nonstationary_var")
     x = np.load(os.path.join(data_dir, "num_nodes_10", "true_lag_7",
                              "noise_scale_1", "seed_0", "_x.npy"))
     gc = np.load(os.path.join(data_dir, "num_nodes_10", "true_lag_7",
