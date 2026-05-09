@@ -28,10 +28,15 @@ NSVAR d=10, seed 0. Trained Concat JRNGC + ISTF, then measured Δloss under inte
 
 ### CT_medical 3-Seed Validation (P1-1, d_state=8)
 
+d=40, T=1200, lag=1. 3 seeds (0–2).
+
 | | Baseline | ISTF-Mamba | Δ |
 |--|----------|------------|----|
-| Mean ± Std | 0.4741 ± 0.0236 | 0.5136 ± 0.0329 | **+8.3%** |
-| Best seed (0) | 0.4726 | 0.5596 | +18.4% |
+| Mean ± Std | 0.4741 ± 0.0236 | 0.5136 ± 0.0329 | **+3.95pp (+8.3% relative)** |
+| Best seed (0) | 0.4726 | 0.5596 | +8.7pp (+18.4% relative) |
+| Worst seed (2) | 0.5036 | 0.4844 | −1.9pp (−3.8% relative) |
+
+Seed variance (±3.3pp std) is substantial. With T=1200 (T/d=30), this is unlikely due to sample insufficiency; more likely reflects seed-dependent optimization paths and clinical non-stationarity heterogeneity.
 
 ### Multi-Seed Synthetic (P1-3)
 
