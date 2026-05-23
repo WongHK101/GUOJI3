@@ -36,3 +36,9 @@ Thumbs.db
 # Temporary scripts
 tmp_*.py
 temp_*.py
+
+# Raw experiment outputs (large, tracked in results/raw/ only)
+results/*.json
+results/*.log
+!results/raw/
+results/processed/*.json

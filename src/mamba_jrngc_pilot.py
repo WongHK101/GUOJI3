@@ -700,35 +700,24 @@ class BaselineJRNGC(nn.Module):
 
 
 # ---- Metrics ----
-def compute_metrics(gc_true, gc_pred):
-    """Compute comprehensive metrics: AUROC, AUPRC, F1, Acc, SHD, nSHD, MCC.
+def _compute_metrics_core(gt_2d, pr_2d, gc_true_full=None, gc_pred_full=None):
+    """Core metric computation given collapsed 2D ground-truth and prediction.
 
-    Returns dict with all metrics + per-lag-stratum AUROC.
+    All lag-stratified-AUROC logic lives here; the caller decides how to
+    collapse the 3D arrays into 2D.
     """
-    # Collapse to 2D summary if needed
-    if gc_true.ndim == 3:
-        gc_true_2d = gc_true[:, :, 0]
-    else:
-        gc_true_2d = gc_true
-    if gc_pred.ndim == 3:
-        gc_pred_lag = gc_pred
-        gc_pred_summary = np.max(np.abs(gc_pred), axis=2)
-    else:
-        gc_pred_summary = gc_pred
-
-    # Remove self-connections for metric computation
-    gt = remove_self_connection(gc_true_2d.astype(np.int32))
-    pr = remove_self_connection(gc_pred_summary.astype(np.float64))
-
     # Threshold-dependent metrics
-    (f1, f1_trd), (acc, acc_trd), (auroc, _, _), (auprc, _, _) = two_classify_metrics(pr, gt)
+    (f1, f1_trd), (acc, acc_trd), (auroc, _, _), (auprc, _, _) = two_classify_metrics(pr_2d, gt_2d)
 
-    # ---- SHD and normalized SHD ----
-    threshold = 0.5
-    pred_binary = (pr > threshold).astype(np.int32)
-    gt_int = gt.astype(np.int32)
-    shd = int(np.sum(np.abs(gt_int - pred_binary)))
+    # ---- SHD and normalized SHD (top-k thresholding) ----
+    gt_int = gt_2d.astype(np.int32)
     n_edges_true = int(np.sum(gt_int))
+    if n_edges_true > 0:
+        thr = np.sort(pr_2d.ravel())[-n_edges_true]
+        pred_binary = (pr_2d >= thr).astype(np.int32)
+    else:
+        pred_binary = np.zeros_like(gt_int, dtype=np.int32)
+    shd = int(np.sum(np.abs(gt_int - pred_binary)))
     nshd = shd / max(n_edges_true, 1)
 
     # ---- MCC (Matthews Correlation Coefficient) ----
@@ -740,16 +729,17 @@ def compute_metrics(gc_true, gc_pred):
     mcc = float(tp * tn - fp * fn) / max(mcc_denom, 1e-8)
 
     # ---- Distance-stratified AUROC ----
-    d = gc_true_2d.shape[0]
+    d = gt_2d.shape[0]
     lag_metrics = {}
-    if gc_pred.ndim == 3 and gc_true.ndim == 3:
-        max_lag = min(gc_true.shape[2], gc_pred.shape[2])
+    if gc_true_full is not None and gc_pred_full is not None \
+            and gc_true_full.ndim == 3 and gc_pred_full.ndim == 3:
+        max_lag = min(gc_true_full.shape[2], gc_pred_full.shape[2])
         for start, end in [(0, 2), (2, 4), (4, 6), (6, max_lag)]:
             if start >= max_lag:
                 break
             end = min(end, max_lag)
-            gt_slice = gc_true[:, :, start:end]
-            pr_slice = gc_pred[:, :, start:end]
+            gt_slice = gc_true_full[:, :, start:end]
+            pr_slice = gc_pred_full[:, :, start:end]
             gt_bin = (gt_slice.sum(axis=2) > 0).astype(np.int32)
             pr_score = pr_slice.max(axis=2)
             gt_bin = remove_self_connection(gt_bin)
@@ -762,12 +752,85 @@ def compute_metrics(gc_true, gc_pred):
         "auprc": float(auprc),
         "f1": float(f1),
         "acc": float(acc),
-        "shd": shd,
-        "nshd": float(nshd),
-        "mcc": float(mcc),
+        "shd_topk": shd,
+        "nshd_topk": float(nshd),
+        "mcc_topk": float(mcc),
         "n_edges_true": n_edges_true,
         **lag_metrics
     }
+
+
+def compute_metrics(gc_true, gc_pred):
+    """Compute comprehensive metrics using lag-0 ground truth (backward-compatible).
+
+    NOTE: This uses gc_true[:,:,0] as the ground-truth graph. For factorial
+    experiments where edges are distributed across lags, prefer
+    compute_metrics_multimode() which additionally reports summary_max and
+    summary_mean metrics that aggregate across all lags.
+    """
+    # Collapse to 2D summary if needed
+    if gc_true.ndim == 3:
+        gc_true_2d = gc_true[:, :, 0]
+    else:
+        gc_true_2d = gc_true
+    if gc_pred.ndim == 3:
+        gc_pred_full = gc_pred
+        gc_pred_summary = np.max(np.abs(gc_pred), axis=2)
+    else:
+        gc_pred_full = None
+        gc_pred_summary = gc_pred
+
+    # Remove self-connections for metric computation
+    gt = remove_self_connection(gc_true_2d.astype(np.int32))
+    pr = remove_self_connection(gc_pred_summary.astype(np.float64))
+
+    return _compute_metrics_core(gt, pr, gc_true, gc_pred_full)
+
+
+def compute_metrics_multimode(gc_true, gc_pred):
+    """Compute metrics in three summary modes: lag0, summary_max, summary_mean.
+
+    - **lag0**: ground truth = gc_true[:,:,0] (edges in first lag only).
+      Prediction = max(|pred|) over lags.  This is the original JRNGC metric.
+    - **summary_max**: ground truth = 1[∃k: A_{ij}^{(k)} ≠ 0] (edge exists at
+      any lag).  Prediction = max_k |pred_{ij}^{(k)}|.
+    - **summary_mean**: same ground truth as summary_max.  Prediction =
+      (1/K) Σ_k |pred_{ij}^{(k)}|.
+
+    Returns:
+        dict with keys "lag0", "summary_max", "summary_mean", each holding
+        a metrics dict (auroc, auprc, f1, shd, nshd, mcc, n_edges_true, ...).
+    """
+    if gc_true.ndim != 3 or gc_pred.ndim != 3:
+        # Fallback: all modes are identical for 2D inputs
+        single = compute_metrics(gc_true, gc_pred)
+        return {"lag0": single, "summary_max": single, "summary_mean": single}
+
+    d0, d1, lag = gc_true.shape
+    result = {}
+
+    # ---- lag0 ----
+    gt_lag0 = gc_true[:, :, 0]
+    pr_lag0 = np.max(np.abs(gc_pred), axis=2)
+    gt_lag0 = remove_self_connection(gt_lag0.astype(np.int32))
+    pr_lag0 = remove_self_connection(pr_lag0.astype(np.float64))
+    result["lag0"] = _compute_metrics_core(gt_lag0, pr_lag0, gc_true, gc_pred)
+
+    # ---- summary (shared ground truth) ----
+    gt_summary = (gc_true.sum(axis=2) > 0).astype(np.int32)
+    gt_summary = remove_self_connection(gt_summary)
+
+    # summary_max
+    pr_max = np.max(np.abs(gc_pred), axis=2)
+    pr_max = remove_self_connection(pr_max.astype(np.float64))
+    result["summary_max"] = _compute_metrics_core(gt_summary, pr_max, gc_true, gc_pred)
+
+    # summary_mean
+    pr_mean = np.mean(np.abs(gc_pred), axis=2)
+    pr_mean = remove_self_connection(pr_mean.astype(np.float64))
+    result["summary_mean"] = _compute_metrics_core(gt_summary, pr_mean, gc_true, gc_pred)
+
+    return result
 
 
 def compute_seed_confidence_intervals(metrics_list, confidence=0.95):

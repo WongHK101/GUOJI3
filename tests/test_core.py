@@ -166,9 +166,73 @@ def test_self_link_removal_consistency():
     print("PASS: test_self_link_removal_consistency — CT_medical 153→133, Lorenz 100→90, no-diag 20→20")
 
 
+# ============================================================
+# Test 5: Factorial data generation
+# ============================================================
+def test_factorial_data_generation():
+    """generate_factorial_cell produces correct shapes, sparse edges, no self-loops."""
+    from factorial_data import generate_factorial_cell
+
+    d, T, lag, seed = 10, 600, 3, 42
+    sparsity = 0.2
+
+    # Test stationary linear
+    x_stat, gc_stat = generate_factorial_cell(
+        d=d, T=T, lag=lag, seed=seed,
+        stationary=True, linear=True,
+        coeff_scale=0.40, noise_scale=0.15,
+        sparsity=sparsity,
+    )
+    assert x_stat.shape == (d, T), f"Stat+Linear x shape: expected ({d},{T}), got {x_stat.shape}"
+    assert gc_stat.shape == (d, d, lag), f"Stat+Linear gc shape: expected ({d},{d},{lag}), got {gc_stat.shape}"
+    # No self-loops
+    for l in range(lag):
+        assert np.all(np.diag(gc_stat[:, :, l]) == 0), f"Self-loops found in lag {l}"
+    # Edge count roughly matches sparsity: d*(d-1)*sparsity
+    expected_edges = d * (d - 1) * sparsity
+    actual_edges = gc_stat.sum()
+    assert abs(actual_edges - expected_edges) < d, \
+        f"Edge count {actual_edges} deviates too far from expected {expected_edges}"
+
+    # Test non-stationary nonlinear
+    x_ns, gc_ns = generate_factorial_cell(
+        d=d, T=T, lag=lag, seed=seed,
+        stationary=False, linear=False,
+        coeff_scale=0.40, noise_scale=0.15,
+        regime_shift_strength=0.20, nonlinear_strength=0.50,
+        sparsity=sparsity,
+    )
+    assert x_ns.shape == (d, T)
+    assert gc_ns.shape == (d, d, lag)
+    for l in range(lag):
+        assert np.all(np.diag(gc_ns[:, :, l]) == 0), f"Self-loops found in lag {l}"
+
+    # Same seed produces same GC for same sparsity
+    x_s2, gc_s2 = generate_factorial_cell(
+        d=d, T=T, lag=lag, seed=seed,
+        stationary=True, linear=True,
+        coeff_scale=0.40, noise_scale=0.15,
+        sparsity=sparsity,
+    )
+    assert np.allclose(gc_stat, gc_s2), "Same seed should produce same GC structure"
+    assert np.allclose(x_stat, x_s2), "Same seed should produce same data"
+
+    # Different seed produces different graph
+    x_diff, gc_diff = generate_factorial_cell(
+        d=d, T=T, lag=lag, seed=seed + 1,
+        stationary=True, linear=True,
+        coeff_scale=0.40, noise_scale=0.15,
+        sparsity=sparsity,
+    )
+    assert not np.allclose(gc_stat, gc_diff), "Different seeds should produce different graphs"
+
+    print("PASS: test_factorial_data_generation — shapes, sparsity, no self-loops, seed reproducibility")
+
+
 if __name__ == "__main__":
     test_windowing_shape()
     test_istf_output_dim_eq_input_dim()
     test_mask_intervention_correctness()
     test_self_link_removal_consistency()
-    print("\nAll 4 tests passed.")
+    test_factorial_data_generation()
+    print("\nAll 5 tests passed.")

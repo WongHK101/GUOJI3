@@ -229,7 +229,7 @@ def exp1_gradient_path_analysis():
 
         results[arch_name] = {
             "final_auroc": metrics["auroc"],
-            "final_shd": metrics["shd"],
+            "final_shd": metrics["shd_topk"],
             "final_auprc": metrics["auprc"],
             "log": log
         }
@@ -295,11 +295,11 @@ def exp2_dcond_sweep():
         results[label] = {
             "auroc": metrics["auroc"],
             "auprc": metrics["auprc"],
-            "shd": metrics["shd"],
+            "shd": metrics["shd_topk"],
             "train_loss": float(loss),
             "d_cond": d_cond,
         }
-        print(f"    AUROC={metrics['auroc']:.4f}, SHD={metrics['shd']}, "
+        print(f"    AUROC={metrics['auroc']:.4f}, SHD={metrics['shd_topk']}, "
               f"loss={loss:.6f}")
 
         del model
@@ -408,7 +408,7 @@ def exp3_loss_trajectory():
         results[arch_name] = {
             "auroc": metrics["auroc"],
             "auprc": metrics["auprc"],
-            "shd": metrics["shd"],
+            "shd": metrics["shd_topk"],
             "trajectory": trajectory,
         }
 
@@ -486,11 +486,11 @@ def exp4_coefficient_recovery():
         shrinkage = np.linalg.norm(recovered_flat[mask]) / max(
             np.linalg.norm(true_flat[mask]), 1e-10)
 
-        metrics = compute_metrics(gc, A_true_nodiag)
+        metrics = compute_metrics(gc, gc_pred)
         results[arch_name] = {
             "auroc": metrics["auroc"],
             "auprc": metrics["auprc"],
-            "shd": metrics["shd"],
+            "shd": metrics["shd_topk"],
             "coefficient_correlation": float(corr),
             "coefficient_shrinkage": float(shrinkage),
             "recovered_norm": float(np.linalg.norm(recovered_flat[mask])),
@@ -499,7 +499,7 @@ def exp4_coefficient_recovery():
 
         print(f"    AUROC={metrics['auroc']:.4f}, Corr={corr:.4f}, "
               f"Shrinkage={shrinkage:.4f} "
-              f"({'SHORTCUT' if shrinkage < 0.3 else 'PRESERVED'})")
+              f"({'SHORTCUT' if shrinkage < 0.7 else 'PRESERVED'})")
 
         del model
         torch.cuda.empty_cache()

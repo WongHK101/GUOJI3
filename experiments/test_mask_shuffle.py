@@ -116,8 +116,8 @@ def main():
     gc_istf = m_istf.get_gc_matrix(x_orig)
     met_concat = compute_metrics(gc, gc_concat)
     met_istf = compute_metrics(gc, gc_istf)
-    log(f"    Concat: AUROC={met_concat['auroc']:.4f}, SHD={met_concat['shd']}")
-    log(f"    ISTF:   AUROC={met_istf['auroc']:.4f}, SHD={met_istf['shd']}")
+    log(f"    Concat: AUROC={met_concat['auroc']:.4f}, SHD={met_concat['shd_topk']}")
+    log(f"    ISTF:   AUROC={met_istf['auroc']:.4f}, SHD={met_istf['shd_topk']}")
 
     # ---- Interpretation ----
     log(f"\n{'='*60}")
@@ -150,18 +150,20 @@ def main():
 
     with open("mask_shuffle_results.json", "w") as f:
         json.dump({
-            "concat_baseline_loss": base_concat,
-            "istf_baseline_loss": base_istf,
-            "concat_mask_x_loss": mask_concat,
-            "concat_mask_delta": concat_mask_delta,
-            "istf_mask_x_loss": mask_istf,
-            "istf_mask_delta": istf_mask_delta,
-            "concat_shuffle_x_loss": shuf_concat,
-            "concat_shuffle_delta": concat_shuf_delta,
-            "istf_shuffle_x_loss": shuf_istf,
-            "istf_shuffle_delta": istf_shuf_delta,
-            "concat_gc_auroc": met_concat['auroc'],
-            "istf_gc_auroc": met_istf['auroc'],
+            "concat_baseline_loss": float(base_concat),
+            "istf_baseline_loss": float(base_istf),
+            "concat_mask_x_loss": float(mask_concat),
+            "concat_mask_delta": float(concat_mask_delta),
+            "istf_mask_x_loss": float(mask_istf),
+            "istf_mask_delta": float(istf_mask_delta),
+            "concat_shuffle_x_loss": float(shuf_concat),
+            "concat_shuffle_delta": float(concat_shuf_delta),
+            "istf_shuffle_x_loss": float(shuf_istf),
+            "istf_shuffle_delta": float(istf_shuf_delta),
+            "concat_gc_auroc": float(met_concat['auroc']),
+            "istf_gc_auroc": float(met_istf['auroc']),
+            "concat_gc_shd": int(met_concat['shd_topk']),
+            "istf_gc_shd": int(met_istf['shd_topk']),
         }, f, indent=2)
     log(f"\nSaved to mask_shuffle_results.json")
     log_fh.close()

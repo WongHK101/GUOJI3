@@ -44,9 +44,11 @@ def resolve_results_dir():
     return os.path.join(PROJECT_ROOT, "results", "raw")
 
 
-def resolve_device():
-    """CPU fallback when CUDA is unavailable."""
+def resolve_device(force_cpu=False):
+    """CPU fallback when CUDA is unavailable or --cpu flag is set."""
     import torch
+    if force_cpu:
+        return torch.device("cpu")
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -86,7 +88,26 @@ def base_parser(description=""):
     p.add_argument("--ortho-lam", type=float, default=0.05)
     p.add_argument("--residual-scale", type=float, default=0.1)
     p.add_argument("--verbose", action="store_true")
+    p.add_argument("--cpu", action="store_true", default=False,
+                   help="Force CPU even if CUDA is available")
     return p
+
+
+def add_standard_args(parser):
+    """Add standard training flags to an existing ArgumentParser.
+
+    Usage:
+        parser = argparse.ArgumentParser(parents=[base_parser()], ...)
+        add_standard_args(parser)   # adds model-specific flags
+    """
+    parser.add_argument("--d", type=int, default=10, help="number of variables")
+    parser.add_argument("--T", type=int, default=600, help="time series length")
+    parser.add_argument("--lag", type=int, default=3, help="lag order")
+    parser.add_argument("--layers", type=int, default=5, help="MLP layers")
+    parser.add_argument("--hidden", type=int, default=50, help="hidden dim")
+    parser.add_argument("--filter-type", type=str, default="mamba",
+                        choices=["mamba", "tcn", "none"],
+                        help="temporal filter type")
 
 
 def setup_env(args=None):
