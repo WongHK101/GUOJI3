@@ -55,7 +55,7 @@ def init_panel(ax, label, title):
     ax.set_yticks([])
     ax.set_frame_on(False)
     frame = FancyBboxPatch(
-        (0.015, 0.035),
+        (0.010, 0.030),
         0.970,
         0.930,
         boxstyle="round,pad=0.006,rounding_size=0.012",
@@ -286,20 +286,20 @@ def draw_heatmap(ax, x, y, w, h, mat, edge, label):
 
 def panel_a(ax):
     init_panel(ax, "a", "concat shortcut")
-    draw_matrix(ax, 0.070, 0.640, 0.160, 0.150, BLUE, r"$X_{t-L:t}$")
-    draw_vector(ax, 0.070, 0.250, 0.160, 0.105, RED, r"$c_t$")
-    add_box(ax, 0.405, 0.455, 0.160, 0.135, "concat", fill=LIGHT, fs=6.2)
-    add_box(ax, 0.675, 0.455, 0.190, 0.135, "predictor", fill="white", fs=6.2)
-    add_box(ax, 0.730, 0.180, 0.095, 0.100, r"$\hat y$", fill=LIGHT, fs=6.5)
+    draw_matrix(ax, 0.070, 0.635, 0.205, 0.180, BLUE, r"$X_{t-L:t}$")
+    draw_vector(ax, 0.070, 0.280, 0.205, 0.130, RED, r"$c_t$")
+    add_box(ax, 0.405, 0.510, 0.185, 0.160, "concat", fill=LIGHT, fs=6.6)
+    add_box(ax, 0.685, 0.510, 0.205, 0.160, "predictor", fill="white", fs=6.6)
+    add_box(ax, 0.735, 0.205, 0.115, 0.115, r"$\hat y$", fill=LIGHT, fs=7.0)
 
     # Orthogonal routes into concat.
-    ortho_arrow(ax, [(0.230, 0.715), (0.320, 0.715), (0.320, 0.525), (0.405, 0.525)], BLUE, 1.25)
-    ortho_arrow(ax, [(0.230, 0.303), (0.320, 0.303), (0.320, 0.490), (0.405, 0.490)], RED, 1.45)
-    ortho_arrow(ax, [(0.565, 0.523), (0.675, 0.523)], DARK, 1.0)
-    ortho_arrow(ax, [(0.770, 0.455), (0.770, 0.280)], DARK, 0.95)
+    ortho_arrow(ax, [(0.275, 0.725), (0.335, 0.725), (0.335, 0.590), (0.405, 0.590)], BLUE, 1.25)
+    ortho_arrow(ax, [(0.275, 0.345), (0.335, 0.345), (0.335, 0.555), (0.405, 0.555)], RED, 1.45)
+    ortho_arrow(ax, [(0.590, 0.590), (0.685, 0.590)], DARK, 1.0)
+    ortho_arrow(ax, [(0.787, 0.510), (0.787, 0.320)], DARK, 0.95)
 
-    add_box(ax, 0.390, 0.175, 0.185, 0.110, r"$J_x$", edge=BLUE, fill=BLUE_FILL, lw=0.85, fs=6.0)
-    arrow_segment(ax, (0.485, 0.455), (0.485, 0.285), color=BLUE, lw=0.9, arrow=True, ls=(0, (3, 2)))
+    add_box(ax, 0.390, 0.205, 0.210, 0.130, r"$J_x$", edge=BLUE, fill=BLUE_FILL, lw=0.85, fs=6.4)
+    arrow_segment(ax, (0.498, 0.510), (0.498, 0.335), color=BLUE, lw=0.9, arrow=True, ls=(0, (3, 2)))
     ax.text(
         0.055,
         0.090,
@@ -313,32 +313,32 @@ def panel_a(ax):
 
 def panel_b(ax):
     init_panel(ax, "b", "input-space repair")
-    draw_matrix(ax, 0.070, 0.515, 0.150, 0.145, BLUE, r"$X$")
-    add_box(ax, 0.315, 0.475, 0.245, 0.165, r"$F_\theta$" + "\nMamba | TCN", edge=BLUE, fill=BLUE_FILL, lw=1.05, fs=6.2, weight="bold")
-    add_box(ax, 0.650, 0.500, 0.120, 0.115, r"$X'$" + "\nsame $d$", edge=BLUE, fill="white", lw=0.95, fs=5.9)
-    add_box(ax, 0.835, 0.500, 0.115, 0.115, r"MLP" + "\n" + r"$\hat y$", edge=DARK, fill=LIGHT, lw=0.9, fs=5.9)
+    draw_matrix(ax, 0.060, 0.575, 0.175, 0.165, BLUE, r"$X$")
+    add_box(ax, 0.315, 0.535, 0.275, 0.195, r"$F_\theta$" + "\nMamba | TCN", edge=BLUE, fill=BLUE_FILL, lw=1.05, fs=6.6, weight="bold")
+    add_box(ax, 0.660, 0.565, 0.135, 0.135, r"$X'$" + "\nsame $d$", edge=BLUE, fill="white", lw=0.95, fs=6.2)
+    add_box(ax, 0.835, 0.565, 0.120, 0.135, r"MLP" + "\n" + r"$\hat y$", edge=DARK, fill=LIGHT, lw=0.9, fs=6.1)
 
-    ortho_arrow(ax, [(0.220, 0.588), (0.315, 0.588)], BLUE, 1.2)
-    ortho_arrow(ax, [(0.560, 0.558), (0.650, 0.558)], BLUE, 1.2)
-    ortho_arrow(ax, [(0.770, 0.558), (0.835, 0.558)], DARK, 1.0)
+    ortho_arrow(ax, [(0.235, 0.658), (0.315, 0.658)], BLUE, 1.2)
+    ortho_arrow(ax, [(0.590, 0.632), (0.660, 0.632)], BLUE, 1.2)
+    ortho_arrow(ax, [(0.795, 0.632), (0.835, 0.632)], DARK, 1.0)
 
     add_box(
         ax,
-        0.080,
-        0.185,
-        0.835,
-        0.120,
+        0.070,
+        0.130,
+        0.860,
+        0.145,
         r"$X'=F_\theta(X)\in\mathbb{R}^{T\times d}$"
         + "     "
         + r"$\mathcal{L}=\mathcal{L}_{pred}+\lambda_J\|J_x\|_1+\lambda_O\|X'-X\|_2^2$",
         edge=MID,
         fill="white",
         lw=0.75,
-        fs=5.8,
+        fs=6.0,
     )
     ax.text(
-        0.315,
-        0.380,
+        0.335,
+        0.385,
         r"$J_x=(\partial\hat y/\partial X')(\partial X'/\partial X)$",
         ha="left",
         va="center",
@@ -378,14 +378,14 @@ def panel_c(ax):
         ]
     ), 0, 1)
 
-    draw_heatmap(ax, 0.075, 0.360, 0.118, 0.260, true, BLUE, "True A")
-    draw_heatmap(ax, 0.270, 0.360, 0.118, 0.260, concat, RED, "Concat S")
-    draw_heatmap(ax, 0.465, 0.360, 0.118, 0.260, istf, BLUE, "ISTF S")
-    ortho_arrow(ax, [(0.193, 0.490), (0.270, 0.490)], MID, 0.8)
-    ortho_arrow(ax, [(0.388, 0.490), (0.465, 0.490)], MID, 0.8)
+    draw_heatmap(ax, 0.070, 0.300, 0.150, 0.365, true, BLUE, "True A")
+    draw_heatmap(ax, 0.290, 0.300, 0.150, 0.365, concat, RED, "Concat S")
+    draw_heatmap(ax, 0.510, 0.300, 0.150, 0.365, istf, BLUE, "ISTF S")
+    ortho_arrow(ax, [(0.220, 0.482), (0.290, 0.482)], MID, 0.8)
+    ortho_arrow(ax, [(0.440, 0.482), (0.510, 0.482)], MID, 0.8)
 
     # Small coefficient diagnostic, neutral two-tone bars.
-    x0, y0, w, h = 0.680, 0.240, 0.245, 0.410
+    x0, y0, w, h = 0.725, 0.250, 0.225, 0.440
     ax.plot([x0, x0], [y0, y0 + h], color=DARK, lw=0.75, transform=ax.transAxes)
     ax.plot([x0, x0 + w], [y0, y0], color=DARK, lw=0.75, transform=ax.transAxes)
     ax.plot([x0, x0 + w], [y0 + h * (1.0 / 1.15), y0 + h * (1.0 / 1.15)],
@@ -424,10 +424,10 @@ def save_figure(fig, name):
 
 
 def main():
-    fig = plt.figure(figsize=(7.15, 3.05), facecolor="white")
-    ax_a = fig.add_axes([0.035, 0.560, 0.455, 0.380])
-    ax_b = fig.add_axes([0.510, 0.560, 0.455, 0.380])
-    ax_c = fig.add_axes([0.035, 0.075, 0.930, 0.395])
+    fig = plt.figure(figsize=(7.15, 3.85), facecolor="white")
+    ax_a = fig.add_axes([0.030, 0.535, 0.460, 0.420])
+    ax_b = fig.add_axes([0.510, 0.535, 0.460, 0.420])
+    ax_c = fig.add_axes([0.030, 0.065, 0.940, 0.420])
 
     panel_a(ax_a)
     panel_b(ax_b)
