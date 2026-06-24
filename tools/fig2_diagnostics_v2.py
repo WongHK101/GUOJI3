@@ -32,6 +32,8 @@ GRAY      = '#767676'
 DARK      = '#272727'
 CONCAT_C  = '#D98C7A'
 ISTF_C    = '#5B9E6F'
+PEARSON_C = '#4C627F'
+NORM_C    = '#8B6F47'
 
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                           "paper-data", "figures")
@@ -55,9 +57,9 @@ def main():
     fig = plt.figure(figsize=(7.0, 3.45), facecolor='white')
 
     # Grid: left column panel (a) is taller, right column split for (b) top, (c) bottom
-    gs = fig.add_gridspec(2, 2, left=0.06, right=0.97, bottom=0.10, top=0.79,
-                          wspace=0.32, hspace=0.56,
-                          width_ratios=[1.1, 0.9])
+    gs = fig.add_gridspec(2, 2, left=0.06, right=0.97, bottom=0.10, top=0.88,
+                           wspace=0.32, hspace=0.56,
+                           width_ratios=[1.1, 0.9])
 
     ax_a1 = fig.add_subplot(gs[0, 0])  # d_cond sweep — AUROC
     ax_a2 = fig.add_subplot(gs[1, 0])  # d_cond sweep — Loss
@@ -78,16 +80,6 @@ def main():
     ax_a1.text(0.50, 1.12, r'Auxiliary-channel dimension sweep ($d_{\mathrm{cond}}$)',
                transform=ax_a1.transAxes, fontsize=7.2, fontweight='bold',
                color=DARK, ha='center', va='bottom')
-
-    legend_handles = [
-        Patch(facecolor=CONCAT_C, alpha=0.9, label='Concat-JRNGC'),
-        Patch(facecolor=ISTF_C, alpha=0.9, label='ISTF-Mamba'),
-        Patch(facecolor=BLUE, alpha=0.85, label='Pearson r'),
-        Patch(facecolor=GREEN, alpha=0.55, label='Norm shrinkage'),
-    ]
-    fig.legend(handles=legend_handles, loc='upper center', bbox_to_anchor=(0.61, 0.975),
-               ncol=4, fontsize=6.5, handlelength=1.0, handleheight=0.8,
-               columnspacing=1.1, borderpad=0.2, labelspacing=0.3)
 
     save_figure(fig, "fig2_diagnostics_v2")
     plt.close(fig)
@@ -155,6 +147,8 @@ def draw_intervention(ax):
                 fontsize=5.8, color=DARK, zorder=5)
     ax.set_title('Intervention sensitivity', fontsize=8, fontweight='bold',
                  color=DARK, loc='center', pad=4)
+    ax.legend(loc='upper right', fontsize=6.0, handlelength=1.0,
+              borderpad=0.15, labelspacing=0.25)
 
 
 def draw_coefficient_fidelity(ax):
@@ -164,20 +158,23 @@ def draw_coefficient_fidelity(ax):
     x = np.arange(len(methods))
     width = 0.30
 
-    ax.bar(x - width/2, pearson_r, width, color=BLUE, alpha=0.85,
-           edgecolor='white', linewidth=0.5, zorder=3)
-    ax.bar(x + width/2, shrinkage, width, color=GREEN, alpha=0.55,
-           edgecolor='white', linewidth=0.5, zorder=3)
+    ax.bar(x - width/2, pearson_r, width, color=PEARSON_C, alpha=0.88,
+           edgecolor='white', linewidth=0.5, label='Pearson r', zorder=3)
+    ax.bar(x + width/2, shrinkage, width, color=NORM_C, alpha=0.72,
+           edgecolor='white', linewidth=0.5, label='Norm ratio', zorder=3)
 
     ax.set_xticks(x)
     ax.set_xticklabels(methods, fontsize=6.5)
     ax.tick_params(axis='x', length=3)
-    ax.set_ylabel("Fidelity score", fontsize=7.5)
+    ax.set_ylabel("Correlation / norm ratio", fontsize=7.5)
     ax.tick_params(axis='y', labelsize=7)
     ax.set_ylim(0, 1.15)
     ax.axhline(y=1.0, color=GRAY, linewidth=0.6, linestyle='--', zorder=1, alpha=0.7)
     ax.set_title('Coefficient fidelity', fontsize=8, fontweight='bold', color=DARK,
                  loc='center', pad=4)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.50, -0.30), ncol=2,
+              fontsize=6.0, handlelength=1.0, borderpad=0.15,
+              columnspacing=0.9, labelspacing=0.25)
 
 
 if __name__ == '__main__':

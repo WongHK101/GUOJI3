@@ -77,6 +77,27 @@ def panel_label(ax, label):
     )
 
 
+def summarize_ct_medical():
+    metrics_dir = os.path.join(PROJECT_ROOT, "results_kbs", "metrics")
+    summary = {}
+    for method in ["JRNGC", "ISTF-Mamba"]:
+        auroc = []
+        f1 = []
+        for seed in range(10):
+            path = os.path.join(metrics_dir, f"CT_medical_{method}_seed{seed}_metrics.json")
+            with open(path, encoding="utf-8") as f:
+                payload = json.load(f)
+            auroc.append(float(payload["standard_metrics"]["auroc"]))
+            f1.append(float(payload["knowledge_metrics"]["f1_exact"]))
+        summary[method] = {
+            "auroc": float(np.mean(auroc)),
+            "auroc_se": float(np.std(auroc, ddof=1) / np.sqrt(len(auroc))),
+            "f1": float(np.mean(f1)),
+            "f1_se": float(np.std(f1, ddof=1) / np.sqrt(len(f1))),
+        }
+    return summary
+
+
 def load_root_cause_stats():
     base = os.path.join(PROJECT_ROOT, "results_kbs", "root_cause_v2", "summary")
     raw = {
@@ -178,6 +199,7 @@ def figure_root_cause_rework(stats):
             ax.axhline(0.5, color="#8A8A8A", lw=0.8, ls=":", zorder=1)
             ax.text(1.42, 0.515, "chance", ha="right", va="bottom", fontsize=6, color="#777777")
         if metric == "f1":
+            ax.axhline(0.074, color="#8A8A8A", lw=0.8, ls=":", zorder=1)
             ax.text(
                 0.98,
                 0.08,
@@ -309,40 +331,12 @@ def figure_checkpoint_rework(dynamics, summary):
             "lowest-loss checkpoint",
         )
 
-        ax.annotate(
-            f"best F1\niter {int(best_f1['iter'])}",
-            xy=(best_f1["pred_loss"], best_f1["f1"]),
-            xytext=(0.96, 0.82),
-            textcoords="axes fraction",
-            arrowprops={"arrowstyle": "-", "lw": 0.6, "color": "#C84343"},
-            ha="right",
-            va="top",
-            fontsize=6.3,
-            color="#C84343",
+        ax.set_title(
+            f"{title}\n" + r"$\rho$(loss,F1) = "
+            + f"{sm['spearman_corr']['pred_loss_vs_f1']:+.3f}",
+            fontweight="bold",
+            pad=4,
         )
-        ax.annotate(
-            "lowest loss\nF1 = 0",
-            xy=(best_loss["pred_loss"], best_loss["f1"]),
-            xytext=(0.93, 0.22),
-            textcoords="axes fraction",
-            arrowprops={"arrowstyle": "-", "lw": 0.6, "color": "#222222"},
-            ha="right",
-            va="center",
-            fontsize=6.3,
-            color="#222222",
-        )
-        ax.text(
-            0.04,
-            0.08,
-            f"rho(loss,F1) = {sm['spearman_corr']['pred_loss_vs_f1']:+.3f}\n"
-            f"final AUROC = {auroc[-1]:.3f}",
-            transform=ax.transAxes,
-            ha="left",
-            va="bottom",
-            fontsize=6.3,
-            color="#444444",
-        )
-        ax.set_title(title, fontweight="bold", pad=4)
         panel_label(ax, label)
 
     axes[0].set_ylabel("F1 (exact top-k)")
@@ -387,12 +381,13 @@ def figure_checkpoint_rework(dynamics, summary):
 
 
 def figure_causaltime_rework():
+    ct_medical = summarize_ct_medical()
     datasets = ["CT-medical", "CT-pm25", "CT-traffic"]
     data = {
         "CT-medical": {
             "random_f1": 0.0853,
-            "JRNGC": {"auroc": 0.458, "f1": 0.083},
-            "ISTF-Mamba": {"auroc": 0.500, "f1": 0.132},
+            "JRNGC": ct_medical["JRNGC"],
+            "ISTF-Mamba": ct_medical["ISTF-Mamba"],
             "ISTF-TCN": None,
         },
         "CT-pm25": {
@@ -420,26 +415,52 @@ def figure_causaltime_rework():
         (axes[1], "f1", "F1 (exact top-k)", "b", "Top-k edge recovery"),
     ]:
         for method in methods:
-            vals = []
-            xs = []
             for i, ds in enumerate(datasets):
                 entry = data[ds].get(method)
                 if entry is None:
+                    if ds == "CT-medical" and method == "ISTF-TCN":
+                        na_y = 0.333 if metric == "auroc" else 0.006
+                        ax.text(
+                            i + offsets[method],
+                            na_y,
+                            "N/A",
+                            ha="center",
+                            va="bottom",
+                            fontsize=6,
+                            color=METHOD_STYLE[method]["color"],
+                            fontweight="bold",
+                        )
                     continue
-                vals.append(entry[metric])
-                xs.append(i + offsets[method])
-            style = METHOD_STYLE[method]
-            ax.scatter(
-                xs,
-                vals,
-                s=34,
-                marker=style["marker"],
-                color=style["color"],
-                edgecolor="white",
-                linewidth=0.6,
-                zorder=3,
-            )
-            ax.plot(xs, vals, color=style["color"], lw=0.8, alpha=0.45, zorder=2)
+                style = METHOD_STYLE[method]
+                xpos = i + offsets[method]
+                yerr = entry.get(f"{metric}_se")
+                if yerr is None:
+                    ax.scatter(
+                        xpos,
+                        entry[metric],
+                        s=34,
+                        marker=style["marker"],
+                        color=style["color"],
+                        edgecolor="white",
+                        linewidth=0.6,
+                        zorder=3,
+                    )
+                else:
+                    ax.errorbar(
+                        xpos,
+                        entry[metric],
+                        yerr=yerr,
+                        fmt=style["marker"],
+                        markersize=5.0,
+                        color=style["color"],
+                        markerfacecolor=style["color"],
+                        markeredgecolor="white",
+                        markeredgewidth=0.6,
+                        ecolor=style["color"],
+                        elinewidth=0.8,
+                        capsize=2.0,
+                        zorder=3,
+                    )
 
         if metric == "auroc":
             ax.axhline(0.5, color="#8A8A8A", lw=0.8, ls=":", zorder=1)

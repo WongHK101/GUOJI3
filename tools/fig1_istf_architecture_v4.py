@@ -174,22 +174,32 @@ def draw_panel_b(ax):
     txt(ax, 0.60, 0.31, r"$\mathbf{x}_t^\prime$", color=GREEN, fs=6, fw="bold")
     txt(ax, 0.50, 0.05, r"$\hat{\mathbf{y}}_{t+1}$", color=DARK, fs=6.5, fw="bold")
     arrow(ax, 0.50, 0.13, 0.50, 0.07, color=DARK, lw=0.9)
-    txt(ax, 0.08, 0.26, "all MLP inputs\npenalized", color=GREEN, fs=5.4, ha="left")
+    txt(
+        ax,
+        0.08,
+        0.28,
+        "Jacobian penalty\nbackpropagates\nthrough $x'_t$ to $x_t$",
+        color=GREEN,
+        fs=5.0,
+        ha="left",
+    )
 
 
 def draw_panel_c(ax):
     box(ax, 0.22, 0.78, 0.56, 0.10, r"$\mathbf{x}_t$" + "\n(d-dim input)", color=DARK, fill=LGRAY, fs=6.5)
-    box(ax, 0.02, 0.48, 0.44, 0.14, "", color=GREEN, fill="white", lw=1.3)
+    box(ax, 0.03, 0.49, 0.40, 0.14, "", color=GREEN, fill="white", lw=1.3)
     txt(ax, 0.24, 0.58, "Mamba", color=GREEN, fs=7, fw="bold")
     txt(ax, 0.24, 0.51, "selective SSM", color=DARK, fs=6)
-    box(ax, 0.54, 0.48, 0.44, 0.14, "", color=GREEN, fill="white", lw=1.3)
+    txt(ax, 0.50, 0.565, "OR", color=DARK, fs=7, fw="bold")
+    box(ax, 0.57, 0.49, 0.40, 0.14, "", color=GREEN, fill="white", lw=1.3)
     txt(ax, 0.76, 0.58, "TCN", color=GREEN, fs=7, fw="bold")
     txt(ax, 0.76, 0.51, "temporal conv", color=DARK, fs=6)
-    arrow(ax, 0.36, 0.78, 0.24, 0.62, color=GREEN, lw=1.0)
-    arrow(ax, 0.64, 0.78, 0.76, 0.62, color=GREEN, lw=1.0)
-    box(ax, 0.22, 0.31, 0.56, 0.08, r"$\mathbf{x}_t^\prime$", color=GREEN, fill=LGRAY, fs=6.5)
-    arrow(ax, 0.24, 0.48, 0.40, 0.39, color=GREEN, lw=0.9)
-    arrow(ax, 0.76, 0.48, 0.60, 0.39, color=GREEN, lw=0.9)
+    arrow(ax, 0.35, 0.78, 0.24, 0.63, color=GREEN, lw=1.0)
+    arrow(ax, 0.65, 0.78, 0.76, 0.63, color=GREEN, lw=1.0)
+    box(ax, 0.08, 0.30, 0.32, 0.08, r"$\mathbf{x}'_t$ (Mamba)", color=GREEN, fill=LGRAY, fs=6.0)
+    box(ax, 0.60, 0.30, 0.32, 0.08, r"$\mathbf{x}'_t$ (TCN)", color=GREEN, fill=LGRAY, fs=6.0)
+    arrow(ax, 0.24, 0.49, 0.24, 0.38, color=GREEN, lw=0.9)
+    arrow(ax, 0.76, 0.49, 0.76, 0.38, color=GREEN, lw=0.9)
     box(ax, 0.06, 0.04, 0.88, 0.14, "", color=GREEN, fill=GREEN_FILL, lw=0.9)
     txt(ax, 0.50, 0.145, "shared ISTF constraint", color=GREEN, fs=5.5, fw="bold")
     txt(ax, 0.50, 0.095, "input-space confinement + orthogonality", color=DARK, fs=6)
