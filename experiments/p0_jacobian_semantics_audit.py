@@ -24,8 +24,6 @@ from typing import Dict, Iterable, List, Tuple
 
 import numpy as np
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
 
 PROJ_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -35,10 +33,8 @@ for _path in (SRC_DIR, PROJ_ROOT):
         sys.path.insert(0, _path)
 
 from mamba_jrngc_pilot import (  # noqa: E402
-    BaselineJRNGC,
     MambaFilterJRNGC,
     MambaJRNGC,
-    ResidualBlock,
     train_model,
 )
 
@@ -273,63 +269,6 @@ def concat_total_raw_gc(
     return jac_local.abs().mean(dim=0).detach().cpu().numpy(), stats
 
 
-class DepthwiseCausalFilter(nn.Module):
-    """Coordinate-preserving causal temporal filter.
-
-    Uses grouped Conv1d, so each variable is filtered by its own temporal
-    kernel. There is no cross-variable projection in the filter.
-    """
-
-    def __init__(self, d_model: int, kernel_size: int = 3, residual_scale: float = 0.1):
-        super().__init__()
-        self.kernel_size = kernel_size
-        self.residual_scale = residual_scale
-        self.conv = nn.Conv1d(
-            d_model,
-            d_model,
-            kernel_size=kernel_size,
-            groups=d_model,
-            bias=False,
-        )
-        nn.init.zeros_(self.conv.weight)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        residual = x
-        x_t = x.transpose(1, 2)
-        x_t = F.pad(x_t, (self.kernel_size - 1, 0))
-        y = self.conv(x_t).transpose(1, 2)
-        return residual + self.residual_scale * y
-
-
-class DepthwiseFilterJRNGC(MambaFilterJRNGC):
-    """MambaFilterJRNGC interface with a depthwise causal filter."""
-
-    def __init__(
-        self,
-        d: int,
-        lag: int,
-        layers: int = 1,
-        hidden: int = 16,
-        dropout: float = 0.0,
-        jacobian_lam: float = 0.01,
-        ortho_lam: float = 0.05,
-        residual_scale: float = 0.1,
-    ):
-        super().__init__(
-            d=d,
-            lag=lag,
-            layers=layers,
-            hidden=hidden,
-            dropout=dropout,
-            jacobian_lam=jacobian_lam,
-            d_state=4,
-            ortho_lam=ortho_lam,
-            residual_scale=residual_scale,
-            filter_type="mamba",
-        )
-        self.filter_mamba = DepthwiseCausalFilter(d, kernel_size=3, residual_scale=residual_scale)
-
-
 def aggregate_scores(jac: np.ndarray) -> np.ndarray:
     if jac.ndim == 3:
         return np.max(np.abs(jac), axis=2)
@@ -500,14 +439,16 @@ def run_audit(args: argparse.Namespace) -> Dict[str, object]:
 
     if args.mode in ("all", "depthwise"):
         set_seed(args.seed)
-        depthwise = DepthwiseFilterJRNGC(
+        depthwise = MambaFilterJRNGC(
             d=args.d,
             lag=args.lag,
             layers=args.layers,
             hidden=args.hidden,
             jacobian_lam=0.01,
+            d_state=4,
             ortho_lam=0.05,
             residual_scale=0.1,
+            filter_type="depthwise",
         ).to(device)
         depthwise = train_small_model(depthwise, x, args)
         current = filtered_coordinate_gc(depthwise, x, window_idx)

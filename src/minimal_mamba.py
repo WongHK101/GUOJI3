@@ -228,6 +228,35 @@ class TCNBlock(nn.Module):
         return x + residual
 
 
+class DepthwiseCausalFilter(nn.Module):
+    """Coordinate-preserving causal temporal filter.
+
+    Same interface as MambaBlock/TCNBlock: (B, L, d) -> (B, L, d).
+    The grouped convolution prevents cross-variable mixing: each variable is
+    filtered only along its own temporal trajectory.
+    """
+    def __init__(self, d_model: int, kernel_size: int = 3,
+                 residual_scale: float = 0.1):
+        super().__init__()
+        self.kernel_size = kernel_size
+        self.residual_scale = residual_scale
+        self.conv = nn.Conv1d(
+            d_model,
+            d_model,
+            kernel_size=kernel_size,
+            groups=d_model,
+            bias=False,
+        )
+        nn.init.zeros_(self.conv.weight)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        residual = x
+        x_t = x.transpose(1, 2)
+        x_t = F.pad(x_t, (self.kernel_size - 1, 0))
+        y = self.conv(x_t).transpose(1, 2)
+        return residual + self.residual_scale * y
+
+
 def test_scan():
     """Verify parallel scan matches iterative scan."""
     torch.manual_seed(42)

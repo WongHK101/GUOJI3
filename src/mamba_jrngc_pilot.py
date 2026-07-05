@@ -532,10 +532,13 @@ class MambaFilterJRNGC(nn.Module):
         self.ortho_lam = ortho_lam
 
         # Filter: (B, L, d) → (B, L, d) — same dimension, temporal processing
-        from minimal_mamba import MambaBlock, TCNBlock
+        from minimal_mamba import MambaBlock, TCNBlock, DepthwiseCausalFilter
         if filter_type == "tcn":
             self.filter_mamba = TCNBlock(d_model=d, kernel_size=3, dilation=2,
                                          residual_scale=residual_scale)
+        elif filter_type == "depthwise":
+            self.filter_mamba = DepthwiseCausalFilter(d_model=d, kernel_size=3,
+                                                      residual_scale=residual_scale)
         else:
             self.filter_mamba = MambaBlock(d_model=d, d_state=d_state, d_conv=4, expand=2,
                                            residual_scale=residual_scale)

@@ -106,7 +106,7 @@ def add_standard_args(parser):
     parser.add_argument("--layers", type=int, default=5, help="MLP layers")
     parser.add_argument("--hidden", type=int, default=50, help="hidden dim")
     parser.add_argument("--filter-type", type=str, default="mamba",
-                        choices=["mamba", "tcn", "none"],
+                        choices=["mamba", "tcn", "depthwise", "none"],
                         help="temporal filter type")
 
 
