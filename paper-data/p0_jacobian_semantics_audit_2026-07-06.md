@@ -89,3 +89,70 @@ Interpretation:
 1. Depthwise ISTF did not collapse graph recovery in this local smoke run; its current-score AUROC was close to baseline and higher than cross-channel ISTF-Mamba under the same setup.
 2. Depthwise current and raw-chain graph scores were effectively identical, supporting it as the leading repair candidate.
 3. This smoke result is not a final benchmark. It is sufficient to justify adapting the controlled diagnostic runners to include depthwise ISTF before any AutoDL/GPU-scale rerun.
+
+## Unified Diagnostic Smoke
+
+Script:
+
+- `experiments/p0_unified_diagnostic_smoke.py`
+
+Local output:
+
+- `results/p0_audit/p0_unified_diagnostic_smoke_d6_iter120_seed0-2.json`
+
+Protocol:
+
+- Stable controlled VAR(1), `d=6`, `T=140`, `lag=1`, `max_iter=120`.
+- CPU-only, seeds 0--2.
+- Compared baseline JRNGC, causal MA(3), causal EMA(0.7), concat partial/total scoring, cross-channel ISTF-Mamba, and depthwise ISTF.
+- The generator was made conservative with row-sum coefficient scaling to avoid non-normal transient blow-up in smoke diagnostics.
+
+Aggregate results:
+
+| Method | Primary AUROC mean | Secondary AUROC mean | Semantic corr mean | Leakage mean | Note |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Baseline JRNGC | 0.6621 | n/a | n/a | n/a | raw current score |
+| MA(3)-JRNGC | 0.6265 | n/a | n/a | n/a | simple causal smoother |
+| EMA(0.7)-JRNGC | 0.5519 | n/a | n/a | n/a | simple causal smoother |
+| Concat JRNGC | 0.5821 | 0.6537 | 0.5730 | n/a | partial vs total-raw scores |
+| ISTF-Mamba | 0.6798 | 0.6685 | 0.8215 | 0.2598 | current vs raw-chain scores |
+| Depthwise ISTF | 0.6242 | 0.6242 | 1.0000 | 0.0117 | current vs raw-chain scores |
+
+Interpretation:
+
+1. On a simple stable VAR(1), depthwise ISTF is semantically clean but does not consistently beat baseline or ISTF-Mamba. This is not surprising because the setting has little non-stationary filtering need.
+2. Simple causal smoothers did not explain the ISTF effect in this smoke; MA/EMA were below baseline.
+3. Concat partial-vs-total scoring can materially change AUROC and has only moderate score alignment, reinforcing the need to separate shortcut architecture from scoring definition.
+
+## Factorial Depthwise Smoke
+
+Script:
+
+- `experiments/p0_factorial_depthwise_smoke.py`
+
+Local output:
+
+- `results/p0_audit/p0_factorial_depthwise_smoke_D2_d6_iter120_seed0-2.json`
+
+Protocol:
+
+- Existing D2 factorial generator: `{stationary, non-stationary} x {linear, nonlinear}`.
+- `d=6`, `T=180`, `lag=3`, `max_iter=120`.
+- CPU-only, seeds 0--2.
+- Compared baseline JRNGC, cross-channel ISTF-Mamba, and depthwise ISTF.
+- Used a 2D summary-max metric to avoid lag-bin undefined-class failures in this small smoke.
+
+Aggregate AUROC and semantic results:
+
+| Cell | Baseline AUROC | ISTF-Mamba AUROC | Depthwise AUROC | Mamba corr/leak | Depthwise corr/leak |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Stat+Linear | 0.8994 | 0.7635 | 0.8736 | 0.9873 / 0.0419 | 1.0000 / 0.0035 |
+| Stat+Nonlinear | 0.8366 | 0.7043 | 0.7808 | 0.9871 / 0.0399 | 1.0000 / 0.0036 |
+| NS+Linear | 0.7973 | 0.7865 | 0.8030 | 0.9834 / 0.0474 | 1.0000 / 0.0039 |
+| NS+Nonlinear | 0.7405 | 0.7135 | 0.7432 | 0.9796 / 0.0463 | 1.0000 / 0.0037 |
+
+Interpretation:
+
+1. In the small factorial smoke, depthwise ISTF was near baseline in stationary cells and slightly above baseline in both non-stationary cells.
+2. Cross-channel ISTF-Mamba did not show a clear advantage over depthwise and remained less semantically clean.
+3. This supports continuing the coordinate-preserving ISTF branch through controlled diagnostics before any expensive full benchmark rerun.
