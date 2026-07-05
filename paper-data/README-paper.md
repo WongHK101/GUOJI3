@@ -187,7 +187,9 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 - Language-unification polishing is complete across the full manuscript. The pass tightened long sentences, reduced rhetorical/over-strong phrasing, and preserved all numbers, statistical language, figure assets, and claim boundaries.
 - Reviewer-style KBS pre-submission audit is complete and archived at `paper-data/kbs_reviewer_audit_2026-07-05.md`.
 - Writing-strategy constraint: audit-identified risks are for internal triage. The manuscript should not automatically expose every weakness in defensive prose; only selective framing edits that improve the main argument and prevent overclaim should be added.
-- Next writing focus: apply selective, argument-strengthening framing edits before any advisor-facing review package.
+- Selective framing edits are complete in the active KBS manuscript: the Introduction/Conclusion now foreground the graph as the extracted knowledge object, FiLM wording is bounded as analogous risk, CT\_medical is framed as operating-regime evidence, and the main-text CT\_medical side-channel self-disclosure was removed.
+- Current KBS compile status after selective framing: 26 pages, 0 LaTeX errors, 0 undefined references/citations, 0 missing figures, 0 Overfull hbox.
+- Next writing focus: final internal consistency pass and advisor-facing package preparation only if no new substantive issues appear.
 
 | Section | Status | Notes |
 |---------|--------|-------|
@@ -296,8 +298,7 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 - [x] Grep audit: all old phrases confirmed zero residual
 
 ### Next Steps
-1. Screen audit findings for manuscript value: add only edits that strengthen the core reliability argument or prevent material overclaim.
-2. Avoid defensive disclosure that invites reviewer attack without improving the paper's affirmative case.
-3. Prioritize positive framing around prediction--knowledge decoupling, ISTF as constrained input-space repair, and evidence-tier clarity.
-4. Preserve all frozen figure assets, statistical/numeric claims, and claim-strength boundaries during any audit-driven edits.
-5. Recompile and run citation/figure/log checks before preparing any advisor-facing review package.
+1. Run a final internal consistency pass focused on abstract/introduction/discussion/conclusion alignment.
+2. Preserve all frozen figure assets, statistical/numeric claims, and claim-strength boundaries.
+3. Recompile and run citation/figure/log checks after any final edits.
+4. Prepare an advisor-facing package only after the consistency pass remains clean.
