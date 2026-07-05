@@ -304,3 +304,5 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 2. Decide whether ISTF should remain a cross-channel Mamba repair, move to a coordinate-preserving/depthwise repair, or be reframed as a Jacobian measurement audit.
 3. Do not launch full benchmark reruns until the raw-input chain-rule scoring and coordinate-preservation question is resolved.
 4. Preserve frozen manuscript figures/results for now; future manuscript edits should wait for the P0 method decision.
+
+P0 audit note: see `paper-data/p0_jacobian_semantics_audit_2026-07-06.md`.
