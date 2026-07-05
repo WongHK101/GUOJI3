@@ -19,10 +19,10 @@ Final inferential benchmark (4 datasets, ≥5 paired seeds, Holm-Bonferroni corr
 
 | Dataset | Seeds | Baseline AUROC | ISTF-Mamba AUROC | Δ | Interpretation |
 |---------|-------|---------------|-----------------|---|----------------|
-| CT_medical | 10 | 0.896 ± 0.013 | 0.916 ± 0.013 | +0.020 | 5/7 metrics Holm-significant |
-| Lorenz_F40 | 10 | 0.948 ± 0.010 | 0.949 ± 0.010 | +0.001 | 0/7 metrics significant (neutral) |
-| VAR_d50 | 10 | 0.727 ± 0.029 | 0.718 ± 0.028 | −0.009 | AUROC directional only; AUPRC/F1 significantly worse |
-| NSVAR_d10 | 5 | 0.930 ± 0.024 | 0.946 ± 0.028 | +0.016 | Degenerate on most metrics |
+| CT_medical | 10 | 0.458 +/- 0.024 | 0.500 +/- 0.022 | +0.042 | 5/7 metrics Holm-significant |
+| Lorenz_F40 | 10 | 0.938 +/- 0.012 | 0.939 +/- 0.014 | +0.001 | 0/7 metrics significant (neutral) |
+| VAR_d50 | 10 | 0.715 +/- 0.034 | 0.678 +/- 0.034 | -0.036 | AUROC directional only; AUPRC/F1 significantly worse |
+| NSVAR_d10 | 5 | 0.930 +/- 0.024 | 0.946 +/- 0.028 | +0.016 | Degenerate on most metrics |
 
 ISTF-Mamba is not a universal booster — it is a structural safeguard whose benefit depends on whether the dataset regime creates incentives for auxiliary-channel shortcut learning.
 

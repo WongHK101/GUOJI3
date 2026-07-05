@@ -300,7 +300,7 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 - [x] Grep audit: all old phrases confirmed zero residual
 
 ### Next Steps
-1. Prepare the final submission/source package or advisor-facing package if requested.
-2. Preserve all frozen figure assets, statistical/numeric claims, and claim-strength boundaries.
-3. Do not rerun experiments unless a new explicit decision changes the current frozen-data state.
-4. If another writing pass is needed, limit it to language polish and submission-format hygiene.
+1. Continue the P0 Jacobian semantics audit before preparing any submission/source package.
+2. Decide whether ISTF should remain a cross-channel Mamba repair, move to a coordinate-preserving/depthwise repair, or be reframed as a Jacobian measurement audit.
+3. Do not launch full benchmark reruns until the raw-input chain-rule scoring and coordinate-preservation question is resolved.
+4. Preserve frozen manuscript figures/results for now; future manuscript edits should wait for the P0 method decision.
