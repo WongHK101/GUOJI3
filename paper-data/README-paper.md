@@ -186,7 +186,8 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 - Narrative unification pass is complete for Abstract, Results, Discussion, and Limitations. It preserved frozen figures and all numeric/statistical claims.
 - Language-unification polishing is complete across the full manuscript. The pass tightened long sentences, reduced rhetorical/over-strong phrasing, and preserved all numbers, statistical language, figure assets, and claim boundaries.
 - Reviewer-style KBS pre-submission audit is complete and archived at `paper-data/kbs_reviewer_audit_2026-07-05.md`.
-- Next writing focus: resolve audit-identified framing risks before any advisor-facing review package.
+- Writing-strategy constraint: audit-identified risks are for internal triage. The manuscript should not automatically expose every weakness in defensive prose; only selective framing edits that improve the main argument and prevent overclaim should be added.
+- Next writing focus: apply selective, argument-strengthening framing edits before any advisor-facing review package.
 
 | Section | Status | Notes |
 |---------|--------|-------|
@@ -295,8 +296,8 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 - [x] Grep audit: all old phrases confirmed zero residual
 
 ### Next Steps
-1. Revise the manuscript framing to separate controlled shortcut evidence from the CT\_medical positive regime.
-2. Contextualize the CT\_medical AUROC $+0.042$ improvement to 0.500 so it is not over-read as high absolute causal discovery accuracy.
-3. Clarify ISTF's added value over EMA/simple input-space smoothing and keep FiLM claims bounded as analogous risk unless additional evidence is supplied.
-4. Preserve all frozen figure assets, statistical/numeric claims, and claim-strength boundaries during audit-driven edits.
+1. Screen audit findings for manuscript value: add only edits that strengthen the core reliability argument or prevent material overclaim.
+2. Avoid defensive disclosure that invites reviewer attack without improving the paper's affirmative case.
+3. Prioritize positive framing around prediction--knowledge decoupling, ISTF as constrained input-space repair, and evidence-tier clarity.
+4. Preserve all frozen figure assets, statistical/numeric claims, and claim-strength boundaries during any audit-driven edits.
 5. Recompile and run citation/figure/log checks before preparing any advisor-facing review package.
