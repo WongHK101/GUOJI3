@@ -300,7 +300,7 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 - [x] Grep audit: all old phrases confirmed zero residual
 
 ### Next Steps
-1. Run a final internal consistency pass focused on abstract/introduction/related-work/discussion/conclusion alignment after the reference expansion.
+1. Prepare the final submission/source package or advisor-facing package if requested.
 2. Preserve all frozen figure assets, statistical/numeric claims, and claim-strength boundaries.
-3. Recompile and run citation/figure/log checks after any final edits.
-4. Prepare an advisor-facing package only after the consistency pass remains clean.
+3. Do not rerun experiments unless a new explicit decision changes the current frozen-data state.
+4. If another writing pass is needed, limit it to language polish and submission-format hygiene.
