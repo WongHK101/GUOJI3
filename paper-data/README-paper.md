@@ -185,7 +185,8 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 - Current KBS compile status: 26 pages, 0 LaTeX errors, 0 undefined references/citations, 0 missing figures, 0 Overfull hbox.
 - Narrative unification pass is complete for Abstract, Results, Discussion, and Limitations. It preserved frozen figures and all numeric/statistical claims.
 - Language-unification polishing is complete across the full manuscript. The pass tightened long sentences, reduced rhetorical/over-strong phrasing, and preserved all numbers, statistical language, figure assets, and claim boundaries.
-- Next writing focus: reviewer-style pre-submission audit from a KBS reviewer perspective, followed only then by any advisor-facing review package.
+- Reviewer-style KBS pre-submission audit is complete and archived at `paper-data/kbs_reviewer_audit_2026-07-05.md`.
+- Next writing focus: resolve audit-identified framing risks before any advisor-facing review package.
 
 | Section | Status | Notes |
 |---------|--------|-------|
@@ -294,7 +295,8 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 - [x] Grep audit: all old phrases confirmed zero residual
 
 ### Next Steps
-1. Run reviewer-style pre-submission audit from a KBS reviewer perspective.
-2. Preserve all frozen figure assets, statistical/numeric claims, and claim-strength boundaries during any audit-driven edits.
-3. If the audit is clean, prepare the next advisor-facing review package.
-4. If the audit finds substantive issues, resolve them locally first and recompile before packaging.
+1. Revise the manuscript framing to separate controlled shortcut evidence from the CT\_medical positive regime.
+2. Contextualize the CT\_medical AUROC $+0.042$ improvement to 0.500 so it is not over-read as high absolute causal discovery accuracy.
+3. Clarify ISTF's added value over EMA/simple input-space smoothing and keep FiLM claims bounded as analogous risk unless additional evidence is supplied.
+4. Preserve all frozen figure assets, statistical/numeric claims, and claim-strength boundaries during audit-driven edits.
+5. Recompile and run citation/figure/log checks before preparing any advisor-facing review package.
