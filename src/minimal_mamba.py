@@ -257,6 +257,38 @@ class DepthwiseCausalFilter(nn.Module):
         return residual + self.residual_scale * y
 
 
+class DepthwiseGatedCausalFilter(nn.Module):
+    """Coordinate-preserving gated causal temporal filter.
+
+    Each variable is processed by its own grouped causal convolution. The
+    value and gate branches increase per-channel temporal capacity without
+    allowing cross-variable mixing.
+    """
+    def __init__(self, d_model: int, kernel_size: int = 3,
+                 residual_scale: float = 0.1):
+        super().__init__()
+        self.kernel_size = kernel_size
+        self.residual_scale = residual_scale
+        self.conv = nn.Conv1d(
+            d_model,
+            2 * d_model,
+            kernel_size=kernel_size,
+            groups=d_model,
+            bias=True,
+        )
+        nn.init.zeros_(self.conv.weight)
+        nn.init.zeros_(self.conv.bias)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        residual = x
+        x_t = x.transpose(1, 2)
+        x_t = F.pad(x_t, (self.kernel_size - 1, 0))
+        y = self.conv(x_t).transpose(1, 2)
+        value, gate = torch.chunk(y, 2, dim=-1)
+        y = torch.tanh(value) * torch.sigmoid(gate)
+        return residual + self.residual_scale * y
+
+
 def test_scan():
     """Verify parallel scan matches iterative scan."""
     torch.manual_seed(42)

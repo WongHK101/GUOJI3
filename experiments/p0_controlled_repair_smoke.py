@@ -265,7 +265,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--filter-types",
         nargs="+",
-        choices=["mamba", "tcn", "depthwise"],
+        choices=["mamba", "tcn", "depthwise", "depthwise_gated"],
         default=["mamba", "depthwise"],
     )
     parser.add_argument(

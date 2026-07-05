@@ -317,7 +317,7 @@ def run_seed(seed: int, args: argparse.Namespace, device: torch.device) -> Dict[
         "side_channel": concat_side_channel_diagnostic(concat, x),
     }
 
-    for filter_type in ("mamba", "depthwise"):
+    for filter_type in ("mamba", "depthwise", "depthwise_gated"):
         set_seed(seed)
         model = MambaFilterJRNGC(
             d=args.d,
@@ -353,7 +353,15 @@ def run_seed(seed: int, args: argparse.Namespace, device: torch.device) -> Dict[
 
 def aggregate(results: Dict[str, object]) -> Dict[str, object]:
     seeds = results["seeds"]
-    methods = ["baseline", "ma3", "ema07", "concat", "istf_mamba", "istf_depthwise"]
+    methods = [
+        "baseline",
+        "ma3",
+        "ema07",
+        "concat",
+        "istf_mamba",
+        "istf_depthwise",
+        "istf_depthwise_gated",
+    ]
     agg: Dict[str, object] = {}
     for method in methods:
         rows = [seeds[s][method] for s in seeds]

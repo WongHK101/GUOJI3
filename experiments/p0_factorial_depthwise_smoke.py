@@ -177,6 +177,9 @@ def run_seed(seed: int, args: argparse.Namespace, device: torch.device) -> Dict[
             "baseline": run_baseline(x, gc_true, seed, args, device),
             "istf_mamba": run_filter(x, gc_true, seed, "mamba", args, device),
             "istf_depthwise": run_filter(x, gc_true, seed, "depthwise", args, device),
+            "istf_depthwise_gated": run_filter(
+                x, gc_true, seed, "depthwise_gated", args, device
+            ),
         }
     return out
 
@@ -186,7 +189,7 @@ def aggregate(results: Dict[str, object]) -> Dict[str, object]:
     agg: Dict[str, object] = {}
     for cell_name, _, _ in FACTORIAL_CELLS:
         agg[cell_name] = {}
-        for method in ("baseline", "istf_mamba", "istf_depthwise"):
+        for method in ("baseline", "istf_mamba", "istf_depthwise", "istf_depthwise_gated"):
             rows = [seeds[s][cell_name][method] for s in seeds]
             entry: Dict[str, object] = {
                 "auroc": numeric_summary(r["summary_max"]["auroc"] for r in rows),
@@ -213,7 +216,7 @@ def print_summary(results: Dict[str, object]) -> None:
     for cell_name, methods in results["aggregate"].items():
         print(f"\n[{cell_name}]")
         base = methods["baseline"]["auroc"]["mean"]
-        for method in ("baseline", "istf_mamba", "istf_depthwise"):
+        for method in ("baseline", "istf_mamba", "istf_depthwise", "istf_depthwise_gated"):
             au = methods[method]["auroc"]
             line = f"  {method:14s} AUROC={au['mean']:.4f}+/-{au['std']:.4f}"
             if method != "baseline":

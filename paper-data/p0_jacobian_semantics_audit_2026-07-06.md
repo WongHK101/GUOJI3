@@ -156,3 +156,40 @@ Interpretation:
 1. In the small factorial smoke, depthwise ISTF was near baseline in stationary cells and slightly above baseline in both non-stationary cells.
 2. Cross-channel ISTF-Mamba did not show a clear advantage over depthwise and remained less semantically clean.
 3. This supports continuing the coordinate-preserving ISTF branch through controlled diagnostics before any expensive full benchmark rerun.
+
+## Depthwise-Gated Candidate Check
+
+Code:
+
+- Added `filter_type="depthwise_gated"` as an experimental coordinate-preserving filter.
+- The filter uses per-channel causal gated convolutions, so it increases temporal capacity without cross-variable mixing.
+
+Controlled repair smoke:
+
+- Output: `results/p0_audit/p0_controlled_repair_smoke_d6_iter120_seed0-4_gated.json`
+- Same controlled setting as the repair smoke (`d=6`, `T=100`, `lag=3`, `max_iter=120`, seeds 0--4).
+
+| Method | Current AUROC mean | Raw-chain AUROC mean | Semantic corr mean | Top-k Jaccard mean | Leakage mean |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Baseline JRNGC | 0.6225 | n/a | n/a | n/a | n/a |
+| ISTF-Mamba | 0.5588 | 0.5768 | 0.8316 | 0.7843 | 0.0835 |
+| Depthwise ISTF | 0.6325 | 0.6316 | 1.0000 | 1.0000 | 0.0053 |
+| Depthwise-gated ISTF | 0.6709 | 0.6720 | 0.9999 | 1.0000 | 0.0017 |
+
+Factorial D2 smoke with gated:
+
+- Output: `results/p0_audit/p0_factorial_depthwise_smoke_D2_d6_iter120_seed0-2_gated.json`
+- Same factorial setting as above (`d=6`, `T=180`, `lag=3`, `max_iter=120`, seeds 0--2).
+
+| Cell | Baseline AUROC | Depthwise AUROC | Depthwise-gated AUROC |
+| --- | ---: | ---: | ---: |
+| Stat+Linear | 0.8994 | 0.8736 | 0.7562 |
+| Stat+Nonlinear | 0.8366 | 0.7808 | 0.7505 |
+| NS+Linear | 0.7973 | 0.8030 | 0.6575 |
+| NS+Nonlinear | 0.7405 | 0.7432 | 0.6058 |
+
+Interpretation:
+
+1. The gated filter improves the small controlled repair smoke but degrades the factorial D2 smoke, especially in non-stationary cells.
+2. The stronger per-channel gated capacity is therefore not the current main repair candidate.
+3. Ordinary depthwise ISTF remains the more stable coordinate-preserving branch for the next controlled diagnostic step.
