@@ -183,7 +183,8 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 - Introduction has been updated with causal-discovery assumption citations.
 - Related Work reference expansion pass 2 is complete: 33 cited/used bibliography entries covering neural/time-series GC, shortcut learning, state-space/TCN filtering, temporal causal discovery, and KBS related work.
 - Current KBS compile status: 26 pages, 0 LaTeX errors, 0 undefined references/citations, 0 missing figures, 0 Overfull hbox.
-- Next writing focus: align Abstract, Results, Discussion, and Limitations with the expanded KBS positioning while keeping frozen figures and all numeric/statistical claims unchanged.
+- Narrative unification pass is complete for Abstract, Results, Discussion, and Limitations. It preserved frozen figures and all numeric/statistical claims.
+- Next writing focus: language-unification polishing across the full manuscript while preserving numbers, statistical language, figure assets, and claim boundaries.
 
 | Section | Status | Notes |
 |---------|--------|-------|
@@ -292,7 +293,7 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 - [x] Grep audit: all old phrases confirmed zero residual
 
 ### Next Steps
-1. Align Abstract, Results, Discussion, and Limitations with the expanded KBS positioning.
-2. Keep all frozen figure assets and statistical/numeric claims unchanged unless the user explicitly reopens them.
-3. Run language unification after section-level narrative consistency is complete.
-4. Run reviewer-style pre-submission audit before generating the next advisor-facing review package.
+1. Run language-unification polishing across the full KBS manuscript.
+2. Preserve all frozen figure assets, statistical/numeric claims, and claim-strength boundaries.
+3. Run reviewer-style pre-submission audit after language polishing.
+4. Generate the next advisor-facing review package only after the internal pre-submission audit is clean.
