@@ -178,6 +178,13 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 
 ## 7. Writing Progress Tracker
 
+### KBS Status Override (2026-07-05)
+- Fig. 1 v9 is now promoted into the active KBS manuscript at `E:\GUOJI\elsarticle\istf_kbs.tex`.
+- Introduction has been updated with causal-discovery assumption citations.
+- Related Work reference expansion pass 2 is complete: 33 cited/used bibliography entries covering neural/time-series GC, shortcut learning, state-space/TCN filtering, temporal causal discovery, and KBS related work.
+- Current KBS compile status: 26 pages, 0 LaTeX errors, 0 undefined references/citations, 0 missing figures, 0 Overfull hbox.
+- Next writing focus: align Abstract, Results, Discussion, and Limitations with the expanded KBS positioning while keeping frozen figures and all numeric/statistical claims unchanged.
+
 | Section | Status | Notes |
 |---------|--------|-------|
 | 1. Introduction | DRAFT (v1, 3-seed data) | CLEARED for rewrite — update with v2 data, corrected narrative |
@@ -209,6 +216,10 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 ---
 
 ## 8. Figures to Generate
+
+### KBS Figure Status Override (2026-07-05)
+- Fig. 1 active manuscript asset: `E:\GUOJI\elsarticle\figures\fig1_istf_architecture_v9.pdf`.
+- Fig. 2, Fig. 3, Fig. 4, Fig. 5, Fig. 6, and Fig. A.1 remain frozen from the passed Phase 6 figure/format audit unless the user explicitly reopens them.
 
 | Figure | Content | Status |
 |--------|---------|--------|
@@ -281,7 +292,7 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 - [x] Grep audit: all old phrases confirmed zero residual
 
 ### Next Steps
-1. Expert review of drafted Figures 2/3/4/S1
-2. Write Results Section: root-cause synthetic (Phase 5.1b narrative)
-3. Integrate figures into manuscript .tex
-4. Final claim audit before manuscript submission
+1. Align Abstract, Results, Discussion, and Limitations with the expanded KBS positioning.
+2. Keep all frozen figure assets and statistical/numeric claims unchanged unless the user explicitly reopens them.
+3. Run language unification after section-level narrative consistency is complete.
+4. Run reviewer-style pre-submission audit before generating the next advisor-facing review package.
