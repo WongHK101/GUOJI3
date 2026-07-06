@@ -65,6 +65,7 @@ class RepairedISTFConfig:
     mamba_expand: int = 2
     mamba_d_conv: int = 4
     ema_alpha: float = 0.9
+    fir3_gamma: float = 0.1
     dtype: str = "float32"
 
 
@@ -395,11 +396,45 @@ class FixedEMAJRNGC(RepairedBaseJRNGC):
         self.filter_receptive_field = "prefix_recursion_unbounded_truncated_for_attribution"
 
     def _identity_filter(self, raw_t: torch.Tensor) -> torch.Tensor:
-        z = torch.zeros_like(raw_t)
-        z[:, 0, :] = raw_t[:, 0, :]
-        for t in range(1, raw_t.shape[1]):
-            z[:, t, :] = self.alpha * z[:, t - 1, :] + (1.0 - self.alpha) * raw_t[:, t, :]
-        return z
+        T = raw_t.shape[1]
+        t_idx = torch.arange(T, device=raw_t.device).view(T, 1)
+        s_idx = torch.arange(T, device=raw_t.device).view(1, T)
+        exp = (t_idx - s_idx).clamp_min(0)
+        alpha = torch.as_tensor(self.alpha, device=raw_t.device, dtype=raw_t.dtype)
+        powers = torch.pow(alpha, exp.to(raw_t.dtype))
+        lower = s_idx <= t_idx
+        weights = torch.where(
+            lower,
+            (1.0 - alpha) * powers,
+            torch.zeros_like(powers),
+        )
+        weights = weights.clone()
+        weights[:, 0] = torch.pow(alpha, torch.arange(T, device=raw_t.device, dtype=raw_t.dtype))
+        return torch.einsum("ts,bsd->btd", weights, raw_t)
+
+
+class FixedResidualFIR3JRNGC(RepairedBaseJRNGC):
+    method_name = "fixed_residual_fir3_jrngc"
+    method_status = "reference"
+
+    def __init__(self, cfg: RepairedISTFConfig):
+        cfg = RepairedISTFConfig(**{**asdict(cfg), "identity_lam": 0.0})
+        super().__init__(cfg)
+        self.gamma = float(cfg.fir3_gamma)
+        self.identity_lam = 0.0
+        self.filter_receptive_field = 3
+
+    def _identity_filter(self, raw_t: torch.Tensor) -> torch.Tensor:
+        zero = torch.zeros_like(raw_t[:, :1, :])
+        prev1 = torch.cat([zero, raw_t[:, :-1, :]], dim=1)
+        prev2 = torch.cat([zero, zero, raw_t[:, :-2, :]], dim=1)
+        counts = torch.ones(raw_t.shape[1], device=raw_t.device, dtype=raw_t.dtype)
+        if raw_t.shape[1] > 1:
+            counts[1:] += 1.0
+        if raw_t.shape[1] > 2:
+            counts[2:] += 1.0
+        m_t = (raw_t + prev1 + prev2) / counts.view(1, -1, 1)
+        return (1.0 - self.gamma) * raw_t + self.gamma * m_t
 
 
 def instantiate_repaired_method(name: str, cfg: RepairedISTFConfig) -> RepairedBaseJRNGC:
@@ -411,6 +446,8 @@ def instantiate_repaired_method(name: str, cfg: RepairedISTFConfig) -> RepairedB
         return RawChainMambaISTFJRNGC(cfg)
     if name == "fixed_ema":
         return FixedEMAJRNGC(cfg)
+    if name == "fixed_fir3":
+        return FixedResidualFIR3JRNGC(cfg)
     raise ValueError(f"Unknown repaired method: {name}")
 
 
@@ -646,24 +683,43 @@ def _best_threshold_f1(y_true: np.ndarray, y_score: np.ndarray) -> float:
     return float(best)
 
 
-def graph_recovery_metrics(scores_2d: np.ndarray, gc_true) -> Dict[str, float]:
+def canonical_metric_adapter(gc_true, gc_pred) -> Dict[str, float]:
+    """Formal graph metric adapter with compute_metrics(gc_true, gc_pred) order.
+
+    Continuous AUROC/AUPRC/F1 use the frozen canonical summary_max path from
+    mamba_jrngc_pilot. Exact top-k metrics use src.knowledge_metrics helpers.
+    """
     gt = np.asarray(gc_true)
+    pred = np.asarray(gc_pred, dtype=np.float64)
+    if pred.ndim == 2:
+        pred_for_canonical = pred[:, :, None]
+    elif pred.ndim == 3:
+        pred_for_canonical = pred
+    else:
+        raise ValueError(f"gc_pred must be 2D or 3D, got {pred.shape}")
     if gt.ndim == 3:
         gt_2d = (gt.sum(axis=2) > 0).astype(np.int32)
     else:
         gt_2d = gt.astype(np.int32)
-    y_true, y_score = _offdiag_labels_scores(gt_2d, scores_2d)
-    exact = exact_topk_metrics(scores_2d, gt_2d)
+    from mamba_jrngc_pilot import compute_metrics_multimode
+
+    canonical = compute_metrics_multimode(gt, pred_for_canonical)["summary_max"]
+    score_2d = np.max(np.abs(pred_for_canonical), axis=2)
+    exact = exact_topk_metrics(score_2d, gt_2d)
     out = {
-        "auroc": _binary_auroc(y_true, y_score),
-        "auprc": _binary_auprc(y_true, y_score),
-        "f1_threshold": _best_threshold_f1(y_true, y_score),
+        "auroc": float(canonical["auroc"]),
+        "auprc": float(canonical["auprc"]),
+        "f1_threshold": float(canonical["f1"]),
         "shd_topk_legacy": float(exact["shd_exact_topk"]),
         "nshd_topk_legacy": float(exact["nshd_exact_topk"]),
         "mcc_topk_legacy": float(exact["mcc_exact_topk"]),
     }
     out.update(exact)
     return out
+
+
+def graph_recovery_metrics(scores_2d: np.ndarray, gc_true) -> Dict[str, float]:
+    return canonical_metric_adapter(gc_true, scores_2d)
 
 
 def offdiag_vector(scores: np.ndarray) -> np.ndarray:
@@ -738,13 +794,15 @@ def filter_cross_variable_leakage(
     cross_mass = torch.zeros((), device=device, dtype=dtype)
     for u in [int(i) for i in target_indices]:
         for out_var in range(model.d):
-            y = filt_t[0, u - model.lag:u, out_var].sum()
-            grad = torch.autograd.grad(y, raw, retain_graph=True, create_graph=False)[0][0]
-            local = grad[:, u - H:u]
-            total_mass = total_mass + torch.sum(torch.abs(local))
             mask = torch.ones(model.d, dtype=torch.bool, device=device)
             mask[out_var] = False
-            cross_mass = cross_mass + torch.sum(torch.abs(local[mask]))
+            for out_time in range(u - model.lag, u):
+                y = filt_t[0, out_time, out_var]
+                grad = torch.autograd.grad(y, raw, retain_graph=True, create_graph=False)[0][0]
+                local = grad[:, u - H:u]
+                abs_local = torch.abs(local)
+                total_mass = total_mass + torch.sum(abs_local)
+                cross_mass = cross_mass + torch.sum(abs_local[mask])
     leakage = cross_mass / (total_mass + EPS)
     return {
         "cross_variable_leakage": float(leakage.detach().cpu()),

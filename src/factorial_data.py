@@ -14,12 +14,12 @@ import numpy as np
 
 # Expert-specified pilot calibration settings
 FACTORIAL_SETTINGS = {
-    "A": {"coeff_scale": 0.25, "noise_scale": 0.20, "regime_shift_strength": 0.30, "nonlinear_strength": 0.50},
-    "B": {"coeff_scale": 0.20, "noise_scale": 0.30, "regime_shift_strength": 0.40, "nonlinear_strength": 0.75},
-    "C": {"coeff_scale": 0.22, "noise_scale": 0.25, "regime_shift_strength": 0.60, "nonlinear_strength": 0.50},
+    "A": {"coeff_scale": 0.25, "noise_scale": 0.20, "regime_shift_strength": 0.30, "nonlinear_strength": 0.50, "nonlinear_scale": 0.50},
+    "B": {"coeff_scale": 0.20, "noise_scale": 0.30, "regime_shift_strength": 0.40, "nonlinear_strength": 0.75, "nonlinear_scale": 0.50},
+    "C": {"coeff_scale": 0.22, "noise_scale": 0.25, "regime_shift_strength": 0.60, "nonlinear_strength": 0.50, "nonlinear_scale": 0.50},
     # D2: canonical setting (selected after 2 rounds of pilot calibration)
     # All 4 cells have baseline AUROC in 0.68-0.84 range with summary_max metric.
-    "D2": {"coeff_scale": 0.40, "noise_scale": 0.15, "regime_shift_strength": 0.20, "nonlinear_strength": 0.50},
+    "D2": {"coeff_scale": 0.40, "noise_scale": 0.15, "regime_shift_strength": 0.20, "nonlinear_strength": 0.50, "nonlinear_scale": 0.50},
 }
 
 # 2x2 cell definitions
@@ -37,6 +37,7 @@ def generate_factorial_cell(
     coeff_scale=0.25, noise_scale=0.20,
     regime_shift_strength=0.0, nonlinear_strength=0.0,
     sparsity=0.2,
+    nonlinear_scale=0.50,
     return_metadata=False,
 ):
     """Generate one cell of the 2x2 factorial design.
@@ -56,6 +57,8 @@ def generate_factorial_cell(
         regime_shift_strength: how much coefficients drift (0 for stationary)
         nonlinear_strength: mix-in weight for tanh nonlinearity (0 for linear)
         sparsity: fraction of non-zero GC edges
+        nonlinear_scale: fixed scalar s0 for coordinate-wise nonlinearity.
+            It must not depend on the current pred vector.
 
         return_metadata: if True, additionally return generator metadata,
             including coefficients and support audit diagnostics.
@@ -127,6 +130,7 @@ def generate_factorial_cell(
     for t in range(lag):
         x[:, t] = noise[:, t]
 
+    nonlinear_records = []
     for t in range(lag, T):
         # Linear predictor
         pred = np.zeros(d, dtype=np.float32)
@@ -134,12 +138,11 @@ def generate_factorial_cell(
             A_k_t = A_t[t, k]
             pred += A_k_t @ x[:, t - k - 1]
 
-        # Apply nonlinearity if specified
+        # Apply coordinate-wise fixed-scale nonlinearity if specified.
         if not linear and nonlinear_strength > 0:
-            # pred_nl = (1-α)·pred + α·s·tanh(pred/s)  where s = std(pred)
-            # Smooth interpolation: identity for small pred, saturation for large pred
-            s = float(np.std(pred)) + 1e-8
-            pred = (1.0 - nonlinear_strength) * pred + nonlinear_strength * s * np.tanh(pred / s)
+            pred_linear = pred.copy()
+            pred = coordinatewise_nonlinearity(pred, nonlinear_strength, nonlinear_scale)
+            nonlinear_records.append(nonlinear_diagnostics(pred_linear, pred, nonlinear_scale))
 
         x[:, t] = pred + noise[:, t]
 
@@ -157,10 +160,168 @@ def generate_factorial_cell(
             "A_drift": A_drift_arr.astype(np.float32),
             "A_t": A_t.astype(np.float32),
             "noise": noise.astype(np.float32),
+            "nonlinear_scale": float(nonlinear_scale),
+            "nonlinear_diagnostics": summarize_nonlinear_records(nonlinear_records),
             "support_audit": audit_factorial_support(gc, A_base_arr, A_drift_arr, A_t, x),
+            "transition_jacobian_audit": audit_transition_jacobian_support(
+                gc,
+                A_t,
+                x,
+                linear=linear,
+                nonlinear_strength=nonlinear_strength,
+                nonlinear_scale=nonlinear_scale,
+            ),
         }
         return x, gc, metadata
     return x, gc
+
+
+def coordinatewise_nonlinearity(pred, beta, s0):
+    """Coordinate-wise fixed-scale nonlinear transition."""
+    pred = np.asarray(pred, dtype=np.float64)
+    s0 = float(s0)
+    if s0 <= 0:
+        raise ValueError("nonlinear_scale must be positive")
+    beta = float(beta)
+    out = (1.0 - beta) * pred + beta * s0 * np.tanh(pred / s0)
+    return out.astype(np.float32)
+
+
+def coordinatewise_nonlinearity_derivative(pred, beta, s0):
+    pred = np.asarray(pred, dtype=np.float64)
+    z = pred / float(s0)
+    return (1.0 - float(beta)) + float(beta) * (1.0 - np.tanh(z) ** 2)
+
+
+def nonlinear_diagnostics(pred_linear, pred_nl, s0):
+    pred_linear = np.asarray(pred_linear, dtype=np.float64)
+    pred_nl = np.asarray(pred_nl, dtype=np.float64)
+    z = pred_linear / float(s0)
+    denom = np.mean(np.abs(pred_linear)) + 1e-12
+    return {
+        "relative_l1_deviation": float(np.mean(np.abs(pred_nl - pred_linear)) / denom),
+        "mean_abs_pre_activation_over_s0": float(np.mean(np.abs(z))),
+        "max_abs_pre_activation_over_s0": float(np.max(np.abs(z))),
+        "saturated_fraction_abs_z_gt_2": float(np.mean(np.abs(z) > 2.0)),
+        "near_identity_fraction_abs_z_lt_0_1": float(np.mean(np.abs(z) < 0.1)),
+    }
+
+
+def summarize_nonlinear_records(records):
+    if not records:
+        return {
+            "enabled": False,
+            "relative_l1_deviation_mean": 0.0,
+            "relative_l1_deviation_max": 0.0,
+            "saturated_fraction_abs_z_gt_2_mean": 0.0,
+            "near_identity_fraction_abs_z_lt_0_1_mean": 0.0,
+        }
+    out = {"enabled": True}
+    for key in records[0].keys():
+        vals = np.asarray([r[key] for r in records], dtype=np.float64)
+        out[f"{key}_mean"] = float(np.mean(vals))
+        out[f"{key}_max"] = float(np.max(vals))
+        out[f"{key}_p95"] = float(np.percentile(vals, 95))
+    return out
+
+
+def transition_jacobian(A_t_at_time, history, linear=True, nonlinear_strength=0.0, nonlinear_scale=0.50):
+    """Analytic one-step transition Jacobian D[target, source, lag]."""
+    A = np.asarray(A_t_at_time, dtype=np.float64)  # (lag,d,d)
+    lag = A.shape[0]
+    d = A.shape[1]
+    pred = np.zeros(d, dtype=np.float64)
+    for k in range(lag):
+        pred += A[k] @ np.asarray(history[k], dtype=np.float64)
+    if linear or nonlinear_strength <= 0:
+        scales = np.ones(d, dtype=np.float64)
+    else:
+        scales = coordinatewise_nonlinearity_derivative(pred, nonlinear_strength, nonlinear_scale)
+    D = np.zeros((d, d, lag), dtype=np.float64)
+    for k in range(lag):
+        D[:, :, k] = scales[:, None] * A[k]
+    return D
+
+
+def deterministic_transition(A_t_at_time, history, linear=True, nonlinear_strength=0.0, nonlinear_scale=0.50):
+    A = np.asarray(A_t_at_time, dtype=np.float64)
+    pred = np.zeros(A.shape[1], dtype=np.float64)
+    for k in range(A.shape[0]):
+        pred += A[k] @ np.asarray(history[k], dtype=np.float64)
+    if not linear and nonlinear_strength > 0:
+        pred = coordinatewise_nonlinearity(pred, nonlinear_strength, nonlinear_scale)
+    return np.asarray(pred, dtype=np.float64)
+
+
+def audit_transition_jacobian_support(
+    gc,
+    A_t,
+    x,
+    linear=True,
+    nonlinear_strength=0.0,
+    nonlinear_scale=0.50,
+    times=None,
+    eps=1e-10,
+):
+    """Audit one-step transition Jacobian support against declared GC."""
+    gc_arr = np.asarray(gc).astype(bool)  # (d,d,lag)
+    A_t_arr = np.asarray(A_t, dtype=np.float64)  # (T,lag,d,d)
+    x_arr = np.asarray(x, dtype=np.float64)
+    d, T = x_arr.shape
+    lag = gc_arr.shape[2]
+    if times is None:
+        raw_times = [lag, max(lag, T // 3), max(lag, 2 * T // 3), T - 1]
+        times = sorted(set(int(t) for t in raw_times if lag <= t < T))
+    declared = gc_arr
+    off_support = ~declared
+    diag_off_support = np.zeros_like(declared, dtype=bool)
+    diag = np.eye(d, dtype=bool)
+    for k in range(lag):
+        diag_off_support[:, :, k] = diag & off_support[:, :, k]
+
+    max_off = 0.0
+    max_diag_off = 0.0
+    min_declared = np.inf
+    linear_alignment = []
+    actual_support_any = np.zeros_like(declared, dtype=bool)
+    per_time = []
+    for t in times:
+        history = [x_arr[:, t - k - 1] for k in range(lag)]
+        D = transition_jacobian(
+            A_t_arr[t],
+            history,
+            linear=linear,
+            nonlinear_strength=nonlinear_strength,
+            nonlinear_scale=nonlinear_scale,
+        )
+        actual_support_any |= np.abs(D) > eps
+        if np.any(off_support):
+            max_off = max(max_off, float(np.max(np.abs(D[off_support]))))
+        if np.any(diag_off_support):
+            max_diag_off = max(max_diag_off, float(np.max(np.abs(D[diag_off_support]))))
+        if np.any(declared):
+            min_declared = min(min_declared, float(np.min(np.abs(D[declared]))))
+        A_as_d = np.transpose(A_t_arr[t], (1, 2, 0))
+        if linear or nonlinear_strength <= 0:
+            linear_alignment.append(float(np.max(np.abs(D - A_as_d))))
+        per_time.append({
+            "time": int(t),
+            "nonzero_derivative_entries": int(np.sum(np.abs(D) > eps)),
+            "off_support_entries": int(np.sum((np.abs(D) > eps) & off_support)),
+            "declared_min_abs_derivative": float(np.min(np.abs(D[declared]))) if np.any(declared) else 0.0,
+        })
+    return {
+        "times": [int(t) for t in times],
+        "max_abs_off_support_derivative": float(max_off),
+        "max_abs_diagonal_off_support_derivative": float(max_diag_off),
+        "actual_support_subset_declared": bool(np.all(~actual_support_any | declared)),
+        "actual_any_lag_support_equals_declared": bool(np.array_equal(np.any(actual_support_any, axis=2), np.any(declared, axis=2))),
+        "actual_lag_specific_support_equals_declared": bool(np.array_equal(actual_support_any, declared)),
+        "declared_min_abs_derivative": float(0.0 if np.isinf(min_declared) else min_declared),
+        "declared_min_abs_derivative_threshold": 1e-8,
+        "linear_jacobian_A_t_max_abs_diff": float(max(linear_alignment) if linear_alignment else 0.0),
+        "per_time": per_time,
+    }
 
 
 def audit_factorial_support(gc, A_base, A_drift, A_t, x=None, eps=1e-12):
@@ -218,6 +379,7 @@ def generate_all_factorial_cells(
             noise_scale=params["noise_scale"],
             regime_shift_strength=regime,
             nonlinear_strength=nl,
+            nonlinear_scale=params.get("nonlinear_scale", 0.50),
             sparsity=sparsity,
             return_metadata=return_metadata,
         )

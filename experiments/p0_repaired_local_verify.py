@@ -1,4 +1,4 @@
-"""CPU Stage 0 verification runner for P0.1 repaired ISTF methods.
+"""CPU Stage 0 verification runner for P0.3 repaired ISTF methods.
 
 This script does not use GPU, does not modify legacy classes, and writes all
 outputs under results_kbs/p0_repaired_local/<timestamp>/.
@@ -33,6 +33,7 @@ from repaired_istf import (  # noqa: E402
     aggregate_window_jacobians,
     canonical_baseline_penalty,
     canonical_baseline_equivalence_audit,
+    canonical_metric_adapter,
     compare_sampled_vs_full,
     deterministic_sample_indices,
     eligible_target_indices,
@@ -52,7 +53,7 @@ from repaired_istf import (  # noqa: E402
 )
 
 
-DEFAULT_METHODS = ["baseline", "cp_depthwise", "raw_chain_mamba", "fixed_ema"]
+DEFAULT_METHODS = ["baseline", "cp_depthwise", "fixed_fir3", "fixed_ema", "raw_chain_mamba"]
 DEFAULT_CELLS = ["Stat+Linear", "NS+Nonlinear"]
 
 
@@ -108,6 +109,7 @@ def load_cells(names: Sequence[str], cfg: RepairedISTFConfig, data_seed: int) ->
             noise_scale=params["noise_scale"],
             regime_shift_strength=regime,
             nonlinear_strength=nonlinear,
+            nonlinear_scale=params["nonlinear_scale"],
             sparsity=0.2,
             return_metadata=True,
         )
@@ -123,6 +125,7 @@ def load_cells(names: Sequence[str], cfg: RepairedISTFConfig, data_seed: int) ->
             "noise_scale": params["noise_scale"],
             "regime_shift_strength": regime,
             "nonlinear_strength": nonlinear,
+            "nonlinear_scale": params["nonlinear_scale"],
             "target_graph_definition": "gc[target, source, lag] from generator; metrics use any-lag summary",
             "metadata": metadata,
         }
@@ -137,6 +140,9 @@ def generator_support_audit_payload(cells: Dict[str, Dict[str, object]]) -> Dict
         meta = cell["metadata"]
         payload["cells"][name] = {
             "support_audit": jsonable(meta["support_audit"]),
+            "transition_jacobian_audit": jsonable(meta["transition_jacobian_audit"]),
+            "nonlinear_diagnostics": jsonable(meta["nonlinear_diagnostics"]),
+            "nonlinear_scale": jsonable(meta["nonlinear_scale"]),
             "rng_streams": jsonable(meta["rng_streams"]),
             "gc_edges": int(np.sum(cell["gc"])),
             "x_shape": list(np.asarray(cell["x"]).shape),
@@ -215,6 +221,7 @@ def build_default_config(args: argparse.Namespace) -> Dict[str, object]:
         mamba_expand=2,
         mamba_d_conv=4,
         ema_alpha=0.9,
+        fir3_gamma=0.1,
         dtype="float32",
     )
     jac_cfg = JacobianEstimatorConfig(
@@ -343,7 +350,7 @@ def causality_report(cfg: RepairedISTFConfig, x: np.ndarray) -> Dict[str, object
     target_u = max(cfg.attribution_horizon, cfg.lag) + 5
     pert = x.copy()
     pert[:, target_u:] += 1000.0
-    for method in ["cp_depthwise", "raw_chain_mamba", "fixed_ema"]:
+    for method in ["cp_depthwise", "fixed_fir3", "fixed_ema", "raw_chain_mamba"]:
         torch.manual_seed(3003)
         model = instantiate_repaired_method(method, cfg)
         base = model.make_histories(x, target_indices=[target_u], require_grad=False)
@@ -361,6 +368,29 @@ def causality_report(cfg: RepairedISTFConfig, x: np.ndarray) -> Dict[str, object
             "passed": hist_diff == 0.0 and pred_diff == 0.0 and target_diff > 0.0,
         }
     return out
+
+
+def metric_adapter_parity_report(gc_true: np.ndarray) -> Dict[str, object]:
+    from mamba_jrngc_pilot import compute_metrics_multimode
+
+    rng = np.random.default_rng(4404)
+    score_2d = rng.normal(size=(gc_true.shape[0], gc_true.shape[1])).astype(np.float64)
+    score_2d[np.eye(score_2d.shape[0], dtype=bool)] = 0.0
+    adapted = canonical_metric_adapter(gc_true, score_2d)
+    canonical = compute_metrics_multimode(gc_true, score_2d[:, :, None])["summary_max"]
+    diffs = {
+        "auroc_abs_diff": abs(adapted["auroc"] - canonical["auroc"]),
+        "auprc_abs_diff": abs(adapted["auprc"] - canonical["auprc"]),
+        "f1_threshold_abs_diff": abs(adapted["f1_threshold"] - canonical["f1"]),
+    }
+    return {
+        "compute_metrics_order": "compute_metrics(gc_true, gc_pred)",
+        "score_convention": "score[target, source]",
+        "summary_graph": "any-lag ground truth via compute_metrics_multimode(...)[summary_max]",
+        "exact_topk_source": "src.knowledge_metrics.topk_edges_exact",
+        "diffs": diffs,
+        "passed": all(v < 1e-12 for v in diffs.values()),
+    }
 
 
 def train_step(model, optimizer, x, schedule_entry, target_indices, cfg: RepairedISTFConfig) -> Dict[str, float]:
@@ -721,7 +751,7 @@ def run_training_trajectory(
 
 def write_decision_memo(output_dir: Path, status: str, reasons: Sequence[str], next_action: str) -> None:
     lines = [
-        "# P0.2 Local Closure Decision Memo",
+        "# P0.3 Nonlinear Ground-Truth Closure Decision Memo",
         "",
         f"- status: {status}",
         f"- generated_at: {time.strftime('%Y-%m-%d %H:%M:%S')}",
@@ -761,13 +791,13 @@ def evaluate_checkpoint_gates(
         for method, payload in methods.items():
             for iteration, checkpoint in payload["checkpoints"].items():
                 tm = checkpoint["temporal_horizon_mass"]
-                if method == "cp_depthwise":
+                if method in {"cp_depthwise", "fixed_fir3"}:
                     leak = checkpoint["cross_variable_leakage"]["cross_variable_leakage"]
                     if leak >= 1e-8:
                         blocking_failures.append(
                             f"{cell_name}/{method}/iter_{iteration}: cross_variable_leakage={leak:.3e} >= 1e-8"
                         )
-                if method in {"cp_depthwise", "raw_chain_mamba", "fixed_ema"}:
+                if method in {"cp_depthwise", "fixed_fir3", "raw_chain_mamba", "fixed_ema"}:
                     if tm["median"] > 0.10 or tm["max"] > 0.20:
                         add_semantic_issue(
                             method,
@@ -833,10 +863,11 @@ def main() -> int:
     eval_cfg: EvaluationWindowConfig = config_bundle["evaluation"]
 
     save_json(str(output_dir / "config.json"), {
-        "stage": "P0.2 repaired local closure CPU verification",
+        "stage": "P0.3 nonlinear-ground-truth closure CPU verification",
         "generator": "factorial_data.generate_factorial_cell",
         "setting": "D2",
         "cells": args.cells,
+        "methods": args.methods,
         "data_seed": args.data_seed,
         "train_seed": args.train_seed,
         "batch_seed": args.batch_seed,
@@ -859,6 +890,8 @@ def main() -> int:
             "sampled_vs_full_topk_jaccard": ">= 0.80",
             "sampled_vs_full_auroc_abs_diff": "<= 0.02",
             "same_seed_score_max_abs_diff": "< 1e-7",
+            "transition_jacobian_off_support": "< 1e-8",
+            "metric_adapter_parity": "AUROC/AUPRC/F1 threshold exact parity with frozen summary_max",
         },
     })
     save_json(str(output_dir / "environment.json"), environment_payload(args))
@@ -872,7 +905,28 @@ def main() -> int:
         (output_dir / "test_report.txt").write_text("Tests skipped by --skip-tests.\n", encoding="utf-8")
 
     cells = load_cells(args.cells, cfg, args.data_seed)
-    save_json(str(output_dir / "generator_support_audit.json"), generator_support_audit_payload(cells))
+    all_cell_names = [name for name, _, _ in FACTORIAL_CELLS]
+    audit_cells = load_cells(all_cell_names, cfg, args.data_seed)
+    generator_payload = generator_support_audit_payload(audit_cells)
+    save_json(str(output_dir / "generator_support_audit.json"), generator_payload)
+    save_json(str(output_dir / "generator_transition_jacobian_audit.json"), {
+        "cells": {
+            name: {
+                "transition_jacobian_audit": jsonable(cell["metadata"]["transition_jacobian_audit"]),
+                "nonlinear_diagnostics": jsonable(cell["metadata"]["nonlinear_diagnostics"]),
+                "nonlinear_scale": jsonable(cell["metadata"]["nonlinear_scale"]),
+            }
+            for name, cell in audit_cells.items()
+        }
+    })
+    generator_transition_passed = all(
+        cell["metadata"]["transition_jacobian_audit"]["max_abs_off_support_derivative"] < 1e-8
+        and cell["metadata"]["transition_jacobian_audit"]["max_abs_diagonal_off_support_derivative"] < 1e-8
+        and cell["metadata"]["transition_jacobian_audit"]["actual_support_subset_declared"]
+        and cell["metadata"]["transition_jacobian_audit"]["actual_any_lag_support_equals_declared"]
+        and cell["metadata"]["transition_jacobian_audit"]["actual_lag_specific_support_equals_declared"]
+        for cell in audit_cells.values()
+    )
     first_payload = next(iter(cells.values()))
     first_x = first_payload["x"]
     first_gc = first_payload["gc"]
@@ -925,10 +979,12 @@ def main() -> int:
     baseline_eq = baseline_equivalence_report(cfg, first_x, first_gc)
     second_order = second_order_gradient_report(cfg, first_x)
     causality = causality_report(cfg, first_x)
+    metric_parity = metric_adapter_parity_report(first_gc)
     determinism = training_determinism_report(cfg, cells, target_indices, schedule, args.train_seed)
     save_json(str(output_dir / "baseline_equivalence.json"), baseline_eq)
     save_json(str(output_dir / "second_order_gradient_test.json"), second_order)
     save_json(str(output_dir / "causality_test.json"), causality)
+    save_json(str(output_dir / "metric_adapter_parity.json"), metric_parity)
     save_json(str(output_dir / "determinism_comparison.json"), determinism)
 
     micro = microbenchmark(
@@ -944,6 +1000,7 @@ def main() -> int:
         "test_payload": test_payload,
         "legacy_file_hashes_before": legacy_before,
         "runtime_microbenchmark": micro,
+        "generator_transition_jacobian_passed": bool(generator_transition_passed),
         "baseline_equivalence_passed": (
             baseline_eq["true_canonical_baseline"]["passed"]
             and
@@ -953,6 +1010,7 @@ def main() -> int:
         ),
         "second_order_gradient_passed": all(v["passed"] for v in second_order.values()),
         "causality_passed": all(v["passed"] for v in causality.values()),
+        "metric_adapter_parity_passed": metric_parity["passed"],
         "determinism_passed": all(
             method_payload["passed"]
             for cell_payload in determinism.values()
@@ -962,21 +1020,22 @@ def main() -> int:
     runtime_failures = []
     for cell_name, by_method in micro.items():
         for method, payload in by_method.items():
-            if method in {"cp_depthwise", "raw_chain_mamba"}:
-                if payload["estimated_2000_iter_hours"] > args.runtime_limit_hours:
-                    runtime_failures.append(
-                        f"{cell_name}/{method}: estimated_2000_iter_hours="
-                        f"{payload['estimated_2000_iter_hours']:.3f}"
-                    )
+            if payload["estimated_2000_iter_hours"] > args.runtime_limit_hours:
+                runtime_failures.append(
+                    f"{cell_name}/{method}: estimated_2000_iter_hours="
+                    f"{payload['estimated_2000_iter_hours']:.3f}"
+                )
     diagnostics["runtime_gate_failures"] = runtime_failures
 
     should_stop = (
         (not test_payload.get("passed", False))
         or runtime_failures
         or args.micro_only
+        or not diagnostics["generator_transition_jacobian_passed"]
         or not diagnostics["baseline_equivalence_passed"]
         or not diagnostics["second_order_gradient_passed"]
         or not diagnostics["causality_passed"]
+        or not diagnostics["metric_adapter_parity_passed"]
         or not diagnostics["determinism_passed"]
     )
 
@@ -995,7 +1054,14 @@ def main() -> int:
             reasons.append("Required tests failed; see test_report.txt.")
         if runtime_failures:
             reasons.append("Runtime gate exceeded: " + "; ".join(runtime_failures))
-        for key in ["baseline_equivalence_passed", "second_order_gradient_passed", "causality_passed", "determinism_passed"]:
+        for key in [
+            "baseline_equivalence_passed",
+            "generator_transition_jacobian_passed",
+            "second_order_gradient_passed",
+            "causality_passed",
+            "metric_adapter_parity_passed",
+            "determinism_passed",
+        ]:
             if not diagnostics[key]:
                 reasons.append(f"{key}=false")
         write_decision_memo(
@@ -1064,7 +1130,7 @@ def main() -> int:
     save_json(str(output_dir / "horizon_sensitivity.json"), checkpoint_diagnostics.get("horizon_sensitivity", {"not_run": True}))
     save_json(str(output_dir / "window_count_sensitivity.json"), checkpoint_diagnostics.get("window_count_sensitivity", {"not_run": True}))
 
-    print(f"P0.2 output: {output_dir}")
+    print(f"P0.3 output: {output_dir}")
     print(f"tests_passed={test_payload.get('passed', False)}")
     print(f"runtime_failures={len(runtime_failures)}")
     print(f"legacy_hashes_unchanged={legacy_before == legacy_after}")

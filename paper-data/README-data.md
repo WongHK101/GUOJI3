@@ -1,0 +1,285 @@
+# Paper Data Inventory — ISTF-Mamba (TNNLS)
+
+**Last updated:** 2026-06-12 (Phase 5 charting complete — 4 figures added to `figures/`)
+**Status:** 176 canonical entries. 104/104 baseline+mamba have gc_score_path. PlanA removed from all active files. Phase 5 root-cause synthetic charting complete. No further data changes without expert re-audit.
+**Data package size:** `paper-data/` contains metadata, tables, canonical JSON, manifests, and figures (~2 MB). The full GC score archive is stored separately under `results/scores/` and contains 208 `.npy` files totaling approximately 2.0 GB.
+
+---
+
+## Directory Structure
+
+```
+paper-data/
+├── README-data.md              ← this file
+├── README-paper.md             ← paper framework & writing tracker
+├── canonical_results/          ← primary results JSON
+├── tables/                     ← all appendix + statistics tables (CSV + LaTeX)
+├── scores_manifest/            ← GC score registry + SHA-256 manifest
+├── factorial/                  ← factorial experiment data + diagnostics
+├── figures/                    ← publication figures (SVG + PDF + PNG 600dpi)
+└── docs/                       ← LaTeX/MD appendix drafts
+```
+
+### Large data (NOT duplicated in paper-data/)
+
+GC score matrices are stored in `results/scores/` (208 `.npy` files, ~2.0 GB).
+Paths are recorded in `scores_manifest/manifest.json` and `scores_manifest/score_registry.json`.
+
+---
+
+## 1. canonical_results/ — Primary Benchmark Results
+
+### migrated_all_v2.json
+- **Source:** `results/raw/migrated_all_v2.json`
+- **Description:** Canonical results collection — THE single source of truth for all benchmark metrics.
+- **Contents:** 176 result entries across 11 datasets, up to 6 methods.
+  - 52 baseline + 52 ISTF-Mamba entries — all metrics from saved GC score matrices
+  - 72 other method entries — from legacy or method-specific results
+  - Every baseline/mamba entry contains: `metrics` (all 7 metrics from same GC score), `artifacts` (gc_score_path, gt_path), `provenance` (sha256, deterministic_training, self_edge_removed)
+  - Lorenz_F40: 10 seeds (0-9) for baseline+mamba; VAR_d50: 10 seeds (0-9) for baseline+mamba; CT_medical: 10 seeds (0-9)
+- **PlanA (NSVAR_d50_PlanA) removed 2026-05-14:** removed due to duplicate data-path bug and violation of canonical score-matrix provenance. 9 entries deleted.
+
+---
+
+## 2. scores/ — GC Score Matrices (stored in `results/scores/`)
+
+### Score matrix files (208 .npy files)
+- **Path:** `results/scores/{dataset}_{method}_seed{seed}_gc.npy` — GC score matrix `G ∈ R^{d×d×L}`
+- **Path:** `results/scores/{dataset}_{method}_seed{seed}_gt.npy` — Ground truth adjacency (lag-0)
+- **Coverage:** 11 datasets × 2 methods (baseline, mamba) × 1-10 seeds = 104 pairs
+- **Size:** ~2.0 GB total
+- **Generation:** `experiments/backfill_canonical_v2.py` (requires GPU)
+- **Integrity:** All files SHA-256 checksummed in `manifest.json`
+
+### scores_manifest/manifest.json
+- **Source:** `results/scores/manifest.json`
+- **Description:** Per-score-pair metadata: dataset, method, seed, shape (d×d×L), SHA-256 (gc + gt), self_edge_removed, metrics_summary
+- **Entries:** 104 (strict UTF-8 encoding, verified loadable via `json.load(open(..., encoding="utf-8"))`)
+- **NSVAR_d50_PlanA removed:** 2026-05-12 — duplicate SHA with NSVAR_d50 due to data-path bug in backfill
+
+### scores_manifest/score_registry.json
+- **Source:** `results/scores/score_registry.json`
+- **Description:** Training registry indexing all saved score files. Contains dataset, method, seed, shape (d×d×L), d, t, n_edges per entry.
+- **Entries:** 104
+- **Note:** Dimension metadata (shape, d, t, n_edges) was backfilled from `manifest.json` on 2026-05-12. The manifest is the authoritative source for score metadata.
+
+---
+
+## 3. tables/ — All Appendix and Statistics Tables
+
+Generated from `migrated_all_v2.json` via `experiments/generate_appendix_tables.py` and `experiments/run_statistical_tests.py`.
+
+### Appendix metric tables (11 datasets × up to 6 methods)
+| File | Metric | Notes |
+|------|--------|-------|
+| `appendix_auroc.csv/.tex` | AUROC | Missing entries where method not run |
+| `appendix_auprc.csv/.tex` | AUPRC | Missing entries where method not run |
+| `appendix_shd_topk.csv/.tex` | SHD (top-k) | TCN DREAM3 entries lack topology metrics (legacy limitation) |
+| `appendix_nshd_topk.csv/.tex` | nSHD (top-k) | TCN DREAM3 entries lack topology metrics |
+| `appendix_mcc_topk.csv/.tex` | MCC (top-k) | TCN DREAM3 entries lack topology metrics |
+| `appendix_f1.csv/.tex` | F1 | Missing entries where method not run |
+| `appendix_acc.csv/.tex` | Accuracy | Missing entries where method not run |
+| `appendix_all_metrics.tex` | Combined | All metrics in one LaTeX; note missing entries |
+
+### Statistical tests
+| File | Description |
+|------|-------------|
+| `statistical_tests.csv/.tex` | Paired Wilcoxon signed-rank tests: ISTF-Mamba vs baseline, per dataset per metric. Includes raw p, Holm adjusted p, family size m=4 (CT_medical + VAR_d50 + Lorenz_F40 + NSVAR_d10), rank, and significance flags. NSVAR_d10 has degenerate/NaN p-values for most metrics (n_eff < 5) but is counted in the correction family. 28 test rows. |
+| `dataset_eligibility.csv/.tex` | Dataset classification: 4 inferential (≥5 paired seeds) + 7 descriptive-only. 11 datasets total (NSVAR_d50_PlanA removed). |
+
+---
+
+## 4. factorial/ — Controlled Operating-Boundary Experiment
+
+### factorial_ablation_canonical.json
+- **Source:** `results/raw/factorial_ablation_canonical.json`
+- **Description:** Canonical merged factorial data with protocol/audit trail.
+- **Setting:** D2 (coeff=0.40, noise=0.15, regime=0.20, nonlinear=0.50), d=10, T=600, lag=3, 10 seeds
+- **Design:** 2×2 factorial (Stationary/Nonstationary × Linear/Nonlinear)
+- **Models:** baseline, ISTF-Mamba, TCN
+- **Contents:** Per-cell summary (mean, std, per-seed values), protocol metadata, calibration history
+
+### factorial_D2_10seed_iter2000.json
+- **Source:** `results/factorial_D2_10seed_iter2000.json`
+- **Description:** Raw 10-seed factorial results for baseline + Mamba (max_iter=2000)
+
+### factorial_D2_10seed_tcn.json
+- **Source:** `results/factorial_D2_10seed_tcn.json`
+- **Description:** Raw 10-seed TCN factorial results
+
+### factorial_stat_tests.json
+- **Source:** `results/raw/factorial_stat_tests.json`
+- **Description:** Full statistical test results (12 comparisons, Holm-corrected)
+
+### Diagnostics
+| File | Description |
+|------|-------------|
+| `diagnostics_D2_seed0.json` | Seed 0 diagnostics: filter deviation, Jacobian ratio, ΔS_true/ΔS_false (all 4 cells) |
+| `diagnostics_D2_seed3.json` | Seed 3 diagnostics (all 4 cells) |
+| `diagnostics_nslinear_5seed_D2.json` | 5-seed NS+Linear expansion: Jacobian ratio + selectivity index |
+
+---
+
+## 5. docs/ — Appendix Drafts for Paper
+
+| File | Description |
+|------|-------------|
+| `appendix_score_manifest.tex` | Score manifest reproducibility appendix (LaTeX; deterministic claim weakened per expert audit) |
+| `factorial_main_text.tex` | Compressed factorial evidence for main text (LaTeX) |
+| `factorial_posthoc_summary.md` | Full factorial post-hoc analysis (expert-reviewed) |
+| `DEPRECATED_paper_experiment_results_v1_DO_NOT_USE.md` | **DEPRECATED** — old v1 results summary with 3-seed data, "Mamba wins 6" narrative, and other pre-v2 conclusions. DO NOT USE for paper writing. |
+
+---
+
+## Data Provenance Chain
+
+```
+1. JRNGC data generators → raw data (.npy) per dataset/seed
+2. backfill_canonical_v2.py → trains model → saves GC score matrix + GT
+3. compute_metrics_from_scores.py → loads GC scores → computes all 7 metrics → migrated_all_v2.json
+4. generate_appendix_tables.py → appendix*.csv/.tex (11 datasets × up to 6 methods)
+5. run_statistical_tests.py → statistical_tests.csv/.tex (Holm m=4 families)
+6. generate_eligibility_table.py → dataset_eligibility.csv/.tex (11 datasets)
+```
+
+## Experiment Scripts (key scripts in `experiments/`)
+
+| Script | Purpose | GPU needed? |
+|--------|---------|-------------|
+| `backfill_canonical_v2.py` | Stage 1: Train + save GC scores | Yes |
+| `compute_metrics_from_scores.py` | Stage 2: Compute metrics from scores | No |
+| `generate_appendix_tables.py` | Generate 7-metric appendix tables | No |
+| `run_statistical_tests.py` | Paired Wilcoxon + Holm correction | No |
+| `generate_eligibility_table.py` | Dataset eligibility classification | No |
+| `cleanup_remove_plana.py` | P0: Remove NSVAR_d50_PlanA duplicates | No |
+| `merge_factorial_canonical.py` | Merge factorial results into canonical JSON | No |
+| `factorial_stat_tests.py` | Factorial statistical tests | No |
+| `factorial_diagnostics.py` | Filter deviation + Jacobian diagnostics | Yes (light) |
+| `gen_paper_figures.py` | Generate paper figures | No |
+
+## Known Data Limitations
+
+1. **TCN DREAM3 topology metrics**: `shd_topk`, `nshd_topk`, `mcc_topk` are unavailable for TCN on DREAM3_d10/d50/d100 due to missing score matrices / legacy entry limitations.
+2. **NSVAR_d50_PlanA**: Removed 2026-05-12 due to duplicate SHA with NSVAR_d50 (data-path bug: `load_nsvar()` loaded identical data for both dataset labels).
+3. **CT_pm25 / CT_traffic**: Single seed only; descriptive-only. CT_pm25 shows mixed results (Mamba worsens AUROC relative to baseline but shows modest improvement in some topology metrics). CT_traffic shows Mamba AUROC below baseline; PCMCI+ is descriptively stronger.
+4. **NSVAR_d10**: 5 paired seeds but several metrics have too few non-zero paired differences for valid Wilcoxon (topology: n_eff=0; AUROC/AUPRC: n_eff=4; F1: n_eff=2). Included in correction family conservatively but no inferential claims made from this dataset.
+
+## Deprecated / Superseded Data (NOT in paper-data/)
+
+The following files in `results/raw/` are superseded by `migrated_all_v2.json` and should NOT be used for paper:
+- `migrated_all.json` — v1, metrics from mixed old/new runs (publication-fatal)
+- `migrated_all_v1_backup.json`, `migrated_all_backup_before_topk.json` — backups
+- `consolidated_all.json`, `final_consolidated.json` — old consolidations
+- All individual dataset files: `ct_medical_*.json`, `dream3_*.json`, `fmri_*.json`, `nsvar50_*.json`, `var50_*.json`, `tcn_*.json`, `pcmci_*.json`, `priority1_*.json`, `neural_gc_*.json`, `causaltime_*.json`, `theory_verification_*.json`, `filter_5seed_*.json`, `interaction_ablation_*.json`, `mask_supplement_*.json`, `multiseed_synthetic_*.json`, `pm25_tcn_*.json`
+- Old factorial: `factorial_D2_full_3seed.json`, `factorial_fast_pilot_ABC.json`, `factorial_pilot_results.json`, `factorial_D2_3seed_iter5000.json`
+- `paper_experiment_results.md` (now `DEPRECATED_paper_experiment_results_v1_DO_NOT_USE.md`)
+- NSVAR_d50_PlanA `.npy` files and entries — removed 2026-05-12
+
+---
+
+## Quick Verification
+
+```bash
+# Verify manifest integrity and UTF-8
+cd mamba_enhanced
+python -c "
+import json
+with open('results/scores/manifest.json', encoding='utf-8') as f:
+    m = json.load(f)
+print(f'Manifest: {len(m[\"entries\"])} entries (UTF-8 OK)')
+print(f'All have shape: {all(e.get(\"shape\") is not None for e in m[\"entries\"])}')
+print(f'All have sha256_gc: {all(\"sha256_gc\" in e for e in m[\"entries\"])}')
+
+# Check no duplicate SHA
+from collections import Counter
+sha_counts = Counter(e['sha256_gc'] for e in m['entries'])
+dups = {k:v for k,v in sha_counts.items() if v > 1}
+print(f'Duplicate SHA groups: {len(dups)} (should be 0)')
+"
+
+# Verify migrated_all_v2.json audit
+python -c "
+import json
+with open('results/raw/migrated_all_v2.json', encoding='utf-8') as f:
+    c = json.load(f)
+audit = c.get('_audit', {})
+print(f'Entries: {len(c[\"results\"])}')
+print(f'Audit source: {audit.get(\"source\")}')
+print(f'Audit n_entries: {audit.get(\"n_entries\")}')
+"
+
+# Regenerate all metrics from scores (GPU-free)
+python experiments/compute_metrics_from_scores.py
+
+# Regenerate tables
+python experiments/generate_appendix_tables.py
+python experiments/run_statistical_tests.py
+python experiments/generate_eligibility_table.py
+```
+
+---
+
+## 8. figures/ — Phase 5 Publication Figures
+
+**Generated:** 2026-06-12
+**Script:** `tools/phase5_charting.py`
+**Backend:** Python (matplotlib 3.10, nature-figure skill)
+
+### fig2_root_cause_main.{svg,pdf,png}
+- **Description:** Root-Cause Synthetic main results — 4-panel grouped bar chart
+- **Panels:** (a) AUROC, (b) F1, (c) pred_loss low range (JRNGC/Concat/ISTF), (d) pred_loss EMA (broken axis)
+- **Data source:** `results_kbs/root_cause_v2/summary/*_cross_summary.json`
+- **Methods:** JRNGC, Concat-JRNGC, ISTF-Mamba, EMA-JRNGC
+- **Datasets:** Linear, Nonstationary (5 data_seeds each)
+
+### fig3_checkpoint_dynamics.{svg,pdf,png}
+- **Description:** JRNGC training dynamics — prediction–knowledge decoupling evidence
+- **Panels:** (a) Linear dataset, (b) Nonstationary dataset
+- **Format:** Dual-axis line plot (pred_loss green-left, F1 red-right)
+- **Data source:** `phase5_1c/checkpoints/*_dynamics.csv` + `dynamics_summary.json`
+- **Annotations:** oracle_best_f1 checkpoint, best_pred_loss checkpoint, Spearman ρ
+
+### figS1_negative_controls.{svg,pdf,png}
+- **Description:** Negative controls — EMA graph recovery is not leakage
+- **Panels:** 2×2 — null distributions (violin) × 2 datasets + shuffled F1 + shuffled AUROC
+- **Data source:** `permuted_gt_null.json` + `shuffled_data_results.json`
+- **Target:** Supplement S1
+
+### fig4_causaltime_boundary.{svg,pdf,png}
+- **Description:** CausalTime operating boundary — directed GC fails on symmetric labels
+- **Panels:** (a) AUROC, (b) F1 with random baselines (hatched)
+- **Data source:** Phase 5.0 CausalTime stress-test report (hardcoded)
+- **Datasets:** CT_pm25 (d=72), CT_traffic (d=40), CT_medical (d=40)
+
+---
+
+## 9. P0.3 Repaired-Method Local Closure Assets
+
+**Generated:** 2026-07-07
+**Directory:** `results_kbs/p0_repaired_local/20260707_034141/`
+**Command:** `python experiments/p0_repaired_local_verify.py --score-max-windows 999`
+**GPU used:** no
+**KBS manuscript modified:** no
+
+### Purpose
+- Replace the invalidated old nonlinear D2 generator results caused by
+  `std(pred)` cross-output coupling.
+- Verify the repaired coordinate-wise fixed-scale nonlinear transition.
+- Verify CP-depthwise, FixedFIR3, EMA reference, and RawChainMamba diagnostic
+  semantics before any Stage 1 GPU work.
+
+### Key files
+- `generator_transition_jacobian_audit.json`: four-cell D2 transition-Jacobian support audit.
+- `generator_support_audit.json`: graph, coefficient, noise, drift, nonlinear diagnostics, and pairing audit.
+- `per_checkpoint_metrics.json`: 120/500/2000 metrics for Stat+Linear and fixed NS+Nonlinear.
+- `diagnostics.json`: gate status, runtime microbenchmark, sampled/full and horizon diagnostics.
+- `horizon_sensitivity.json`: H32/H64/full-prefix comparison.
+- `metric_adapter_parity.json`: canonical summary_max metric parity.
+- `models/`: 30 CPU checkpoints.
+- `scores/`: 120 score arrays for raw-chain, filtered-coordinate, nominal, and full-H outputs.
+- `p0_3_closure_summary.json`: compact run summary.
+
+### Status
+- Blocking gates: passed.
+- Reference limitations: EMA and RawChainMamba are not valid nominal-lag main methods under P0.3 gates.
+- Development seed only: `data_seed=0` must not be used for confirmatory Stage 1 aggregate claims.

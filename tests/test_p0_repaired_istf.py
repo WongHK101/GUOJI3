@@ -20,6 +20,7 @@ if SRC_DIR not in sys.path:
 from repaired_istf import (  # noqa: E402
     CPDepthwiseISTFJRNGC,
     FixedEMAJRNGC,
+    FixedResidualFIR3JRNGC,
     RawChainMambaISTFJRNGC,
     RawTargetBaselineJRNGC,
     RepairedISTFConfig,
@@ -27,11 +28,13 @@ from repaired_istf import (  # noqa: E402
     aggregate_window_jacobians,
     canonical_baseline_equivalence_audit,
     canonical_baseline_penalty,
+    canonical_metric_adapter,
     deterministic_sample_indices,
     eligible_target_indices,
     evaluate_repaired_model,
     exact_topk_metrics,
     filtered_coordinate_jacobian_for_windows,
+    filter_cross_variable_leakage,
     make_cyclic_schedule,
     raw_chain_jacobian_for_windows,
     raw_chain_jacobian_penalty,
@@ -70,6 +73,7 @@ def _models(dtype="float64"):
     return [
         CPDepthwiseISTFJRNGC(cfg),
         FixedEMAJRNGC(cfg),
+        FixedResidualFIR3JRNGC(cfg),
         RawChainMambaISTFJRNGC(cfg),
     ]
 
@@ -293,6 +297,7 @@ def test_shared_target_window_schedule_and_indices():
     methods = [
         RawTargetBaselineJRNGC(cfg),
         CPDepthwiseISTFJRNGC(cfg),
+        FixedResidualFIR3JRNGC(cfg),
         RawChainMambaISTFJRNGC(cfg),
         FixedEMAJRNGC(cfg),
     ]
@@ -318,6 +323,76 @@ def test_same_seed_determinism_score_max_abs_diff():
     s1 = aggregate_window_jacobians(j1, lag=2)["score_nominal"]
     s2 = aggregate_window_jacobians(j2, lag=2)["score_nominal"]
     assert float(np.max(np.abs(s1 - s2))) < 1e-7
+
+
+def test_fixed_fir3_formula_and_zero_cross_variable_leakage():
+    cfg = _cfg(dtype="float64")
+    model = FixedResidualFIR3JRNGC(cfg)
+    x = _x(dtype=np.float64)
+    raw = torch.as_tensor(x, dtype=torch.float64).unsqueeze(0).transpose(1, 2)
+    filt = model._identity_filter(raw).detach().cpu().numpy()[0]
+    for t in range(x.shape[1]):
+        lo = max(0, t - 2)
+        ma = x[:, lo:t + 1].mean(axis=1)
+        expected = (1.0 - cfg.fir3_gamma) * x[:, t] + cfg.fir3_gamma * ma
+        np.testing.assert_allclose(filt[t], expected, atol=1e-12, rtol=1e-12)
+    leak = filter_cross_variable_leakage(model, x, target_indices=[8, 9], attribution_horizon=5)
+    assert leak["cross_variable_leakage"] < 1e-12
+
+
+def test_fixed_ema_matches_recursive_definition():
+    cfg = _cfg(dtype="float64")
+    model = FixedEMAJRNGC(cfg)
+    x = _x(dtype=np.float64)
+    raw = torch.as_tensor(x, dtype=torch.float64).unsqueeze(0).transpose(1, 2)
+    filt = model._identity_filter(raw).detach().cpu().numpy()[0].T
+    expected = np.zeros_like(x)
+    expected[:, 0] = x[:, 0]
+    for t in range(1, x.shape[1]):
+        expected[:, t] = cfg.ema_alpha * expected[:, t - 1] + (1.0 - cfg.ema_alpha) * x[:, t]
+    np.testing.assert_allclose(filt, expected, atol=1e-12, rtol=1e-12)
+
+
+def test_corrected_leakage_is_abs_before_sum_for_cancelling_filter():
+    class CancellingCrossFilter(CPDepthwiseISTFJRNGC):
+        def _identity_filter(self, raw_t):
+            y = torch.zeros_like(raw_t)
+            y[:, 2:, 0] = raw_t[:, 1:-1, 1] - raw_t[:, :-2, 1]
+            y[:, :, 1:] = raw_t[:, :, 1:]
+            return y
+
+    model = CancellingCrossFilter(_cfg(d=3, lag=2, h=5, dtype="float64"))
+    x = _x(dtype=np.float64)
+    leak = filter_cross_variable_leakage(model, x, target_indices=[8], attribution_horizon=5)
+    assert leak["cross_l1_mass"] > 0.0
+    assert leak["cross_variable_leakage"] > 0.0
+
+
+def test_canonical_metric_adapter_matches_frozen_summary_max():
+    from mamba_jrngc_pilot import compute_metrics_multimode
+
+    gc = np.zeros((4, 4, 3), dtype=np.float32)
+    gc[1, 0, 0] = 1.0
+    gc[2, 1, 2] = 1.0
+    gc[3, 0, 1] = 1.0
+    score = np.array(
+        [
+            [0.0, 0.1, 0.2, 0.3],
+            [0.9, 0.0, 0.4, 0.2],
+            [0.2, 0.8, 0.0, 0.1],
+            [0.7, 0.2, 0.3, 0.0],
+        ],
+        dtype=np.float64,
+    )
+    adapted = canonical_metric_adapter(gc, score)
+    canonical = compute_metrics_multimode(gc, score[:, :, None])["summary_max"]
+    assert abs(adapted["auroc"] - canonical["auroc"]) < 1e-12
+    assert abs(adapted["auprc"] - canonical["auprc"]) < 1e-12
+    assert abs(adapted["f1_threshold"] - canonical["f1"]) < 1e-12
+    exact_edges = topk_edges_exact(score, 3, exclude_diag=True)
+    true_edges = adjacency_to_edge_set((gc.sum(axis=2) > 0).astype(np.int32), exclude_diag=True)
+    assert adapted["n_true_edges"] == len(true_edges)
+    assert len(exact_edges) == adapted["n_true_edges"]
 
 
 def test_evaluate_repaired_model_basic_outputs_are_finite():

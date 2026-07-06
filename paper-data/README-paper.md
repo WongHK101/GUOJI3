@@ -312,3 +312,10 @@ P0 method decision memo: see `paper-data/p0_method_decision_memo_2026-07-06.md`.
 P0 minimal GPU benchmark plan: see `paper-data/p0_depthwise_gpu_benchmark_plan_2026-07-06.md`.
 
 P0 external advisor review request: see `paper-data/p0_advisor_review_request_2026-07-06.md`.
+
+P0.3 nonlinear-ground-truth closure (2026-07-07):
+- Advisor blocker: old nonlinear transition used `std(pred)`, creating cross-output support expansion; old NS+Nonlinear metrics are invalidated.
+- Local fix: coordinate-wise fixed-scale nonlinear transition plus transition-Jacobian support audit.
+- Local output: `results_kbs/p0_repaired_local/20260707_034141/`.
+- Status: `STAGE0_TRAJECTORY_COMPLETE_WITH_REFERENCE_LIMITATIONS`; blocking gates passed, with EMA and RawChainMamba retained only as reference/diagnostic for nominal-lag interpretation.
+- Stage 1 preregistration draft: `paper-data/p0_3_stage1_preregistration_plan_2026-07-07.md`.

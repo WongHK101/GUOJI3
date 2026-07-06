@@ -11,7 +11,13 @@ SRC_DIR = os.path.join(PROJECT_ROOT, "src")
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
-from factorial_data import FACTORIAL_CELLS, FACTORIAL_SETTINGS, generate_factorial_cell  # noqa: E402
+from factorial_data import (  # noqa: E402
+    FACTORIAL_CELLS,
+    FACTORIAL_SETTINGS,
+    deterministic_transition,
+    generate_factorial_cell,
+    transition_jacobian,
+)
 
 
 def _generate_all(seed=0):
@@ -29,6 +35,7 @@ def _generate_all(seed=0):
             noise_scale=params["noise_scale"],
             regime_shift_strength=0.0 if stationary else params["regime_shift_strength"],
             nonlinear_strength=0.0 if linear else params["nonlinear_strength"],
+            nonlinear_scale=params["nonlinear_scale"],
             sparsity=0.2,
             return_metadata=True,
         )
@@ -72,6 +79,71 @@ def test_factorial_series_finite_and_stability_diagnostics_present():
         assert np.isfinite(audit["spectral_radius_max"])
         assert np.isfinite(audit["spectral_radius_mean"])
         assert np.isfinite(audit["spectral_radius_p95"])
+
+
+def test_transition_jacobian_support_matches_declared_graph_all_cells():
+    cells = _generate_all(seed=3)
+    for name, payload in cells.items():
+        audit = payload["meta"]["transition_jacobian_audit"]
+        assert audit["max_abs_off_support_derivative"] < 1e-8, name
+        assert audit["max_abs_diagonal_off_support_derivative"] < 1e-8, name
+        assert audit["actual_support_subset_declared"], name
+        assert audit["actual_any_lag_support_equals_declared"], name
+        assert audit["actual_lag_specific_support_equals_declared"], name
+        assert audit["declared_min_abs_derivative"] > audit["declared_min_abs_derivative_threshold"], name
+        if "Linear" in name:
+            assert audit["linear_jacobian_A_t_max_abs_diff"] < 1e-12, name
+
+
+def test_transition_jacobian_matches_central_finite_difference():
+    cells = _generate_all(seed=5)
+    eps = 1e-6
+    for name, payload in cells.items():
+        meta = payload["meta"]
+        linear = "Nonlinear" not in name
+        nonlinear_strength = 0.0 if linear else FACTORIAL_SETTINGS["D2"]["nonlinear_strength"]
+        t = 35
+        history = [payload["x"][:, t - k - 1].astype(np.float64) for k in range(3)]
+        D = transition_jacobian(
+            meta["A_t"][t],
+            history,
+            linear=linear,
+            nonlinear_strength=nonlinear_strength,
+            nonlinear_scale=FACTORIAL_SETTINGS["D2"]["nonlinear_scale"],
+        )
+        for target, source, lag_pos in [(0, 1, 0), (1, 2, 1), (3, 0, 2), (4, 5, 1)]:
+            h_plus = [h.copy() for h in history]
+            h_minus = [h.copy() for h in history]
+            h_plus[lag_pos][source] += eps
+            h_minus[lag_pos][source] -= eps
+            f_plus = deterministic_transition(
+                meta["A_t"][t],
+                h_plus,
+                linear=linear,
+                nonlinear_strength=nonlinear_strength,
+                nonlinear_scale=FACTORIAL_SETTINGS["D2"]["nonlinear_scale"],
+            )[target]
+            f_minus = deterministic_transition(
+                meta["A_t"][t],
+                h_minus,
+                linear=linear,
+                nonlinear_strength=nonlinear_strength,
+                nonlinear_scale=FACTORIAL_SETTINGS["D2"]["nonlinear_scale"],
+            )[target]
+            fd = (f_plus - f_minus) / (2.0 * eps)
+            auto = D[target, source, lag_pos]
+            tol = 1e-6 + 1e-3 * max(abs(fd), abs(auto))
+            assert abs(fd - auto) <= tol, (name, fd, auto, tol)
+
+
+def test_nonlinear_is_coordinatewise_fixed_scale_and_nontrivial():
+    cells = _generate_all(seed=4)
+    for name in ["Stat+Nonlinear", "NS+Nonlinear"]:
+        diag = cells[name]["meta"]["nonlinear_diagnostics"]
+        assert diag["enabled"], name
+        assert cells[name]["meta"]["nonlinear_scale"] == FACTORIAL_SETTINGS["D2"]["nonlinear_scale"]
+        assert diag["relative_l1_deviation_mean"] > 1e-4, name
+        assert diag["saturated_fraction_abs_z_gt_2_mean"] < 0.25, name
 
 
 if __name__ == "__main__":
