@@ -21,6 +21,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from minimal_mamba import MambaBlock
+from knowledge_metrics import adjacency_to_edge_set as canonical_adjacency_to_edge_set
+from knowledge_metrics import topk_edges_exact as canonical_topk_edges_exact
 
 
 EPS = 1e-12
@@ -560,8 +562,8 @@ def exact_topk_metrics(scores_2d: np.ndarray, gc_true) -> Dict[str, float]:
         gt_2d = (gt.sum(axis=2) > 0).astype(np.int32)
     else:
         gt_2d = gt.astype(np.int32)
-    true_edges = adjacency_to_edge_set_local(gt_2d, exclude_diag=True)
-    pred_edges = topk_edges_exact_local(scores_2d, k=len(true_edges), exclude_diag=True)
+    true_edges = canonical_adjacency_to_edge_set(gt_2d, exclude_diag=True)
+    pred_edges = canonical_topk_edges_exact(scores_2d, k=len(true_edges), exclude_diag=True)
     tp = len(true_edges & pred_edges)
     fp = len(pred_edges - true_edges)
     fn = len(true_edges - pred_edges)
@@ -701,8 +703,8 @@ def spearman_corr(a: np.ndarray, b: np.ndarray) -> Optional[float]:
 
 
 def topk_jaccard(a: np.ndarray, b: np.ndarray, k: int) -> float:
-    ea = topk_edges_exact_local(a, k=k, exclude_diag=True)
-    eb = topk_edges_exact_local(b, k=k, exclude_diag=True)
+    ea = canonical_topk_edges_exact(a, k=k, exclude_diag=True)
+    eb = canonical_topk_edges_exact(b, k=k, exclude_diag=True)
     return len(ea & eb) / max(len(ea | eb), 1)
 
 
@@ -897,6 +899,135 @@ def canonical_baseline_penalty(
         total = total + torch.sum(torch.abs(grad))
     denom = max(1, len(target_indices)) * max(1, len(output_targets)) * model.d * model.lag
     return total / denom
+
+
+def _canonical_baseline_jacobian_for_targets(
+    canonical_model: nn.Module,
+    x_full,
+    lag: int,
+    target_indices: Sequence[int],
+    output_targets: Optional[Sequence[int]] = None,
+) -> torch.Tensor:
+    windows = canonical_model.make_windows(x_full)
+    win_idx = torch.as_tensor([int(u) - lag for u in target_indices], dtype=torch.long,
+                              device=next(canonical_model.parameters()).device)
+    x_input = windows[win_idx, :, :lag].detach().clone().requires_grad_(True)
+    pred = canonical_model(x_input)
+    d = x_input.shape[1]
+    targets = range(d) if output_targets is None else [int(t) for t in output_targets]
+    jac = torch.zeros((len(target_indices), d, d, lag), device=x_input.device, dtype=x_input.dtype)
+    for target in targets:
+        grad = torch.autograd.grad(
+            pred[:, target].sum(),
+            x_input,
+            retain_graph=True,
+            create_graph=False,
+        )[0]
+        jac[:, target] = grad
+    return jac
+
+
+def canonical_baseline_equivalence_audit(
+    repaired_model: RawTargetBaselineJRNGC,
+    x_full,
+    target_indices: Sequence[int],
+    output_targets: Sequence[int],
+    gc_true=None,
+    tolerance: float = 1e-6,
+) -> Dict[str, object]:
+    """Compare repaired baseline with legacy canonical BaselineJRNGC."""
+    from mamba_jrngc_pilot import BaselineJRNGC as CanonicalBaselineJRNGC
+
+    if not isinstance(repaired_model, RawTargetBaselineJRNGC):
+        raise TypeError("canonical_baseline_equivalence_audit requires RawTargetBaselineJRNGC")
+    canonical = CanonicalBaselineJRNGC(
+        repaired_model.d,
+        repaired_model.lag,
+        layers=repaired_model.cfg.layers,
+        hidden=repaired_model.cfg.hidden,
+        dropout=repaired_model.cfg.dropout,
+        jacobian_lam=repaired_model.cfg.jacobian_lam,
+    )
+    canonical.to(device=next(repaired_model.parameters()).device, dtype=next(repaired_model.parameters()).dtype)
+    missing, unexpected = canonical.load_state_dict(repaired_model.state_dict(), strict=False)
+
+    batch = repaired_model.make_histories(x_full, target_indices=target_indices, require_grad=False)
+    repaired_pred = repaired_model(batch["raw_history"]).detach()
+    windows = canonical.make_windows(x_full)
+    win_idx = torch.as_tensor([int(u) - repaired_model.lag for u in target_indices],
+                              dtype=torch.long, device=next(repaired_model.parameters()).device)
+    canonical_hist = windows[win_idx, :, :repaired_model.lag]
+    canonical_target = windows[win_idx, :, -1]
+    canonical_pred = canonical(canonical_hist).detach()
+
+    repaired_loss = torch.mean((repaired_pred - batch["raw_target"]) ** 2)
+    canonical_loss = torch.mean((canonical_pred - canonical_target) ** 2)
+    repaired_jac, _ = raw_chain_jacobian_for_windows(
+        repaired_model,
+        x_full,
+        target_indices=target_indices,
+        attribution_horizon=repaired_model.lag,
+        create_graph=False,
+        output_targets=output_targets,
+    )
+    canonical_jac = _canonical_baseline_jacobian_for_targets(
+        canonical,
+        x_full,
+        repaired_model.lag,
+        target_indices=target_indices,
+        output_targets=output_targets,
+    )
+    repaired_penalty = torch.sum(torch.abs(repaired_jac[:, output_targets])) / (
+        max(1, len(target_indices)) * max(1, len(output_targets)) * repaired_model.d * repaired_model.lag
+    )
+    canonical_penalty = torch.sum(torch.abs(canonical_jac[:, output_targets])) / (
+        max(1, len(target_indices)) * max(1, len(output_targets)) * repaired_model.d * repaired_model.lag
+    )
+
+    all_targets = np.arange(repaired_model.lag, np.asarray(x_full).shape[1], dtype=np.int64)
+    repaired_all_jac, _ = raw_chain_jacobian_for_windows(
+        repaired_model,
+        x_full,
+        target_indices=all_targets,
+        attribution_horizon=repaired_model.lag,
+        create_graph=False,
+        output_targets=None,
+    )
+    repaired_gc = torch.mean(torch.abs(repaired_all_jac), dim=0).detach().cpu().numpy()
+    canonical_gc = canonical.get_gc_matrix(x_full)
+    repaired_summary = np.max(np.abs(repaired_gc), axis=2)
+    canonical_summary = np.max(np.abs(canonical_gc), axis=2)
+    if gc_true is not None:
+        gt = np.asarray(gc_true)
+        gt_2d = (gt.sum(axis=2) > 0).astype(np.int32) if gt.ndim == 3 else gt.astype(np.int32)
+        k = len(canonical_adjacency_to_edge_set(gt_2d, exclude_diag=True))
+    else:
+        k = max(1, repaired_model.d)
+    repaired_edges = canonical_topk_edges_exact(repaired_summary, k=k, exclude_diag=True)
+    canonical_edges = canonical_topk_edges_exact(canonical_summary, k=k, exclude_diag=True)
+
+    diffs = {
+        "raw_history_max_abs_diff": float(torch.max(torch.abs(batch["raw_history"] - canonical_hist)).detach().cpu()),
+        "raw_target_max_abs_diff": float(torch.max(torch.abs(batch["raw_target"] - canonical_target)).detach().cpu()),
+        "prediction_max_abs_diff": float(torch.max(torch.abs(repaired_pred - canonical_pred)).detach().cpu()),
+        "prediction_loss_abs_diff": float(torch.abs(repaired_loss - canonical_loss).detach().cpu()),
+        "jacobian_tensor_max_abs_diff": float(torch.max(torch.abs(repaired_jac - canonical_jac)).detach().cpu()),
+        "jacobian_penalty_abs_diff": float(torch.abs(repaired_penalty - canonical_penalty).detach().cpu()),
+        "summary_gc_max_abs_diff": float(np.max(np.abs(repaired_summary - canonical_summary))),
+    }
+    passed = all(v < tolerance for v in diffs.values()) and repaired_edges == canonical_edges
+    return {
+        "passed": bool(passed),
+        "tolerance": float(tolerance),
+        "state_dict_missing_keys": list(missing),
+        "state_dict_unexpected_keys": list(unexpected),
+        "target_indices": [int(i) for i in target_indices],
+        "output_targets": [int(i) for i in output_targets],
+        "diffs": diffs,
+        "exact_topk_edges_equal": bool(repaired_edges == canonical_edges),
+        "exact_topk_edges_repaired": sorted(list(repaired_edges)),
+        "exact_topk_edges_canonical": sorted(list(canonical_edges)),
+    }
 
 
 def save_json(path: str, payload: object) -> None:

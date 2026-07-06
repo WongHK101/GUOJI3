@@ -32,11 +32,13 @@ from repaired_istf import (  # noqa: E402
     RepairedISTFConfig,
     aggregate_window_jacobians,
     canonical_baseline_penalty,
+    canonical_baseline_equivalence_audit,
     compare_sampled_vs_full,
     deterministic_sample_indices,
     eligible_target_indices,
     evaluate_repaired_model,
     finite_values_ok,
+    graph_recovery_metrics,
     horizon_sensitivity_audit,
     instantiate_repaired_method,
     legacy_file_hashes,
@@ -95,7 +97,7 @@ def load_cells(names: Sequence[str], cfg: RepairedISTFConfig, data_seed: int) ->
         stationary, linear = cell_lookup[name]
         regime = 0.0 if stationary else params["regime_shift_strength"]
         nonlinear = 0.0 if linear else params["nonlinear_strength"]
-        x, graph = generate_factorial_cell(
+        x, graph, metadata = generate_factorial_cell(
             d=cfg.d,
             T=180,
             lag=cfg.lag,
@@ -107,6 +109,7 @@ def load_cells(names: Sequence[str], cfg: RepairedISTFConfig, data_seed: int) ->
             regime_shift_strength=regime,
             nonlinear_strength=nonlinear,
             sparsity=0.2,
+            return_metadata=True,
         )
         out[name] = {
             "x": x,
@@ -121,8 +124,39 @@ def load_cells(names: Sequence[str], cfg: RepairedISTFConfig, data_seed: int) ->
             "regime_shift_strength": regime,
             "nonlinear_strength": nonlinear,
             "target_graph_definition": "gc[target, source, lag] from generator; metrics use any-lag summary",
+            "metadata": metadata,
         }
     return out
+
+
+def generator_support_audit_payload(cells: Dict[str, Dict[str, object]]) -> Dict[str, object]:
+    payload: Dict[str, object] = {"cells": {}, "pairing": {}}
+    ref_name = next(iter(cells))
+    ref = cells[ref_name]
+    for name, cell in cells.items():
+        meta = cell["metadata"]
+        payload["cells"][name] = {
+            "support_audit": jsonable(meta["support_audit"]),
+            "rng_streams": jsonable(meta["rng_streams"]),
+            "gc_edges": int(np.sum(cell["gc"])),
+            "x_shape": list(np.asarray(cell["x"]).shape),
+        }
+    payload["pairing"] = {
+        "reference_cell": ref_name,
+        "gc_shared_with_reference": {
+            name: bool(np.array_equal(cell["gc"], ref["gc"]))
+            for name, cell in cells.items()
+        },
+        "A_base_shared_with_reference": {
+            name: bool(np.array_equal(cell["metadata"]["A_base"], ref["metadata"]["A_base"]))
+            for name, cell in cells.items()
+        },
+        "noise_shared_with_reference": {
+            name: bool(np.array_equal(cell["metadata"]["noise"], ref["metadata"]["noise"]))
+            for name, cell in cells.items()
+        },
+    }
+    return payload
 
 
 def jsonable(value):
@@ -212,19 +246,44 @@ def environment_payload(args: argparse.Namespace) -> Dict[str, object]:
     }
 
 
-def baseline_equivalence_report(cfg: RepairedISTFConfig, x: np.ndarray) -> Dict[str, object]:
+def git_commit_hash() -> str:
+    try:
+        proc = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=str(PROJECT_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if proc.returncode == 0:
+            return proc.stdout.strip()
+    except Exception:
+        pass
+    return "unknown"
+
+
+def baseline_equivalence_report(cfg: RepairedISTFConfig, x: np.ndarray, gc_true: np.ndarray) -> Dict[str, object]:
+    target_indices = eligible_target_indices(x.shape[1], cfg.lag, cfg.attribution_horizon)[:4]
+    output_targets = [0, 1]
+    torch.manual_seed(1001)
+    repaired = instantiate_repaired_method("baseline", cfg)
+    canonical_report = canonical_baseline_equivalence_audit(
+        repaired,
+        x,
+        target_indices=target_indices,
+        output_targets=output_targets,
+        gc_true=gc_true,
+        tolerance=1e-6,
+    )
+
     cfg_lag = RepairedISTFConfig(**{**cfg.__dict__, "attribution_horizon": cfg.lag})
     torch.manual_seed(1001)
     lag_model = instantiate_repaired_method("baseline", cfg_lag)
-    torch.manual_seed(1001)
-    h_model = instantiate_repaired_method("baseline", cfg)
-    h_model.load_state_dict(lag_model.state_dict())
-    target_indices = eligible_target_indices(x.shape[1], cfg.lag, cfg.attribution_horizon)[:2]
-    output_targets = [0, 1]
+    repaired.load_state_dict(lag_model.state_dict())
     canonical = canonical_baseline_penalty(lag_model, x, target_indices, output_targets)
     repaired_h_lag = raw_chain_jacobian_penalty(lag_model, x, target_indices, output_targets, create_graph=False)
-    repaired_h = raw_chain_jacobian_penalty(h_model, x, target_indices, output_targets, create_graph=False)
-    jac, _ = raw_chain_jacobian_for_windows(h_model, x, target_indices, attribution_horizon=cfg.attribution_horizon)
+    repaired_h = raw_chain_jacobian_penalty(repaired, x, target_indices, output_targets, create_graph=False)
+    jac, _ = raw_chain_jacobian_for_windows(repaired, x, target_indices, attribution_horizon=cfg.attribution_horizon)
     denom = len(target_indices) * len(output_targets) * cfg.d * cfg.lag
     p0 = torch.sum(torch.abs(jac[:, output_targets, :, :])) / denom
     jac[:, output_targets, :, 0] += 0.25
@@ -232,6 +291,7 @@ def baseline_equivalence_report(cfg: RepairedISTFConfig, x: np.ndarray) -> Dict[
     return {
         "target_indices": [int(i) for i in target_indices],
         "output_targets": output_targets,
+        "true_canonical_baseline": canonical_report,
         "canonical_penalty": float(canonical.detach().cpu()),
         "repaired_H_equals_lag_penalty": float(repaired_h_lag.detach().cpu()),
         "repaired_H32_penalty": float(repaired_h.detach().cpu()),
@@ -303,25 +363,6 @@ def causality_report(cfg: RepairedISTFConfig, x: np.ndarray) -> Dict[str, object
     return out
 
 
-def determinism_report(cfg: RepairedISTFConfig, x: np.ndarray, score_windows: Sequence[int]) -> Dict[str, object]:
-    out: Dict[str, object] = {}
-    for method in DEFAULT_METHODS:
-        torch.manual_seed(4004)
-        m1 = instantiate_repaired_method(method, cfg)
-        torch.manual_seed(4004)
-        m2 = instantiate_repaired_method(method, cfg)
-        j1, _ = raw_chain_jacobian_for_windows(m1, x, score_windows, attribution_horizon=cfg.attribution_horizon)
-        j2, _ = raw_chain_jacobian_for_windows(m2, x, score_windows, attribution_horizon=cfg.attribution_horizon)
-        s1 = aggregate_window_jacobians(j1, cfg.lag)["score_nominal"]
-        s2 = aggregate_window_jacobians(j2, cfg.lag)["score_nominal"]
-        max_diff = float(np.max(np.abs(s1 - s2)))
-        out[method] = {
-            "score_max_abs_diff": max_diff,
-            "passed": max_diff < 1e-7,
-        }
-    return out
-
-
 def train_step(model, optimizer, x, schedule_entry, target_indices, cfg: RepairedISTFConfig) -> Dict[str, float]:
     optimizer.zero_grad(set_to_none=True)
     comp = model.compute_loss_components(
@@ -334,6 +375,89 @@ def train_step(model, optimizer, x, schedule_entry, target_indices, cfg: Repaire
     torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
     optimizer.step()
     return {key: float(val.detach().cpu()) for key, val in comp.items()}
+
+
+def _state_dict_max_abs_diff(a: Dict[str, torch.Tensor], b: Dict[str, torch.Tensor]) -> float:
+    max_diff = 0.0
+    for key in a:
+        if key not in b:
+            return float("inf")
+        ta = a[key]
+        tb = b[key]
+        if torch.is_tensor(ta):
+            max_diff = max(max_diff, float(torch.max(torch.abs(ta.detach().cpu() - tb.detach().cpu()))))
+    return max_diff
+
+
+def _metric_abs_diffs(a: Dict[str, float], b: Dict[str, float]) -> Dict[str, float]:
+    keys = sorted(set(a) & set(b))
+    out = {}
+    for key in keys:
+        if isinstance(a[key], (int, float)) and isinstance(b[key], (int, float)):
+            out[key] = abs(float(a[key]) - float(b[key]))
+    return out
+
+
+def training_determinism_report(
+    cfg: RepairedISTFConfig,
+    cells: Dict[str, Dict[str, object]],
+    target_indices: np.ndarray,
+    schedule: Sequence[Dict[str, List[int]]],
+    train_seed: int,
+) -> Dict[str, object]:
+    out: Dict[str, object] = {}
+    for cell_name, cell_payload in cells.items():
+        x = cell_payload["x"]
+        graph = cell_payload["gc"]
+        out[cell_name] = {}
+        for method in ["baseline", "cp_depthwise"]:
+            runs = []
+            for _ in range(2):
+                torch.manual_seed(train_seed)
+                model = instantiate_repaired_method(method, cfg)
+                optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0.0)
+                trace = []
+                for it in range(120):
+                    loss_payload = train_step(model, optimizer, x, schedule[it], target_indices, cfg)
+                    trace.append(loss_payload["total_training_objective"])
+                eval_out = evaluate_repaired_model(
+                    model,
+                    x,
+                    graph,
+                    target_indices=target_indices,
+                    attribution_horizon=cfg.attribution_horizon,
+                    include_filtered_coordinate=False,
+                )
+                runs.append({
+                    "state_dict": {k: v.detach().cpu().clone() for k, v in model.state_dict().items()},
+                    "loss_trace": np.asarray(trace, dtype=np.float64),
+                    "score_nominal": np.asarray(eval_out["score_nominal"], dtype=np.float64),
+                    "score_full_H": np.asarray(eval_out["score_full_H"], dtype=np.float64),
+                    "metrics_nominal": eval_out["metrics_nominal"],
+                    "metrics_full_H": eval_out["metrics_full_H"],
+                })
+            loss_trace_max_abs_diff = float(np.max(np.abs(runs[0]["loss_trace"] - runs[1]["loss_trace"])))
+            nominal_score_max_abs_diff = float(np.max(np.abs(runs[0]["score_nominal"] - runs[1]["score_nominal"])))
+            full_h_score_max_abs_diff = float(np.max(np.abs(runs[0]["score_full_H"] - runs[1]["score_full_H"])))
+            state_diff = _state_dict_max_abs_diff(runs[0]["state_dict"], runs[1]["state_dict"])
+            nominal_metric_diffs = _metric_abs_diffs(runs[0]["metrics_nominal"], runs[1]["metrics_nominal"])
+            full_h_metric_diffs = _metric_abs_diffs(runs[0]["metrics_full_H"], runs[1]["metrics_full_H"])
+            out[cell_name][method] = {
+                "iterations": 120,
+                "state_dict_max_abs_diff": state_diff,
+                "loss_trace_max_abs_diff": loss_trace_max_abs_diff,
+                "nominal_score_max_abs_diff": nominal_score_max_abs_diff,
+                "full_H_score_max_abs_diff": full_h_score_max_abs_diff,
+                "nominal_metric_abs_diffs": nominal_metric_diffs,
+                "full_H_metric_abs_diffs": full_h_metric_diffs,
+                "passed": (
+                    state_diff < 1e-7
+                    and loss_trace_max_abs_diff < 1e-9
+                    and nominal_score_max_abs_diff < 1e-7
+                    and full_h_score_max_abs_diff < 1e-7
+                ),
+            }
+    return out
 
 
 def microbenchmark(
@@ -395,6 +519,95 @@ def save_scores(score_dir: Path, eval_out: Dict[str, object], iteration: int) ->
     np.save(score_dir / f"iter_{iteration}_full_H.npy", eval_out["score_full_H"])
 
 
+def save_checkpoint(
+    output_dir: Path,
+    method: str,
+    cell_name: str,
+    iteration: int,
+    model,
+    optimizer,
+    cfg: RepairedISTFConfig,
+    schedule_digest: str,
+    commit_hash: str,
+) -> None:
+    ckpt_dir = output_dir / "models" / method / cell_name.replace("+", "_").replace(" ", "_")
+    ckpt_dir.mkdir(parents=True, exist_ok=True)
+    torch.save(
+        {
+            "model_state": model.state_dict(),
+            "optimizer_state": optimizer.state_dict(),
+            "config": cfg.__dict__,
+            "method": method,
+            "cell": cell_name,
+            "iteration": int(iteration),
+            "schedule_hash": schedule_digest,
+            "commit_hash": commit_hash,
+        },
+        ckpt_dir / f"iter_{iteration:04d}.pt",
+    )
+
+
+def nested_window_sequence(target_indices: Sequence[int], max_n: int, seed: int) -> np.ndarray:
+    arr = np.asarray(list(target_indices), dtype=np.int64)
+    rng = np.random.default_rng(seed)
+    if arr.size <= max_n:
+        return arr.copy()
+    return rng.choice(arr, size=max_n, replace=False).astype(np.int64)
+
+
+def window_count_sensitivity_for_checkpoint(
+    model,
+    x: np.ndarray,
+    graph: np.ndarray,
+    full_eval: Dict[str, object],
+    target_indices: Sequence[int],
+    seed: int,
+) -> Dict[str, object]:
+    nested = nested_window_sequence(target_indices, max_n=min(128, len(target_indices)), seed=seed)
+    full_score = full_eval["score_nominal"]
+    full_metrics = full_eval["metrics_nominal"]
+    out: Dict[str, object] = {
+        "nested_sequence": [int(i) for i in nested],
+        "full_window_count": int(len(target_indices)),
+        "counts": {},
+    }
+    for count in [32, 64, 128]:
+        if len(nested) < count:
+            continue
+        idx = nested[:count]
+        eval_out = evaluate_repaired_model(
+            model,
+            x,
+            graph,
+            target_indices=idx,
+            attribution_horizon=model.attribution_horizon,
+            include_filtered_coordinate=False,
+        )
+        metrics = eval_out["metrics_nominal"]
+        cmp = compare_sampled_vs_full(eval_out["score_nominal"], full_score, graph)
+        out["counts"][str(count)] = {
+            "target_indices": [int(i) for i in idx],
+            "score_comparison": cmp["score_comparison"],
+            "metrics": metrics,
+            "diff_vs_full": {
+                "auroc_abs_diff": abs(metrics["auroc"] - full_metrics["auroc"]),
+                "auprc_abs_diff": abs(metrics["auprc"] - full_metrics["auprc"]),
+                "f1_exact_topk_abs_diff": abs(metrics["f1_exact_topk"] - full_metrics["f1_exact_topk"]),
+            },
+        }
+    out["counts"]["full"] = {
+        "target_indices": [int(i) for i in target_indices],
+        "score_comparison": compare_sampled_vs_full(full_score, full_score, graph)["score_comparison"],
+        "metrics": full_metrics,
+        "diff_vs_full": {
+            "auroc_abs_diff": 0.0,
+            "auprc_abs_diff": 0.0,
+            "f1_exact_topk_abs_diff": 0.0,
+        },
+    }
+    return jsonable(out)
+
+
 def run_training_trajectory(
     cfg: RepairedISTFConfig,
     cells: Dict[str, Dict[str, object]],
@@ -408,15 +621,22 @@ def run_training_trajectory(
     train_seed: int,
     output_dir: Path,
     skip_heavy_audits: bool,
+    schedule_digest: str,
+    commit_hash: str,
 ) -> tuple[Dict[str, object], Dict[str, object]]:
     metrics: Dict[str, object] = {}
-    diagnostics: Dict[str, object] = {"sampled_vs_full": {}, "horizon_sensitivity": {}}
+    diagnostics: Dict[str, object] = {
+        "sampled_vs_full": {},
+        "horizon_sensitivity": {},
+        "window_count_sensitivity": {},
+    }
     for cell_name, cell_payload in cells.items():
         x = cell_payload["x"]
         graph = cell_payload["gc"]
         metrics[cell_name] = {}
         diagnostics["sampled_vs_full"][cell_name] = {}
         diagnostics["horizon_sensitivity"][cell_name] = {}
+        diagnostics["window_count_sensitivity"][cell_name] = {}
         for method in methods:
             torch.manual_seed(train_seed)
             model = instantiate_repaired_method(method, cfg)
@@ -432,6 +652,17 @@ def run_training_trajectory(
                     method_metrics["training_loss_trace"].append({"iter": it, **loss_payload})
                 if it not in checkpoints:
                     continue
+                save_checkpoint(
+                    output_dir,
+                    method,
+                    cell_name,
+                    it,
+                    model,
+                    optimizer,
+                    cfg,
+                    schedule_digest,
+                    commit_hash,
+                )
                 eval_out = evaluate_repaired_model(
                     model,
                     x,
@@ -464,6 +695,16 @@ def run_training_trajectory(
                         graph,
                     )
                     diagnostics["sampled_vs_full"][cell_name].setdefault(method, {})[str(it)] = jsonable(svf)
+                    diagnostics["window_count_sensitivity"][cell_name].setdefault(method, {})[str(it)] = (
+                        window_count_sensitivity_for_checkpoint(
+                            model,
+                            x,
+                            graph,
+                            full_eval,
+                            target_indices,
+                            seed=9103,
+                        )
+                    )
                     horizon = horizon_sensitivity_audit(
                         model,
                         x,
@@ -480,7 +721,7 @@ def run_training_trajectory(
 
 def write_decision_memo(output_dir: Path, status: str, reasons: Sequence[str], next_action: str) -> None:
     lines = [
-        "# P0.1 Stage 0 Decision Memo",
+        "# P0.2 Local Closure Decision Memo",
         "",
         f"- status: {status}",
         f"- generated_at: {time.strftime('%Y-%m-%d %H:%M:%S')}",
@@ -511,7 +752,7 @@ def evaluate_checkpoint_gates(
     nominal_disqualifications: List[str] = []
 
     def add_semantic_issue(method: str, message: str) -> None:
-        if method == "fixed_ema":
+        if method in {"fixed_ema", "raw_chain_mamba"}:
             nominal_disqualifications.append(message)
         else:
             blocking_failures.append(message)
@@ -592,7 +833,7 @@ def main() -> int:
     eval_cfg: EvaluationWindowConfig = config_bundle["evaluation"]
 
     save_json(str(output_dir / "config.json"), {
-        "stage": "P0.1 repaired local CPU verification",
+        "stage": "P0.2 repaired local closure CPU verification",
         "generator": "factorial_data.generate_factorial_cell",
         "setting": "D2",
         "cells": args.cells,
@@ -605,6 +846,7 @@ def main() -> int:
             "runtime_limit_hours_per_method_cell": args.runtime_limit_hours,
             "first_pass_only_data_seed": 0,
             "first_pass_only_train_seed": 0,
+            "formal_score_extraction": "full eligible-window exact extraction; 32/64/128 are sensitivity audits only",
         },
         "pass_fail_gates": {
             "depthwise_cross_variable_leakage": "< 1e-8",
@@ -630,7 +872,10 @@ def main() -> int:
         (output_dir / "test_report.txt").write_text("Tests skipped by --skip-tests.\n", encoding="utf-8")
 
     cells = load_cells(args.cells, cfg, args.data_seed)
-    first_x = next(iter(cells.values()))["x"]
+    save_json(str(output_dir / "generator_support_audit.json"), generator_support_audit_payload(cells))
+    first_payload = next(iter(cells.values()))
+    first_x = first_payload["x"]
+    first_gc = first_payload["gc"]
     target_indices = eligible_target_indices(first_x.shape[1], cfg.lag, cfg.attribution_horizon)
     score_windows = deterministic_sample_indices(
         target_indices,
@@ -651,8 +896,10 @@ def main() -> int:
         targets_per_step=jac_cfg.sampled_targets_per_step,
         seed=jac_cfg.jacobian_seed,
     )
+    schedule_digest = schedule_hash(schedule)
+    commit_hash = git_commit_hash()
     save_json(str(output_dir / "jacobian_sampling_schedule.json"), {
-        "hash": schedule_hash(schedule),
+        "hash": schedule_digest,
         "schedule": schedule,
     })
     save_json(str(output_dir / "window_indices.json"), {
@@ -663,11 +910,22 @@ def main() -> int:
         "eligible_rule": "u >= max(H, lag)",
         "common_eligible_min_for_horizon_audit": "u >= 64",
     })
+    (output_dir / "clean_rerun_commands.txt").write_text(
+        "\n".join([
+            f"git checkout {commit_hash}",
+            "python -m py_compile src/repaired_istf.py src/factorial_data.py src/knowledge_metrics.py tests/test_p0_repaired_istf.py tests/test_p0_factorial_generator.py experiments/p0_repaired_local_verify.py",
+            "python tests\\test_p0_factorial_generator.py",
+            "python tests\\test_p0_repaired_istf.py",
+            "python experiments\\p0_repaired_local_verify.py --score-max-windows 999",
+            "",
+        ]),
+        encoding="utf-8",
+    )
 
-    baseline_eq = baseline_equivalence_report(cfg, first_x)
+    baseline_eq = baseline_equivalence_report(cfg, first_x, first_gc)
     second_order = second_order_gradient_report(cfg, first_x)
     causality = causality_report(cfg, first_x)
-    determinism = determinism_report(cfg, first_x, score_windows[:4])
+    determinism = training_determinism_report(cfg, cells, target_indices, schedule, args.train_seed)
     save_json(str(output_dir / "baseline_equivalence.json"), baseline_eq)
     save_json(str(output_dir / "second_order_gradient_test.json"), second_order)
     save_json(str(output_dir / "causality_test.json"), causality)
@@ -687,13 +945,19 @@ def main() -> int:
         "legacy_file_hashes_before": legacy_before,
         "runtime_microbenchmark": micro,
         "baseline_equivalence_passed": (
+            baseline_eq["true_canonical_baseline"]["passed"]
+            and
             baseline_eq["max_abs_diff_H_equals_lag"] <= 1e-7
             and baseline_eq["max_abs_diff_H32_zero_extension"] <= 1e-7
             and baseline_eq["artificial_out_of_lag_increases_penalty"]
         ),
         "second_order_gradient_passed": all(v["passed"] for v in second_order.values()),
         "causality_passed": all(v["passed"] for v in causality.values()),
-        "determinism_passed": all(v["passed"] for v in determinism.values()),
+        "determinism_passed": all(
+            method_payload["passed"]
+            for cell_payload in determinism.values()
+            for method_payload in cell_payload.values()
+        ),
     }
     runtime_failures = []
     for cell_name, by_method in micro.items():
@@ -755,6 +1019,8 @@ def main() -> int:
             args.train_seed,
             output_dir,
             skip_heavy_audits=args.skip_heavy_audits,
+            schedule_digest=schedule_digest,
+            commit_hash=commit_hash,
         )
         if args.skip_heavy_audits:
             checkpoint_gate_report["blocking_failures"] = [
@@ -796,8 +1062,9 @@ def main() -> int:
     save_json(str(output_dir / "diagnostics.json"), diagnostics)
     save_json(str(output_dir / "per_checkpoint_metrics.json"), per_checkpoint_metrics)
     save_json(str(output_dir / "horizon_sensitivity.json"), checkpoint_diagnostics.get("horizon_sensitivity", {"not_run": True}))
+    save_json(str(output_dir / "window_count_sensitivity.json"), checkpoint_diagnostics.get("window_count_sensitivity", {"not_run": True}))
 
-    print(f"P0.1 output: {output_dir}")
+    print(f"P0.2 output: {output_dir}")
     print(f"tests_passed={test_payload.get('passed', False)}")
     print(f"runtime_failures={len(runtime_failures)}")
     print(f"legacy_hashes_unchanged={legacy_before == legacy_after}")

@@ -23,7 +23,9 @@ from repaired_istf import (  # noqa: E402
     RawChainMambaISTFJRNGC,
     RawTargetBaselineJRNGC,
     RepairedISTFConfig,
+    adjacency_to_edge_set_local,
     aggregate_window_jacobians,
+    canonical_baseline_equivalence_audit,
     canonical_baseline_penalty,
     deterministic_sample_indices,
     eligible_target_indices,
@@ -36,6 +38,7 @@ from repaired_istf import (  # noqa: E402
     schedule_hash,
     topk_edges_exact_local,
 )
+from knowledge_metrics import adjacency_to_edge_set, topk_edges_exact  # noqa: E402
 
 
 def _x(d=3, t=18, seed=123, dtype=np.float64):
@@ -107,6 +110,27 @@ def test_topk_orientation_target_source_to_source_target():
     gc[1, 0] = 1
     metrics = exact_topk_metrics(scores, gc)
     assert metrics["f1_exact_topk"] == 1.0
+
+
+def test_canonical_vs_local_exact_topk_equivalence():
+    rng = np.random.default_rng(999)
+    scores = rng.normal(size=(5, 5))
+    scores[2, 1] = scores[3, 0]  # exercise deterministic tie handling
+    gc = np.zeros((5, 5), dtype=np.int32)
+    gc[1, 0] = 1
+    gc[3, 2] = 1
+    gc[4, 1] = 1
+    for k in [0, 1, 3, 20]:
+        assert topk_edges_exact(scores, k, exclude_diag=True) == topk_edges_exact_local(scores, k, exclude_diag=True)
+    assert adjacency_to_edge_set(gc, exclude_diag=True) == adjacency_to_edge_set_local(gc, exclude_diag=True)
+    canonical_metrics = exact_topk_metrics(scores, gc)
+    true_edges = adjacency_to_edge_set_local(gc, exclude_diag=True)
+    pred_edges = topk_edges_exact_local(scores, k=len(true_edges), exclude_diag=True)
+    tp = len(true_edges & pred_edges)
+    precision = tp / max(len(pred_edges), 1)
+    recall = tp / max(len(true_edges), 1)
+    f1 = 2 * precision * recall / max(precision + recall, 1e-12)
+    assert abs(canonical_metrics["f1_exact_topk"] - f1) < 1e-12
 
 
 def test_causal_no_future_and_raw_target_isolation():
@@ -223,6 +247,24 @@ def test_baseline_penalty_equivalence_and_out_of_lag_growth():
     jac[:, output_targets, :, 0] += 0.25
     p1 = torch.sum(torch.abs(jac[:, output_targets, :, :])) / denom
     assert p1 > p0
+
+
+def test_true_canonical_baseline_equivalence():
+    x = _x(d=3, t=12, dtype=np.float32)
+    gc = np.zeros((3, 3, 2), dtype=np.float32)
+    gc[1, 0, 0] = 1.0
+    gc[2, 1, 1] = 1.0
+    torch.manual_seed(1234)
+    model = RawTargetBaselineJRNGC(_cfg(d=3, lag=2, h=5, dtype="float32"))
+    report = canonical_baseline_equivalence_audit(
+        model,
+        x,
+        target_indices=[5, 6, 7],
+        output_targets=[0, 1],
+        gc_true=gc,
+        tolerance=1e-6,
+    )
+    assert report["passed"], report
 
 
 def test_raw_chain_coordinate_detach_failure():
