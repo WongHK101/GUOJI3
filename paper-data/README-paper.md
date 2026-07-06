@@ -306,3 +306,9 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 4. Preserve frozen manuscript figures/results for now; future manuscript edits should wait for the P0 method decision.
 
 P0 audit note: see `paper-data/p0_jacobian_semantics_audit_2026-07-06.md`.
+
+P0 method decision memo: see `paper-data/p0_method_decision_memo_2026-07-06.md`.
+
+P0 minimal GPU benchmark plan: see `paper-data/p0_depthwise_gpu_benchmark_plan_2026-07-06.md`.
+
+P0 external advisor review request: see `paper-data/p0_advisor_review_request_2026-07-06.md`.
