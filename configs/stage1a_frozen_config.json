@@ -1,0 +1,171 @@
+{
+  "config_name": "stage1a_frozen_config",
+  "config_version": "p0.3c_v1",
+  "formal_result": true,
+  "frozen": true,
+  "data": {
+    "generator": "factorial_data.generate_factorial_cell",
+    "setting": "D2",
+    "d": 10,
+    "T": 600,
+    "lag": 3,
+    "sparsity": 0.2,
+    "beta": 0.5,
+    "s0": 0.075,
+    "cells": ["Stat+Linear", "Stat+Nonlinear", "NS+Linear", "NS+Nonlinear"],
+    "data_seeds": [1, 2, 3],
+    "train_seeds": [0, 1],
+    "development_data_seed": 0,
+    "stage1b_independent_data_seeds": [4, 5, 6, 7, 8]
+  },
+  "model": {
+    "predictor": {
+      "class": "RepairedBaseJRNGC",
+      "layers": 1,
+      "hidden": 16,
+      "activation": "ResidualBlock.relu: torch.nn.ReLU",
+      "dropout": 0.0
+    },
+    "cp_depthwise": {
+      "kernel_size": 3,
+      "dilation": 1,
+      "groups": "d",
+      "bias": false,
+      "residual_gain": 0.1,
+      "initialization": "zero"
+    },
+    "fixed_fir3": {
+      "gamma": 0.1
+    },
+    "fixed_ema": {
+      "alpha": 0.9,
+      "recursion": "z_t = alpha*z_{t-1} + (1-alpha)*x_t; z_0=x_0",
+      "role": "mandatory full-H reference"
+    },
+    "raw_chain_mamba": {
+      "role": "limited diagnostic only",
+      "d_state": 4,
+      "expand": 2,
+      "d_conv": 4,
+      "residual_gain": 0.1,
+      "implementation": "minimal_mamba.MambaBlock"
+    }
+  },
+  "methods": {
+    "formal": ["baseline", "cp_depthwise", "fixed_fir3", "fixed_ema"],
+    "limited_ablation": [
+      {
+        "method": "raw_chain_mamba",
+        "data_seeds": [1],
+        "train_seeds": [0],
+        "cells": ["Stat+Linear", "Stat+Nonlinear", "NS+Linear", "NS+Nonlinear"]
+      }
+    ]
+  },
+  "training": {
+    "max_iter": 500,
+    "primary_checkpoint": 500,
+    "optimizer": "Adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "grad_clip": 1.0,
+    "dtype": "float32",
+    "jacobian_lam": 0.01,
+    "identity_lam": {
+      "baseline": 0.0,
+      "cp_depthwise": 0.05,
+      "fixed_fir3": 0.0,
+      "fixed_ema": 0.0,
+      "raw_chain_mamba": 0.05
+    },
+    "prediction_loss": "full-batch mean MSE over common_target_indices and variables",
+    "jacobian_estimator": {
+      "type": "deterministic sampled exact raw-chain Jacobian",
+      "sampled_windows_per_step": 2,
+      "sampled_output_targets_per_step": 2,
+      "denominator": "W_sample * output_target_sample * d_source * nominal_lag",
+      "denominator_nominal_lag": 3,
+      "create_graph": true
+    },
+    "seed_rules": {
+      "schedule_seed": "7101 + 1000*data_seed + train_seed",
+      "torch_seed": "100000 + 1000*data_seed + 100*train_seed + method_offset",
+      "method_offsets": {
+        "baseline": 0,
+        "cp_depthwise": 1,
+        "fixed_fir3": 2,
+        "fixed_ema": 3,
+        "raw_chain_mamba": 4
+      }
+    }
+  },
+  "target_windows": {
+    "common_start": 64,
+    "common_stop_inclusive": 599,
+    "count": 536,
+    "indices_definition": "common_target_indices = np.arange(64, 600)",
+    "shared_for": ["training_prediction_loss", "jacobian_sampling_schedule", "prediction_loss_evaluation", "graph_evaluation"]
+  },
+  "attribution": {
+    "horizons": {
+      "baseline": 32,
+      "cp_depthwise": 32,
+      "fixed_fir3": 32,
+      "fixed_ema": 64,
+      "raw_chain_mamba": 32
+    },
+    "score_coordinate": "extended truncated raw-chain attribution",
+    "score_tensor_convention": "score[target,source]",
+    "j_bar": "mean_w abs(d y_hat_w,target / d x_w,source,h)",
+    "score_nominal": "max over last lag positions of j_bar[target,source,h]",
+    "score_full_H": "max over all H positions of j_bar[target,source,h]",
+    "exact_topk_helper": "knowledge_metrics.topk_edges_exact",
+    "tie_break": "sort by (-score, target_idx, source_idx), return (source,target)"
+  },
+  "evaluation": {
+    "chunk_size": 64,
+    "full_window_chunked_exact": true,
+    "accumulator_dtype": "float64",
+    "ema_metric_track": "full_H_reference",
+    "stage1a_significance_policy": "effect-size go/no-go triage only; no strong n=3 significance claims"
+  },
+  "stage1a_go_no_go_gates": {
+    "cp_vs_baseline": {
+      "min_qualifying_cells_delta_auroc_ge_0_03": 2,
+      "at_least_one_qualifying_cell_nonstationary": true,
+      "per_qualifying_cell_min_positive_data_seeds": 2,
+      "mean_delta_auprc_min": -0.02,
+      "mean_delta_mcc_min": -0.05
+    },
+    "fixed_fir3_novelty": {
+      "at_least_one_cp_vs_baseline_qualifying_cell_must_also_pass": true,
+      "mean_delta_auroc_cp_minus_fir3_min": 0.02,
+      "min_positive_data_seeds": 2,
+      "mean_delta_auprc_min": -0.02,
+      "mean_delta_mcc_min": -0.05
+    },
+    "ema_reference_dominance_no_go": {
+      "all_cells_ema_mean_auroc_not_lower_than_cp": true,
+      "min_cells_ema_minus_cp_delta_auroc_ge_0_02": 2,
+      "ema_minus_cp_delta_auprc_min": -0.02,
+      "ema_minus_cp_delta_mcc_min": -0.05,
+      "ema_track": "full_H_reference_not_nominal_lag_causal_method"
+    },
+    "cp_semantics": {
+      "leakage_temporal_horizon_truncation_gates_continue_to_pass": true,
+      "learned_kernel_nonzero_change_from_zero_initialization": true,
+      "identity_deviation_finite_and_nonzero_reported_no_posthoc_threshold": true
+    }
+  },
+  "run_count": {
+    "formal": 96,
+    "limited_ablation": 4,
+    "total": 100
+  },
+  "gpu_budget_estimate": {
+    "expected_run_count": 100,
+    "rough_gpu_hours_per_formal_run_range": [0.25, 1.0],
+    "rough_total_gpu_hours_range": [25.0, 100.0],
+    "requires_pre_full_matrix_gpu_infrastructure_smoke": true
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "schema_name": "stage1a_execution_config_schema",
+  "schema_version": "p0.3c_v1",
+  "required_top_level_keys": [
+    "config_name",
+    "config_version",
+    "formal_result",
+    "frozen",
+    "data",
+    "model",
+    "methods",
+    "training",
+    "target_windows",
+    "attribution",
+    "evaluation",
+    "stage1a_go_no_go_gates",
+    "run_count",
+    "gpu_budget_estimate"
+  ],
+  "frozen_values": {
+    "data.setting": "D2",
+    "data.d": 10,
+    "data.T": 600,
+    "data.lag": 3,
+    "data.sparsity": 0.2,
+    "data.beta": 0.5,
+    "data.s0": 0.075,
+    "training.optimizer": "Adam",
+    "training.lr": 0.001,
+    "training.weight_decay": 0.0,
+    "training.grad_clip": 1.0,
+    "training.dtype": "float32",
+    "training.jacobian_lam": 0.01,
+    "target_windows.common_start": 64,
+    "target_windows.common_stop_inclusive": 599,
+    "target_windows.count": 536,
+    "evaluation.chunk_size": 64,
+    "evaluation.full_window_chunked_exact": true,
+    "evaluation.accumulator_dtype": "float64"
+  },
+  "formal_config_required_values": {
+    "formal_result": true,
+    "training.max_iter": 500,
+    "training.primary_checkpoint": 500,
+    "data.data_seeds": [1, 2, 3],
+    "data.train_seeds": [0, 1],
+    "run_count.formal": 96,
+    "run_count.limited_ablation": 4,
+    "run_count.total": 100
+  },
+  "smoke_config_required_values": {
+    "formal_result": false,
+    "training.max_iter": 20,
+    "training.primary_checkpoint": 20,
+    "data.cells": ["NS+Nonlinear"],
+    "data.data_seeds": [1],
+    "data.train_seeds": [0],
+    "run_count.formal": 4,
+    "run_count.limited_ablation": 0,
+    "run_count.total": 4
+  }
+}

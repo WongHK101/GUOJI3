@@ -193,6 +193,7 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 - Current KBS compile status after reference expansion: 27 pages, 0 LaTeX errors, 0 undefined references/citations, 0 missing figures, 0 Overfull hbox.
 - Next writing focus: final internal consistency pass across Abstract, Introduction, Related Work, Discussion, Limitations, and Conclusion after the expanded literature positioning.
 - Method-pivot status as of 2026-07-07: KBS text remains frozen while P0 repaired-method readiness is audited locally. P0.3b locks D2 `s0=0.075`, primary checkpoint `500`, CP-depthwise as the only repaired main candidate, FixedFIR3 as matched baseline, FixedEMA as full-H reference, and RawChainMamba as limited diagnostic. Development seed `data_seed=0` remains non-evidentiary and must not be cited as paper performance.
+- Execution-readiness status as of 2026-07-07: P0.3c adds the frozen Stage 1a runner, aggregation script, config validation, exact run manifest, resume/atomic-write checks, and a Stage 1-scale CPU smoke. These are execution artifacts only; do not revise manuscript claims until approved Stage 1a/1b results exist.
 
 | Section | Status | Notes |
 |---------|--------|-------|

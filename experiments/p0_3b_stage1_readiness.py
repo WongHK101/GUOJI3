@@ -600,7 +600,7 @@ def chunked_evaluator_parity_and_microbenchmark(output_dir: Path) -> tuple[Dict[
                     "eligible_window_count": int(len(bench_idx)),
                     "wall_time_seconds": elapsed,
                     "cpu_peak_rss_mb": peak,
-                    "projected_gpu_peak_memory_mb": bytes_jac / (1024 ** 2),
+                    "jacobian_output_buffer_lower_bound_mb": bytes_jac / (1024 ** 2),
                     "score_file_size_bytes": int(out["j_bar"].nbytes + out["score_nominal"].nbytes + out["score_full_H"].nbytes),
                     "finite": finite_values_ok(out),
                 })
