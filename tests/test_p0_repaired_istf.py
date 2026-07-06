@@ -26,16 +26,19 @@ from repaired_istf import (  # noqa: E402
     RepairedISTFConfig,
     adjacency_to_edge_set_local,
     aggregate_window_jacobians,
+    aggregate_window_jacobians_float64,
     canonical_baseline_equivalence_audit,
     canonical_baseline_penalty,
     canonical_metric_adapter,
     deterministic_sample_indices,
     eligible_target_indices,
     evaluate_repaired_model,
+    evaluate_repaired_model_chunked,
     exact_topk_metrics,
     filtered_coordinate_jacobian_for_windows,
     filter_cross_variable_leakage,
     make_cyclic_schedule,
+    raw_chain_jacobian_chunked_aggregate,
     raw_chain_jacobian_for_windows,
     raw_chain_jacobian_penalty,
     schedule_hash,
@@ -104,6 +107,50 @@ def test_evaluation_aggregation_abs_mean_max():
     np.testing.assert_allclose(agg["j_bar"], expected_jbar)
     np.testing.assert_allclose(agg["score_nominal"], expected_jbar[:, :, -2:].max(axis=2))
     np.testing.assert_allclose(agg["score_full_H"], expected_jbar.max(axis=2))
+
+
+def test_chunked_evaluator_parity_includes_frozen_chunk_size_64():
+    x = _x(d=3, t=20, dtype=np.float32)
+    gc = np.zeros((3, 3, 2), dtype=np.float32)
+    gc[1, 0, 0] = 1.0
+    gc[2, 1, 1] = 1.0
+    cfg = _cfg(d=3, lag=2, h=5, dtype="float32")
+    target_indices = eligible_target_indices(T=20, lag=cfg.lag, attribution_horizon=cfg.attribution_horizon)
+    methods = [
+        RawTargetBaselineJRNGC(cfg),
+        CPDepthwiseISTFJRNGC(cfg),
+        FixedResidualFIR3JRNGC(cfg),
+        FixedEMAJRNGC(cfg),
+        RawChainMambaISTFJRNGC(cfg),
+    ]
+    metric_keys = ["auroc", "auprc", "f1_exact_topk", "mcc_exact_topk", "shd_exact_topk", "nshd_exact_topk"]
+    k = int(np.sum(gc.sum(axis=2) > 0))
+    for model in methods:
+        jac, _ = raw_chain_jacobian_for_windows(
+            model,
+            x,
+            target_indices=target_indices,
+            attribution_horizon=cfg.attribution_horizon,
+            create_graph=False,
+        )
+        ref = aggregate_window_jacobians_float64(jac, lag=cfg.lag)
+        ref_edges = topk_edges_exact(ref["score_nominal"], k, exclude_diag=True)
+        ref_metrics = canonical_metric_adapter(gc, ref["score_nominal"])
+        for chunk_size in [1, 4, 32, 64]:
+            got = raw_chain_jacobian_chunked_aggregate(
+                model,
+                x,
+                target_indices=target_indices,
+                attribution_horizon=cfg.attribution_horizon,
+                chunk_size=chunk_size,
+            )
+            assert np.max(np.abs(got["j_bar"] - ref["j_bar"])) < 1e-7
+            assert np.max(np.abs(got["score_nominal"] - ref["score_nominal"])) < 1e-7
+            assert np.max(np.abs(got["score_full_H"] - ref["score_full_H"])) < 1e-7
+            assert topk_edges_exact(got["score_nominal"], k, exclude_diag=True) == ref_edges
+            metrics = canonical_metric_adapter(gc, got["score_nominal"])
+            for key in metric_keys:
+                assert abs(float(metrics[key]) - float(ref_metrics[key])) <= 1e-12, (type(model).__name__, key)
 
 
 def test_topk_orientation_target_source_to_source_target():
@@ -406,6 +453,10 @@ def test_evaluate_repaired_model_basic_outputs_are_finite():
     assert out["score_full_H"].shape == (3, 3)
     assert np.isfinite(out["metrics_nominal"]["auroc"])
     assert np.isfinite(out["eval_raw_prediction_loss"])
+    chunked = evaluate_repaired_model_chunked(model, x, gc, target_indices=[6, 7], attribution_horizon=5, chunk_size=64)
+    assert chunked["score_nominal"].shape == (3, 3)
+    assert chunked["chunked_evaluator"]["chunk_size"] == 64
+    assert np.isfinite(chunked["metrics_nominal"]["auroc"])
 
 
 if __name__ == "__main__":

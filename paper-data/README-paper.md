@@ -192,6 +192,7 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 - Reference expansion is complete as of 2026-07-05: 45 bibitems, selected from verified high-quality/relevant sources (ACM CSUR, Proceedings of the IEEE, ICML, ICLR, NeurIPS, AAAI, PMLR/CLeaR, and recent KBS). The expansion supports the existing ISTF/JRNGC narrative and does not change experiments, figures, numerical results, statistical claims, or conclusion strength.
 - Current KBS compile status after reference expansion: 27 pages, 0 LaTeX errors, 0 undefined references/citations, 0 missing figures, 0 Overfull hbox.
 - Next writing focus: final internal consistency pass across Abstract, Introduction, Related Work, Discussion, Limitations, and Conclusion after the expanded literature positioning.
+- Method-pivot status as of 2026-07-07: KBS text remains frozen while P0 repaired-method readiness is audited locally. P0.3b locks D2 `s0=0.075`, primary checkpoint `500`, CP-depthwise as the only repaired main candidate, FixedFIR3 as matched baseline, FixedEMA as full-H reference, and RawChainMamba as limited diagnostic. Development seed `data_seed=0` remains non-evidentiary and must not be cited as paper performance.
 
 | Section | Status | Notes |
 |---------|--------|-------|

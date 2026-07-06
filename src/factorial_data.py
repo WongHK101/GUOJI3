@@ -19,7 +19,7 @@ FACTORIAL_SETTINGS = {
     "C": {"coeff_scale": 0.22, "noise_scale": 0.25, "regime_shift_strength": 0.60, "nonlinear_strength": 0.50, "nonlinear_scale": 0.50},
     # D2: canonical setting (selected after 2 rounds of pilot calibration)
     # All 4 cells have baseline AUROC in 0.68-0.84 range with summary_max metric.
-    "D2": {"coeff_scale": 0.40, "noise_scale": 0.15, "regime_shift_strength": 0.20, "nonlinear_strength": 0.50, "nonlinear_scale": 0.50},
+    "D2": {"coeff_scale": 0.40, "noise_scale": 0.15, "regime_shift_strength": 0.20, "nonlinear_strength": 0.50, "nonlinear_scale": 0.075},
 }
 
 # 2x2 cell definitions
@@ -178,13 +178,15 @@ def generate_factorial_cell(
 
 def coordinatewise_nonlinearity(pred, beta, s0):
     """Coordinate-wise fixed-scale nonlinear transition."""
-    pred = np.asarray(pred, dtype=np.float64)
+    pred_arr = np.asarray(pred)
+    out_dtype = pred_arr.dtype if np.issubdtype(pred_arr.dtype, np.floating) else np.float64
+    pred = pred_arr.astype(np.float64, copy=False)
     s0 = float(s0)
     if s0 <= 0:
         raise ValueError("nonlinear_scale must be positive")
     beta = float(beta)
     out = (1.0 - beta) * pred + beta * s0 * np.tanh(pred / s0)
-    return out.astype(np.float32)
+    return out.astype(out_dtype, copy=False)
 
 
 def coordinatewise_nonlinearity_derivative(pred, beta, s0):
@@ -198,12 +200,17 @@ def nonlinear_diagnostics(pred_linear, pred_nl, s0):
     pred_nl = np.asarray(pred_nl, dtype=np.float64)
     z = pred_linear / float(s0)
     denom = np.mean(np.abs(pred_linear)) + 1e-12
+    per_variable_relative = np.abs(pred_nl - pred_linear) / (np.abs(pred_linear) + 1e-12)
     return {
         "relative_l1_deviation": float(np.mean(np.abs(pred_nl - pred_linear)) / denom),
         "mean_abs_pre_activation_over_s0": float(np.mean(np.abs(z))),
         "max_abs_pre_activation_over_s0": float(np.max(np.abs(z))),
         "saturated_fraction_abs_z_gt_2": float(np.mean(np.abs(z) > 2.0)),
         "near_identity_fraction_abs_z_lt_0_1": float(np.mean(np.abs(z) < 0.1)),
+        "per_variable_relative_l1_deviation": per_variable_relative.tolist(),
+        "per_variable_abs_pre_activation_over_s0": np.abs(z).tolist(),
+        "per_variable_saturated_fraction_abs_z_gt_2": (np.abs(z) > 2.0).astype(np.float64).tolist(),
+        "per_variable_near_identity_fraction_abs_z_lt_0_1": (np.abs(z) < 0.1).astype(np.float64).tolist(),
     }
 
 
@@ -219,9 +226,17 @@ def summarize_nonlinear_records(records):
     out = {"enabled": True}
     for key in records[0].keys():
         vals = np.asarray([r[key] for r in records], dtype=np.float64)
-        out[f"{key}_mean"] = float(np.mean(vals))
-        out[f"{key}_max"] = float(np.max(vals))
-        out[f"{key}_p95"] = float(np.percentile(vals, 95))
+        if vals.ndim == 1:
+            out[f"{key}_mean"] = float(np.mean(vals))
+            out[f"{key}_max"] = float(np.max(vals))
+            out[f"{key}_p95"] = float(np.percentile(vals, 95))
+        else:
+            out[f"{key}_mean_per_variable"] = np.mean(vals, axis=0).tolist()
+            out[f"{key}_max_per_variable"] = np.max(vals, axis=0).tolist()
+            out[f"{key}_p95_per_variable"] = np.percentile(vals, 95, axis=0).tolist()
+            out[f"{key}_pooled_mean"] = float(np.mean(vals))
+            out[f"{key}_pooled_max"] = float(np.max(vals))
+            out[f"{key}_pooled_p95"] = float(np.percentile(vals, 95))
     return out
 
 
@@ -263,7 +278,11 @@ def audit_transition_jacobian_support(
     times=None,
     eps=1e-10,
 ):
-    """Audit one-step transition Jacobian support against declared GC."""
+    """Audit one-step transition Jacobian support against declared GC.
+
+    The returned fields are intended to be directly usable as pass/fail gates
+    for the P0.3b nonlinear ground-truth support audit.
+    """
     gc_arr = np.asarray(gc).astype(bool)  # (d,d,lag)
     A_t_arr = np.asarray(A_t, dtype=np.float64)  # (T,lag,d,d)
     x_arr = np.asarray(x, dtype=np.float64)
@@ -285,6 +304,10 @@ def audit_transition_jacobian_support(
     linear_alignment = []
     actual_support_any = np.zeros_like(declared, dtype=bool)
     per_time = []
+    declared_values = {tuple(idx): [] for idx in np.argwhere(declared)}
+    ratio_values = []
+    sign_mismatches = []
+    coefficient_crossing_zero_edges = set()
     for t in times:
         history = [x_arr[:, t - k - 1] for k in range(lag)]
         D = transition_jacobian(
@@ -294,6 +317,7 @@ def audit_transition_jacobian_support(
             nonlinear_strength=nonlinear_strength,
             nonlinear_scale=nonlinear_scale,
         )
+        A_as_d = np.transpose(A_t_arr[t], (1, 2, 0))
         actual_support_any |= np.abs(D) > eps
         if np.any(off_support):
             max_off = max(max_off, float(np.max(np.abs(D[off_support]))))
@@ -301,7 +325,17 @@ def audit_transition_jacobian_support(
             max_diag_off = max(max_diag_off, float(np.max(np.abs(D[diag_off_support]))))
         if np.any(declared):
             min_declared = min(min_declared, float(np.min(np.abs(D[declared]))))
-        A_as_d = np.transpose(A_t_arr[t], (1, 2, 0))
+            for edge in declared_values:
+                target, source, k = edge
+                declared_values[edge].append(float(abs(D[target, source, k])))
+                a_val = float(A_as_d[target, source, k])
+                d_val = float(D[target, source, k])
+                if abs(a_val) <= 1e-6:
+                    coefficient_crossing_zero_edges.add(edge)
+                else:
+                    ratio_values.append(abs(d_val / a_val))
+                    if np.sign(d_val) != np.sign(a_val):
+                        sign_mismatches.append((int(target), int(source), int(k), int(t), d_val, a_val))
         if linear or nonlinear_strength <= 0:
             linear_alignment.append(float(np.max(np.abs(D - A_as_d))))
         per_time.append({
@@ -310,17 +344,158 @@ def audit_transition_jacobian_support(
             "off_support_entries": int(np.sum((np.abs(D) > eps) & off_support)),
             "declared_min_abs_derivative": float(np.min(np.abs(D[declared]))) if np.any(declared) else 0.0,
         })
+    edge_medians = {}
+    edge_maxima = {}
+    for edge, values in declared_values.items():
+        arr = np.asarray(values, dtype=np.float64)
+        key = f"{edge[0]}<-{edge[1]}@lag{edge[2]}"
+        edge_medians[key] = float(np.median(arr)) if arr.size else 0.0
+        edge_maxima[key] = float(np.max(arr)) if arr.size else 0.0
+    ratio_arr = np.asarray(ratio_values, dtype=np.float64)
+    ratio_min = float(np.min(ratio_arr)) if ratio_arr.size else 1.0
+    ratio_max = float(np.max(ratio_arr)) if ratio_arr.size else 1.0
+    declared_edge_median_min = float(min(edge_medians.values())) if edge_medians else 0.0
+    declared_edge_max_min = float(min(edge_maxima.values())) if edge_maxima else 0.0
+    support_subset = bool(np.all(~actual_support_any | declared))
+    any_lag_equal = bool(np.array_equal(np.any(actual_support_any, axis=2), np.any(declared, axis=2)))
+    lag_specific_equal = bool(np.array_equal(actual_support_any, declared))
+    off_support_gate = bool(max_off < 1e-8)
+    ratio_gate = bool((len(sign_mismatches) == 0) and ratio_min >= 0.5 - 1e-6 and ratio_max <= 1.0 + 1e-6)
+    edge_strength_gate = bool(declared_edge_median_min > 1e-3 and declared_edge_max_min > 1e-3)
     return {
         "times": [int(t) for t in times],
         "max_abs_off_support_derivative": float(max_off),
         "max_abs_diagonal_off_support_derivative": float(max_diag_off),
-        "actual_support_subset_declared": bool(np.all(~actual_support_any | declared)),
-        "actual_any_lag_support_equals_declared": bool(np.array_equal(np.any(actual_support_any, axis=2), np.any(declared, axis=2))),
-        "actual_lag_specific_support_equals_declared": bool(np.array_equal(actual_support_any, declared)),
+        "actual_support_subset_declared": support_subset,
+        "actual_any_lag_support_equals_declared": any_lag_equal,
+        "actual_lag_specific_support_equals_declared": lag_specific_equal,
         "declared_min_abs_derivative": float(0.0 if np.isinf(min_declared) else min_declared),
         "declared_min_abs_derivative_threshold": 1e-8,
+        "supported_derivative_over_A_min": ratio_min,
+        "supported_derivative_over_A_max": ratio_max,
+        "supported_derivative_over_A_gate": ratio_gate,
+        "supported_sign_mismatch_count": int(len(sign_mismatches)),
+        "supported_sign_mismatches": sign_mismatches[:20],
+        "declared_edge_median_abs_derivative_min": declared_edge_median_min,
+        "declared_edge_max_abs_derivative_min": declared_edge_max_min,
+        "declared_edge_median_abs_derivative": edge_medians,
+        "declared_edge_max_abs_derivative": edge_maxima,
+        "coefficient_crossing_zero_edges": [
+            {"target": int(e[0]), "source": int(e[1]), "lag": int(e[2])}
+            for e in sorted(coefficient_crossing_zero_edges)
+        ],
+        "off_support_gate_passed": off_support_gate,
+        "support_gate_passed": bool(support_subset and any_lag_equal and lag_specific_equal),
+        "declared_edge_strength_gate_passed": edge_strength_gate,
+        "transition_jacobian_gate_passed": bool(
+            off_support_gate
+            and support_subset
+            and any_lag_equal
+            and lag_specific_equal
+            and ratio_gate
+            and edge_strength_gate
+        ),
         "linear_jacobian_A_t_max_abs_diff": float(max(linear_alignment) if linear_alignment else 0.0),
         "per_time": per_time,
+    }
+
+
+def transition_jacobian_fd_spot_check(
+    gc,
+    A_t,
+    x,
+    linear=True,
+    nonlinear_strength=0.0,
+    nonlinear_scale=0.50,
+    times=None,
+    entries_per_time=8,
+    eps=1e-6,
+):
+    """Deterministic central finite-difference spot-check for transition Jacobians."""
+    gc_arr = np.asarray(gc).astype(bool)
+    A_t_arr = np.asarray(A_t, dtype=np.float64)
+    x_arr = np.asarray(x, dtype=np.float64)
+    d, T = x_arr.shape
+    lag = gc_arr.shape[2]
+    if times is None:
+        n_times = min(10, max(1, T - lag))
+        times = np.linspace(lag, T - 1, num=n_times, dtype=int).tolist()
+    times = sorted(set(int(t) for t in times if lag <= int(t) < T))
+    declared = np.argwhere(gc_arr)
+    off_support = np.argwhere(~gc_arr & ~np.eye(d, dtype=bool)[:, :, None])
+    if declared.size == 0:
+        declared = np.empty((0, 3), dtype=int)
+    if off_support.size == 0:
+        off_support = np.empty((0, 3), dtype=int)
+
+    checks = []
+    failures = []
+    max_abs_diff = 0.0
+    max_allowed = 0.0
+    for pos, t in enumerate(times):
+        history = [x_arr[:, t - k - 1].copy() for k in range(lag)]
+        D = transition_jacobian(
+            A_t_arr[t],
+            history,
+            linear=linear,
+            nonlinear_strength=nonlinear_strength,
+            nonlinear_scale=nonlinear_scale,
+        )
+        candidates = []
+        half = max(1, entries_per_time // 2)
+        for arr, n_take in [(declared, half), (off_support, entries_per_time - half)]:
+            if len(arr) == 0:
+                continue
+            for j in range(n_take):
+                candidates.append(tuple(int(v) for v in arr[(pos * n_take + j) % len(arr)]))
+        for target, source, lag_pos in candidates:
+            h_plus = [h.copy() for h in history]
+            h_minus = [h.copy() for h in history]
+            h_plus[lag_pos][source] += eps
+            h_minus[lag_pos][source] -= eps
+            f_plus = deterministic_transition(
+                A_t_arr[t],
+                h_plus,
+                linear=linear,
+                nonlinear_strength=nonlinear_strength,
+                nonlinear_scale=nonlinear_scale,
+            )[target]
+            f_minus = deterministic_transition(
+                A_t_arr[t],
+                h_minus,
+                linear=linear,
+                nonlinear_strength=nonlinear_strength,
+                nonlinear_scale=nonlinear_scale,
+            )[target]
+            fd = (f_plus - f_minus) / (2.0 * eps)
+            auto = float(D[target, source, lag_pos])
+            allowed = 1e-6 + 1e-3 * max(abs(fd), abs(auto))
+            diff = abs(fd - auto)
+            max_abs_diff = max(max_abs_diff, float(diff))
+            max_allowed = max(max_allowed, float(allowed))
+            row = {
+                "time": int(t),
+                "target": int(target),
+                "source": int(source),
+                "lag": int(lag_pos),
+                "fd": float(fd),
+                "analytic": auto,
+                "abs_diff": float(diff),
+                "allowed": float(allowed),
+                "passed": bool(diff <= allowed),
+            }
+            checks.append(row)
+            if not row["passed"]:
+                failures.append(row)
+    return {
+        "times": [int(t) for t in times],
+        "n_checks": int(len(checks)),
+        "entries_per_time": int(entries_per_time),
+        "max_abs_diff": max_abs_diff,
+        "max_allowed_tolerance": max_allowed,
+        "passed": bool(len(failures) == 0 and len(checks) > 0),
+        "failures": failures[:20],
+        "checks": checks,
     }
 
 

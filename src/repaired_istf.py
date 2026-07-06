@@ -536,6 +536,91 @@ def aggregate_window_jacobians(jac_windows: torch.Tensor, lag: int) -> Dict[str,
     }
 
 
+def aggregate_window_jacobians_float64(jac_windows: torch.Tensor, lag: int) -> Dict[str, np.ndarray]:
+    """Float64 reference aggregation: abs -> mean over windows -> max."""
+    if jac_windows.shape[0] == 0:
+        raise ValueError("jac_windows must contain at least one window")
+    jbar = torch.sum(torch.abs(jac_windows).to(torch.float64), dim=0) / float(jac_windows.shape[0])
+    score_nominal = torch.max(jbar[:, :, -lag:], dim=2).values
+    score_full_h = torch.max(jbar, dim=2).values
+    return {
+        "j_bar": jbar.detach().cpu().numpy(),
+        "score_nominal": score_nominal.detach().cpu().numpy(),
+        "score_full_H": score_full_h.detach().cpu().numpy(),
+    }
+
+
+def raw_chain_jacobian_chunked_aggregate(
+    model: RepairedBaseJRNGC,
+    x_full,
+    target_indices: Sequence[int],
+    attribution_horizon: Optional[int] = None,
+    chunk_size: int = 64,
+    output_targets: Optional[Sequence[int]] = None,
+) -> Dict[str, object]:
+    """Streaming exact raw-chain attribution with float64 accumulation.
+
+    For each chunk this computes per-window raw-chain Jacobians, applies abs(J),
+    accumulates the window sum in float64, and divides only after all windows
+    have been processed. This is the frozen P0.3b evaluation contract.
+    """
+    H = attribution_horizon or model.attribution_horizon
+    idx = [int(i) for i in target_indices]
+    if not idx:
+        raise ValueError("target_indices cannot be empty")
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be positive")
+    device = next(model.parameters()).device
+    accumulator = torch.zeros((model.d, model.d, H), device=device, dtype=torch.float64)
+    temporal_vals: List[float] = []
+    chunk_records = []
+    for start in range(0, len(idx), int(chunk_size)):
+        chunk = idx[start:start + int(chunk_size)]
+        jac, _ = raw_chain_jacobian_for_windows(
+            model,
+            x_full,
+            target_indices=chunk,
+            attribution_horizon=H,
+            create_graph=False,
+            output_targets=output_targets,
+            full_prefix=False,
+        )
+        abs_jac = torch.abs(jac).to(torch.float64)
+        accumulator = accumulator + torch.sum(abs_jac, dim=0)
+        mass = torch.sum(abs_jac, dim=(1, 2, 3))
+        outside = torch.sum(abs_jac[:, :, :, :-model.lag], dim=(1, 2, 3))
+        vals = (outside / (mass + EPS)).detach().cpu().numpy()
+        temporal_vals.extend(float(v) for v in vals)
+        chunk_records.append({
+            "start": int(start),
+            "stop": int(start + len(chunk)),
+            "window_count": int(len(chunk)),
+            "first_target_index": int(chunk[0]),
+            "last_target_index": int(chunk[-1]),
+        })
+    jbar = accumulator / float(len(idx))
+    score_nominal = torch.max(jbar[:, :, -model.lag:], dim=2).values
+    score_full_h = torch.max(jbar, dim=2).values
+    vals_np = np.asarray(temporal_vals, dtype=np.float64)
+    return {
+        "j_bar": jbar.detach().cpu().numpy(),
+        "score_nominal": score_nominal.detach().cpu().numpy(),
+        "score_full_H": score_full_h.detach().cpu().numpy(),
+        "temporal_horizon_mass": {
+            "mean": float(np.mean(vals_np)),
+            "median": float(np.median(vals_np)),
+            "p95": float(np.percentile(vals_np, 95)),
+            "max": float(np.max(vals_np)),
+            "per_window": [float(v) for v in vals_np],
+        },
+        "chunk_size": int(chunk_size),
+        "window_count": int(len(idx)),
+        "attribution_horizon": int(H),
+        "accumulator_dtype": "float64",
+        "chunk_records": chunk_records,
+    }
+
+
 def filtered_coordinate_jacobian_for_windows(
     model: RepairedBaseJRNGC,
     x_full,
@@ -851,6 +936,61 @@ def evaluate_repaired_model(
     if include_filtered_coordinate:
         filt = filtered_coordinate_jacobian_for_windows(model, x_full, target_indices, create_graph=False)
         fagg = aggregate_window_jacobians(filt, model.lag)
+        out["filtered_coordinate_j_bar"] = fagg["j_bar"]
+        out["filtered_coordinate_score_nominal"] = fagg["score_nominal"]
+    return out
+
+
+def evaluate_repaired_model_chunked(
+    model: RepairedBaseJRNGC,
+    x_full,
+    gc_true,
+    target_indices: Sequence[int],
+    attribution_horizon: Optional[int] = None,
+    chunk_size: int = 64,
+    include_filtered_coordinate: bool = True,
+    prediction_target_indices: Optional[Sequence[int]] = None,
+    leakage_target_indices: Optional[Sequence[int]] = None,
+) -> Dict[str, object]:
+    """Evaluate with the P0.3b chunked full-window raw-chain contract."""
+    H = attribution_horizon or model.attribution_horizon
+    with torch.enable_grad():
+        agg = raw_chain_jacobian_chunked_aggregate(
+            model,
+            x_full,
+            target_indices=target_indices,
+            attribution_horizon=H,
+            chunk_size=chunk_size,
+            output_targets=None,
+        )
+    nominal_metrics = graph_recovery_metrics(agg["score_nominal"], gc_true)
+    full_h_metrics = graph_recovery_metrics(agg["score_full_H"], gc_true)
+    pred_idx = prediction_target_indices
+    if pred_idx is None:
+        pred_idx = eligible_target_indices(np.asarray(x_full).shape[1], model.lag, model.attribution_horizon)
+    leak_idx = leakage_target_indices if leakage_target_indices is not None else target_indices
+    pred_losses = model.prediction_losses(x_full, target_indices=pred_idx)
+    out: Dict[str, object] = {
+        "raw_chain_j_bar": agg["j_bar"],
+        "score_nominal": agg["score_nominal"],
+        "score_full_H": agg["score_full_H"],
+        "metrics_nominal": nominal_metrics,
+        "metrics_full_H": full_h_metrics,
+        "eval_raw_prediction_loss": float(pred_losses["raw"].detach().cpu()),
+        "eval_filtered_prediction_loss": float(pred_losses["filtered"].detach().cpu()),
+        "temporal_horizon_mass": agg["temporal_horizon_mass"],
+        "cross_variable_leakage": filter_cross_variable_leakage(model, x_full, leak_idx, H),
+        "filter_diagnostics": model.filter_diagnostics(x_full, target_indices=pred_idx),
+        "chunked_evaluator": {
+            "chunk_size": int(chunk_size),
+            "window_count": int(agg["window_count"]),
+            "attribution_horizon": int(H),
+            "accumulator_dtype": "float64",
+        },
+    }
+    if include_filtered_coordinate:
+        filt = filtered_coordinate_jacobian_for_windows(model, x_full, target_indices, create_graph=False)
+        fagg = aggregate_window_jacobians_float64(filt, model.lag)
         out["filtered_coordinate_j_bar"] = fagg["j_bar"]
         out["filtered_coordinate_score_nominal"] = fagg["score_nominal"]
     return out
