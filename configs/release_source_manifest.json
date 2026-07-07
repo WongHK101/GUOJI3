@@ -1,15 +1,16 @@
 {
   "files": {
+    ".gitattributes": "8aab71513bed236b9aa44401c37a517334edcbb9210ae9065f7e07cb38f3d378",
     ".gitignore": "e37380ec43019566ffe96a2039bd4c6162c736f20854e3b3d7c3e302e42b1b45",
-    "configs/approved_stage1a_frozen_config_sha256.txt": "35c61717de22e17ca949747fbba778e2a17e7ee596f9f00ad015dda4f3223839",
-    "configs/approved_stage1a_gpu_infrastructure_smoke_config_sha256.txt": "12138b8ef8cf138bf2d0e75cfe0942a0650c3e80fdf7b50dd3634354deaeb3ac",
-    "configs/approved_stage1a_smoke_config_sha256.txt": "03a0dca37001743af9719f56ec218535d6ae519123451ad793b7b702b54bff6e",
+    "configs/approved_stage1a_frozen_config_sha256.txt": "22596ac56c8f27350bebd6c9cb71353af27d24b273f83709e5abb1b8dfdc772c",
+    "configs/approved_stage1a_gpu_infrastructure_smoke_config_sha256.txt": "4af62791651d30204a7f9b3150200879ccf8ddf2122cb674e6493eb660d80a54",
+    "configs/approved_stage1a_smoke_config_sha256.txt": "157d4a4404d5bf36bcb10baa9b23e29271c09509004c99abb3f64be6b1e0b8f6",
     "configs/stage1a_frozen_config.json": "f777c6509839a40acd029e36d7b6a280d246c7774e89084efb7fe3fdc5eeee2f",
     "configs/stage1a_gpu_infrastructure_smoke_config.json": "9fe56feab725671bb5de3e222e28592c93c18d29caeb24fab7133f72b508c325",
     "configs/stage1a_smoke_config.json": "9ca04db5065364b8b4d322a462b95e120f17cc4254cba3c88209282c4eec188a",
     "experiments/aggregate_stage1a.py": "91b46c580d5004250bf0370ebfc4490f446a51522b348c65f73f5f89a321423d",
     "experiments/compare_stage1a_determinism.py": "93688385bb62aaf32629293ee3181db41a546812dfa93570e6f85d0477f222c3",
-    "experiments/release_lock.py": "b3d8c228bd412444245da833c8c607c0e3d6084ec206bf63eff6f0bc64565ee9",
+    "experiments/release_lock.py": "c0336b44c3e671a0e78772d9e71681b632a71fa50d2c0c07fc33925aad811b0d",
     "experiments/stage1a_gpu_benchmark.py": "100b1c891aeadd4be07133f413c9dd634256574164e11a7188c428c86dcc32d9",
     "experiments/validate_gpu_infrastructure_smoke.py": "be47e88a33036aa3f03d8f437acc5ca1e38afa3a1341f776d6ec7229011c29d9",
     "src/factorial_data.py": "38fe5331dd708d43d0bcfdf0498d3b36ef3073a880b2302a56e4242ef56313ba",
@@ -17,8 +18,10 @@
     "src/minimal_mamba.py": "6aae1f47059f922c289fc1b37c4c4e028e3425e94dd430f469db2151888d1b07",
     "src/repaired_istf.py": "9213d3aeec1bf627724e73322630c54fa88caea073e0f128066e42bb6abcb92b"
   },
-  "generated_at": "2026-07-07 16:26:03",
+  "generated_at": "2026-07-07 16:32:03",
+  "hash_scope": "working-tree file bytes with LF-normalized release text files enforced by .gitattributes",
   "key_source_files": [
+    ".gitattributes",
     ".gitignore",
     "experiments/stage1a_gpu_benchmark.py",
     "experiments/aggregate_stage1a.py",

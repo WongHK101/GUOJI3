@@ -21,6 +21,7 @@ RELEASE_SOURCE_MANIFEST_PATH = PROJECT_ROOT / "configs" / "release_source_manife
 
 
 KEY_SOURCE_FILES = [
+    ".gitattributes",
     ".gitignore",
     "experiments/stage1a_gpu_benchmark.py",
     "experiments/aggregate_stage1a.py",
