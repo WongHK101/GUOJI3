@@ -1,5 +1,5 @@
 {
-  "config_name": "stage1a_cpu_smoke_config",
+  "config_name": "stage1a_gpu_infrastructure_smoke_config",
   "config_version": "p0.3d_v1",
   "formal_result": false,
   "frozen": true,
@@ -53,7 +53,14 @@
   },
   "methods": {
     "formal": ["baseline", "cp_depthwise", "fixed_fir3", "fixed_ema"],
-    "limited_ablation": []
+    "limited_ablation": [
+      {
+        "method": "raw_chain_mamba",
+        "data_seeds": [1],
+        "train_seeds": [0],
+        "cells": ["NS+Nonlinear"]
+      }
+    ]
   },
   "training": {
     "max_iter": 20,
@@ -114,7 +121,7 @@
     "full_window_chunked_exact": true,
     "accumulator_dtype": "float64",
     "ema_metric_track": "full_H_reference",
-    "stage1a_significance_policy": "smoke only; formal_result=false"
+    "stage1a_significance_policy": "gpu infrastructure smoke only; formal_result=false"
   },
   "semantic_audit": {
     "audit_window_seed": 9301,
@@ -161,13 +168,13 @@
   },
   "run_count": {
     "formal": 4,
-    "limited_ablation": 0,
-    "total": 4
+    "limited_ablation": 1,
+    "total": 5
   },
   "gpu_budget_estimate": {
-    "expected_run_count": 100,
+    "expected_run_count": 5,
     "rough_gpu_hours_per_formal_run_range": [0.25, 1.0],
-    "rough_total_gpu_hours_range": [25.0, 100.0],
+    "rough_total_gpu_hours_range": [1.25, 5.0],
     "requires_pre_full_matrix_gpu_infrastructure_smoke": true
   }
 }

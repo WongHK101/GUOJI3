@@ -10,11 +10,13 @@ Aggregation order is preregistered:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import math
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Sequence
+from typing import Dict, List, Optional, Sequence
 
 import numpy as np
 
@@ -54,6 +56,11 @@ def save_json(path: Path, payload) -> None:
     tmp.replace(path)
 
 
+def canonical_config_hash(config: Dict[str, object]) -> str:
+    payload = json.dumps(config, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
 def metric_track_for_method(method: str) -> str:
     return "full_H" if method == "fixed_ema" else "nominal"
 
@@ -67,29 +74,177 @@ def load_rows_from_stage1_root(root: Path) -> List[Dict[str, object]]:
         run_dir = Path(run["output_path"])
         status_path = run_dir / "status.json"
         metrics_path = run_dir / "metrics.json"
-        if not status_path.exists() or not metrics_path.exists():
-            continue
-        status = load_json(status_path)
-        if status.get("status") != "complete":
-            continue
-        metrics_payload = load_json(metrics_path)
+        diagnostics_path = run_dir / "diagnostics.json"
+        status = load_json(status_path) if status_path.exists() else {}
+        metrics_payload = load_json(metrics_path) if metrics_path.exists() else {}
+        diagnostics_payload = load_json(diagnostics_path) if diagnostics_path.exists() else {}
         track = metric_track_for_method(run["method"])
         key = "metrics_full_H" if track == "full_H" else "metrics_nominal"
-        metrics = metrics_payload[key]
         rows.append({
             "cell": run["cell"],
             "method": run["method"],
             "data_seed": int(run["data_seed"]),
             "train_seed": int(run["train_seed"]),
-            "metric_track": track,
-            "metrics": metrics,
+            "metric_track": metrics_payload.get("metric_track_for_aggregation", track),
+            "metrics": metrics_payload.get(key, {}),
+            "status": status.get("status"),
+            "formal_result": status.get("formal_result"),
+            "config_sha256": status.get("config_sha256"),
+            "no_nan_inf": status.get("no_nan_inf"),
+            "run_dir": str(run_dir),
+            "semantic_audit": diagnostics_payload.get("semantic_audit", {}),
             "run_id": run["run_id"],
         })
     return rows
 
 
+def root_config_hash(root: Path) -> Optional[str]:
+    path = root / "config_sha256.txt"
+    if path.exists():
+        return path.read_text(encoding="utf-8").strip()
+    manifest = load_json(root / "run_manifest.json")
+    return manifest.get("config_sha256")
+
+
 def _mean(values: Sequence[float]) -> float:
     return float(np.mean(np.asarray(values, dtype=np.float64)))
+
+
+def _is_finite_number(value) -> bool:
+    try:
+        return math.isfinite(float(value))
+    except Exception:
+        return False
+
+
+def validate_completeness(
+    rows: Sequence[Dict[str, object]],
+    config: Dict[str, object],
+    expected_config_hash: str,
+) -> Dict[str, object]:
+    cells = list(config["data"]["cells"])
+    methods = list(config["methods"]["formal"])
+    data_seeds = [int(s) for s in config["data"]["data_seeds"]]
+    train_seeds = [int(s) for s in config["data"]["train_seeds"]]
+    expected_total = len(cells) * len(methods) * len(data_seeds) * len(train_seeds)
+    failures: List[Dict[str, object]] = []
+    seen: Dict[tuple, Dict[str, object]] = {}
+    for row in rows:
+        key = (row.get("cell"), row.get("method"), int(row.get("data_seed")), int(row.get("train_seed")))
+        if key in seen:
+            failures.append({"type": "duplicate_run", "key": list(key), "run_id": row.get("run_id")})
+            continue
+        seen[key] = row
+        method = str(row.get("method"))
+        if row.get("status") != "complete":
+            failures.append({"type": "status_not_complete", "key": list(key), "status": row.get("status")})
+        if row.get("formal_result") is not True:
+            failures.append({"type": "formal_result_not_true", "key": list(key), "formal_result": row.get("formal_result")})
+        if row.get("config_sha256") != expected_config_hash:
+            failures.append({
+                "type": "config_hash_mismatch",
+                "key": list(key),
+                "config_sha256": row.get("config_sha256"),
+                "expected": expected_config_hash,
+            })
+        expected_track = metric_track_for_method(method)
+        if row.get("metric_track") != expected_track:
+            failures.append({
+                "type": "metric_track_mismatch",
+                "key": list(key),
+                "metric_track": row.get("metric_track"),
+                "expected": expected_track,
+            })
+        metrics = row.get("metrics") or {}
+        for metric in ["auroc", "auprc", "mcc_exact_topk", "f1_exact_topk", "shd_exact_topk", "nshd_exact_topk"]:
+            if metric not in metrics or not _is_finite_number(metrics[metric]):
+                failures.append({"type": "missing_or_nonfinite_metric", "key": list(key), "metric": metric})
+    for cell in cells:
+        for method in methods:
+            present_data = set()
+            for data_seed in data_seeds:
+                present_train = {
+                    int(k[3]) for k in seen
+                    if k[0] == cell and k[1] == method and int(k[2]) == data_seed
+                }
+                if present_train != set(train_seeds):
+                    failures.append({
+                        "type": "train_seed_set_mismatch",
+                        "cell": cell,
+                        "method": method,
+                        "data_seed": data_seed,
+                        "present_train_seeds": sorted(present_train),
+                        "expected_train_seeds": train_seeds,
+                    })
+                if present_train:
+                    present_data.add(data_seed)
+            if present_data != set(data_seeds):
+                failures.append({
+                    "type": "data_seed_set_mismatch",
+                    "cell": cell,
+                    "method": method,
+                    "present_data_seeds": sorted(present_data),
+                    "expected_data_seeds": data_seeds,
+                })
+    passed = len(failures) == 0 and len(rows) == expected_total
+    if len(rows) != expected_total:
+        failures.append({"type": "row_count_mismatch", "rows": len(rows), "expected": expected_total})
+        passed = False
+    return {
+        "passed": bool(passed),
+        "expected_formal_run_count": expected_total,
+        "observed_formal_row_count": len(rows),
+        "expected_cells": cells,
+        "expected_methods": methods,
+        "expected_data_seeds": data_seeds,
+        "expected_train_seeds": train_seeds,
+        "expected_config_sha256": expected_config_hash,
+        "failures": failures,
+    }
+
+
+def evaluate_semantic_gates(rows: Sequence[Dict[str, object]], config: Dict[str, object]) -> Dict[str, object]:
+    failures: List[Dict[str, object]] = []
+    by_method = defaultdict(lambda: {"passed": 0, "failed": 0})
+    for row in rows:
+        method = str(row["method"])
+        audit = row.get("semantic_audit") or {}
+        if method == "baseline":
+            continue
+        required = method in {"cp_depthwise", "fixed_fir3", "fixed_ema"}
+        if not audit:
+            if required:
+                failures.append({"type": "missing_semantic_audit", "row": _row_id(row)})
+                by_method[method]["failed"] += 1
+            continue
+        if bool(audit.get("passed")):
+            by_method[method]["passed"] += 1
+        else:
+            by_method[method]["failed"] += 1
+            failures.append({
+                "type": "semantic_gate_failed",
+                "row": _row_id(row),
+                "failures": audit.get("failures", []),
+            })
+        if method == "fixed_ema" and audit.get("metric_track_required") != "full_H":
+            failures.append({"type": "ema_missing_full_H_track_marker", "row": _row_id(row)})
+    cp_failures = [f for f in failures if f.get("row", {}).get("method") == "cp_depthwise"]
+    return {
+        "passed": len(failures) == 0,
+        "by_method": dict(by_method),
+        "failures": failures,
+        "cp_failed_runs": cp_failures,
+    }
+
+
+def _row_id(row: Dict[str, object]) -> Dict[str, object]:
+    return {
+        "cell": row.get("cell"),
+        "method": row.get("method"),
+        "data_seed": row.get("data_seed"),
+        "train_seed": row.get("train_seed"),
+        "run_id": row.get("run_id"),
+    }
 
 
 def average_train_seeds(rows: Sequence[Dict[str, object]]) -> Dict[str, object]:
@@ -180,7 +335,12 @@ def _cell_passes_delta_gate(effect: Dict[str, object], gate: Dict[str, object]) 
     )
 
 
-def evaluate_go_no_go(effects: Dict[str, object], config: Dict[str, object]) -> Dict[str, object]:
+def evaluate_go_no_go(
+    effects: Dict[str, object],
+    config: Dict[str, object],
+    completeness: Optional[Dict[str, object]] = None,
+    semantic: Optional[Dict[str, object]] = None,
+) -> Dict[str, object]:
     gates_cfg = config["stage1a_go_no_go_gates"]
     cp_gate_cfg = gates_cfg["cp_vs_baseline"]
     cp_cell_gate = {
@@ -234,9 +394,15 @@ def evaluate_go_no_go(effects: Dict[str, object], config: Dict[str, object]) -> 
         and ema_noninferior_all
     )
 
-    final_go = bool(cp_vs_baseline_pass and fixed_fir3_novelty_pass and not ema_reference_dominance_no_go)
+    performance_go = bool(cp_vs_baseline_pass and fixed_fir3_novelty_pass and not ema_reference_dominance_no_go)
+    completeness_pass = True if completeness is None else bool(completeness.get("passed"))
+    semantic_pass = True if semantic is None else bool(semantic.get("passed"))
+    final_go = bool(completeness_pass and semantic_pass and performance_go)
     return {
         "final_go": final_go,
+        "performance_go": performance_go,
+        "completeness_passed": completeness_pass,
+        "semantic_passed": semantic_pass,
         "stage1a_is_effect_size_triage_only": True,
         "no_strong_n3_significance_claim": True,
         "cp_vs_baseline": {
@@ -258,12 +424,29 @@ def evaluate_go_no_go(effects: Dict[str, object], config: Dict[str, object]) -> 
     }
 
 
-def aggregate(rows: Sequence[Dict[str, object]], config: Dict[str, object]) -> Dict[str, object]:
+def aggregate(
+    rows: Sequence[Dict[str, object]],
+    config: Dict[str, object],
+    expected_config_hash: Optional[str] = None,
+) -> Dict[str, object]:
+    if expected_config_hash is None:
+        expected_config_hash = canonical_config_hash(config)
+    completeness = validate_completeness(rows, config, expected_config_hash)
+    if not completeness["passed"]:
+        return {
+            "formal_result": bool(config["formal_result"]),
+            "aggregation_status": "failed_completeness",
+            "completeness_gate": completeness,
+        }
+    semantic = evaluate_semantic_gates(rows, config)
     averaged = average_train_seeds(rows)
     effects = compute_paired_effects(averaged, config)
-    gates = evaluate_go_no_go(effects, config)
+    gates = evaluate_go_no_go(effects, config, completeness=completeness, semantic=semantic)
     return {
         "formal_result": bool(config["formal_result"]),
+        "aggregation_status": "complete",
+        "completeness_gate": completeness,
+        "semantic_gate": semantic,
         "averaged_by_train_seed": averaged,
         "paired_effects_by_data_seed": effects,
         "go_no_go": gates,
@@ -276,17 +459,39 @@ def main() -> int:
     if bool(config.get("formal_result")) is False:
         raise ValueError("Aggregation is intended for formal Stage 1a results; smoke config is not accepted.")
     if args.results_json:
-        rows = load_json(Path(args.results_json))["rows"]
+        payload = load_json(Path(args.results_json))
+        rows = payload["rows"]
+        expected_hash = payload.get("root_config_sha256") or canonical_config_hash(config)
     elif args.stage1_root:
-        rows = load_rows_from_stage1_root(Path(args.stage1_root))
+        stage_root = Path(args.stage1_root)
+        rows = load_rows_from_stage1_root(stage_root)
+        expected_hash = root_config_hash(stage_root) or canonical_config_hash(config)
     else:
         raise ValueError("Either --stage1-root or --results-json is required")
-    out = aggregate(rows, config)
+    completeness = validate_completeness(rows, config, expected_hash)
+    completeness_path = Path(args.output).with_name("completeness_report.json")
+    save_json(completeness_path, completeness)
+    if not completeness["passed"]:
+        out = {
+            "formal_result": True,
+            "aggregation_status": "failed_completeness",
+            "completeness_gate": completeness,
+        }
+        save_json(Path(args.output), out)
+        print(json.dumps({
+            "output": args.output,
+            "completeness_report": str(completeness_path),
+            "rows": len(rows),
+            "aggregation_status": "failed_completeness",
+        }, indent=2))
+        return 1
+    out = aggregate(rows, config, expected_config_hash=expected_hash)
     save_json(Path(args.output), out)
     print(json.dumps({
         "output": args.output,
         "rows": len(rows),
         "final_go": out["go_no_go"]["final_go"],
+        "semantic_passed": out["semantic_gate"]["passed"],
     }, indent=2))
     return 0
 

@@ -17,7 +17,7 @@ import sys
 import time
 from dataclasses import asdict
 from pathlib import Path
-from typing import Dict, List, Sequence
+from typing import Dict, List, Optional, Sequence
 
 import numpy as np
 import torch
@@ -29,26 +29,23 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from factorial_data import FACTORIAL_CELLS, FACTORIAL_SETTINGS, generate_factorial_cell  # noqa: E402
+from minimal_mamba import MambaBlock  # noqa: E402
 from repaired_istf import (  # noqa: E402
     RepairedISTFConfig,
+    deterministic_sample_indices,
     eligible_target_indices,
     evaluate_repaired_model_chunked,
     finite_values_ok,
+    horizon_sensitivity_audit,
     instantiate_repaired_method,
     make_cyclic_schedule,
     model_metadata,
+    raw_chain_jacobian_for_windows,
     schedule_hash,
 )
 
 
 CELL_FLAGS = {name: (stationary, linear) for name, stationary, linear in FACTORIAL_CELLS}
-METHOD_OFFSETS = {
-    "baseline": 0,
-    "cp_depthwise": 1,
-    "fixed_fir3": 2,
-    "fixed_ema": 3,
-    "raw_chain_mamba": 4,
-}
 FORMAL_METHOD_LABELS = {
     "baseline": "Baseline",
     "cp_depthwise": "CP-depthwise",
@@ -56,6 +53,12 @@ FORMAL_METHOD_LABELS = {
     "fixed_ema": "FixedEMA",
     "raw_chain_mamba": "RawChainMamba",
 }
+APPROVED_CONFIG_SHA_FILES = {
+    "stage1a_frozen_config": PROJECT_ROOT / "configs" / "approved_stage1a_frozen_config_sha256.txt",
+    "stage1a_cpu_smoke_config": PROJECT_ROOT / "configs" / "approved_stage1a_smoke_config_sha256.txt",
+    "stage1a_gpu_infrastructure_smoke_config": PROJECT_ROOT / "configs" / "approved_stage1a_gpu_infrastructure_smoke_config_sha256.txt",
+}
+PREDICTOR_PREFIXES = ("inputgate.", "outputgate.", "encoders.")
 
 
 def parse_args() -> argparse.Namespace:
@@ -102,6 +105,16 @@ def atomic_torch_save(path: Path, payload: object) -> None:
 def canonical_config_hash(config: Dict[str, object]) -> str:
     payload = json.dumps(config, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
+
+
+def file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def read_approved_sha(path: Path) -> str:
+    if not path.exists():
+        raise ValueError(f"Approved config SHA file is missing: {path}")
+    return path.read_text(encoding="utf-8").strip().split()[0].lower()
 
 
 def git_commit_hash() -> str:
@@ -165,15 +178,26 @@ def require_equal(config: Dict[str, object], dotted: str, expected) -> None:
         raise ValueError(f"Frozen config mismatch: {dotted}={actual!r}, expected {expected!r}")
 
 
-def validate_config(config: Dict[str, object], smoke: bool) -> None:
+def validate_config(config: Dict[str, object], smoke: bool, config_path: Optional[Path] = None) -> None:
     required = [
         "config_name", "config_version", "formal_result", "frozen", "data", "model",
         "methods", "training", "target_windows", "attribution", "evaluation",
-        "stage1a_go_no_go_gates", "run_count", "gpu_budget_estimate",
+        "semantic_audit", "stage1a_go_no_go_gates", "run_count", "gpu_budget_estimate",
     ]
     missing = [key for key in required if key not in config]
     if missing:
         raise ValueError(f"Config missing required keys: {missing}")
+    if config_path is not None:
+        name = str(config.get("config_name"))
+        approved_path = APPROVED_CONFIG_SHA_FILES.get(name)
+        if approved_path is None:
+            raise ValueError(f"No approved SHA whitelist entry for config_name={name!r}")
+        actual_sha = file_sha256(config_path)
+        approved_sha = read_approved_sha(approved_path)
+        if actual_sha.lower() != approved_sha:
+            raise ValueError(
+                f"Frozen config SHA mismatch for {name}: actual {actual_sha}, approved {approved_sha}"
+            )
     if config["frozen"] is not True:
         raise ValueError("Config must have frozen=true")
     if bool(config["formal_result"]) == bool(smoke):
@@ -206,7 +230,14 @@ def validate_config(config: Dict[str, object], smoke: bool) -> None:
         require_equal(config, "data.cells", ["NS+Nonlinear"])
         require_equal(config, "data.data_seeds", [1])
         require_equal(config, "data.train_seeds", [0])
-        require_equal(config, "run_count.total", 4)
+        if config["config_name"] == "stage1a_gpu_infrastructure_smoke_config":
+            require_equal(config, "run_count.formal", 4)
+            require_equal(config, "run_count.limited_ablation", 1)
+            require_equal(config, "run_count.total", 5)
+        else:
+            require_equal(config, "run_count.formal", 4)
+            require_equal(config, "run_count.limited_ablation", 0)
+            require_equal(config, "run_count.total", 4)
     else:
         require_equal(config, "training.max_iter", 500)
         require_equal(config, "training.primary_checkpoint", 500)
@@ -214,6 +245,11 @@ def validate_config(config: Dict[str, object], smoke: bool) -> None:
         require_equal(config, "data.data_seeds", [1, 2, 3])
         require_equal(config, "data.train_seeds", [0, 1])
         require_equal(config, "run_count.total", 100)
+    require_equal(config, "training.seed_rules.predictor_seed", "100000 + 1000*data_seed + 100*train_seed")
+    require_equal(config, "training.seed_rules.raw_chain_mamba_filter_seed", "200000 + 1000*data_seed + 100*train_seed")
+    require_equal(config, "semantic_audit.audit_window_count", 32)
+    require_equal(config, "semantic_audit.audit_window_seed", 9301)
+    require_equal(config, "semantic_audit.audit_window_min_target", 64)
     d2 = FACTORIAL_SETTINGS["D2"]
     if d2["nonlinear_strength"] != config["data"]["beta"] or d2["nonlinear_scale"] != config["data"]["s0"]:  # type: ignore[index]
         raise ValueError("Local FACTORIAL_SETTINGS['D2'] no longer matches frozen config beta/s0")
@@ -310,8 +346,62 @@ def schedule_seed(data_seed: int, train_seed: int) -> int:
     return 7101 + 1000 * int(data_seed) + int(train_seed)
 
 
-def torch_seed(method: str, data_seed: int, train_seed: int) -> int:
-    return 100000 + 1000 * int(data_seed) + 100 * int(train_seed) + METHOD_OFFSETS[method]
+def predictor_seed(data_seed: int, train_seed: int) -> int:
+    return 100000 + 1000 * int(data_seed) + 100 * int(train_seed)
+
+
+def raw_chain_mamba_filter_seed(data_seed: int, train_seed: int) -> int:
+    return 200000 + 1000 * int(data_seed) + 100 * int(train_seed)
+
+
+def configure_torch_determinism(seed: int, device: torch.device) -> Dict[str, object]:
+    torch.manual_seed(int(seed))
+    if device.type == "cuda":
+        torch.cuda.manual_seed_all(int(seed))
+        torch.cuda.reset_peak_memory_stats(device)
+    torch.use_deterministic_algorithms(True)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    return {
+        "seed": int(seed),
+        "torch_use_deterministic_algorithms": bool(torch.are_deterministic_algorithms_enabled()),
+        "cudnn_deterministic": bool(torch.backends.cudnn.deterministic),
+        "cudnn_benchmark": bool(torch.backends.cudnn.benchmark),
+        "cuda_manual_seed_all": bool(device.type == "cuda"),
+    }
+
+
+def predictor_state_dict(model) -> Dict[str, torch.Tensor]:
+    return {
+        key: tensor.detach().cpu().clone()
+        for key, tensor in model.state_dict().items()
+        if key.startswith(PREDICTOR_PREFIXES)
+    }
+
+
+def instantiate_paired_method(
+    method: str,
+    cfg: RepairedISTFConfig,
+    data_seed: int,
+    train_seed: int,
+) -> tuple[torch.nn.Module, Dict[str, Optional[int]]]:
+    p_seed = predictor_seed(data_seed, train_seed)
+    torch.manual_seed(p_seed)
+    model = instantiate_repaired_method(method, cfg)
+    seeds: Dict[str, Optional[int]] = {"predictor_seed": p_seed, "filter_seed": None}
+    if method == "raw_chain_mamba":
+        f_seed = raw_chain_mamba_filter_seed(data_seed, train_seed)
+        torch.manual_seed(f_seed)
+        dtype = next(model.parameters()).dtype
+        model.filter = MambaBlock(
+            d_model=cfg.d,
+            d_state=cfg.d_state,
+            d_conv=cfg.mamba_d_conv,
+            expand=cfg.mamba_expand,
+            residual_scale=cfg.residual_gain,
+        ).to(dtype=dtype)
+        seeds["filter_seed"] = f_seed
+    return model, seeds
 
 
 def generate_cell(config: Dict[str, object], cell: str, data_seed: int):
@@ -334,7 +424,11 @@ def generate_cell(config: Dict[str, object], cell: str, data_seed: int):
     )
 
 
-def environment_payload(config: Dict[str, object], device: torch.device) -> Dict[str, object]:
+def environment_payload(
+    config: Dict[str, object],
+    device: torch.device,
+    deterministic_settings: Optional[Dict[str, object]] = None,
+) -> Dict[str, object]:
     return {
         "python": sys.version,
         "platform": platform.platform(),
@@ -344,6 +438,11 @@ def environment_payload(config: Dict[str, object], device: torch.device) -> Dict
         "device": str(device),
         "cuda_available": bool(torch.cuda.is_available()),
         "formal_result": bool(config["formal_result"]),
+        "deterministic_settings": deterministic_settings or {
+            "torch_use_deterministic_algorithms": bool(torch.are_deterministic_algorithms_enabled()),
+            "cudnn_deterministic": bool(torch.backends.cudnn.deterministic),
+            "cudnn_benchmark": bool(torch.backends.cudnn.benchmark),
+        },
     }
 
 
@@ -354,6 +453,144 @@ def train_step(model, optimizer, x, schedule_entry, target_indices, grad_clip: f
     torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=float(grad_clip))
     optimizer.step()
     return {key: float(val.detach().cpu()) for key, val in comp.items()}
+
+
+def audit_target_indices(config: Dict[str, object], target_indices: Sequence[int]) -> np.ndarray:
+    audit_cfg = config["semantic_audit"]  # type: ignore[index]
+    return deterministic_sample_indices(
+        target_indices,
+        n=int(audit_cfg["audit_window_count"]),  # type: ignore[index]
+        seed=int(audit_cfg["audit_window_seed"]),  # type: ignore[index]
+        require_min_target=int(audit_cfg["audit_window_min_target"]),  # type: ignore[index]
+    )
+
+
+def full_prefix_omitted_mass(model, x, target_indices: Sequence[int], horizon: int) -> Dict[str, object]:
+    idx = [int(i) for i in target_indices if int(i) >= horizon]
+    if not idx:
+        raise ValueError("full-prefix omitted-mass audit has no target indices")
+    _, per_full = raw_chain_jacobian_for_windows(
+        model,
+        x,
+        target_indices=idx,
+        attribution_horizon=horizon,
+        create_graph=False,
+        full_prefix=True,
+    )
+    vals = []
+    for u, jac_u in zip(idx, per_full):
+        early = jac_u[:, :, :max(0, u - horizon)]
+        omitted = float(torch.sum(torch.abs(early)).detach().cpu())
+        total = float(torch.sum(torch.abs(jac_u)).detach().cpu())
+        vals.append(omitted / (total + 1e-12))
+    arr = np.asarray(vals, dtype=np.float64)
+    return {
+        "horizon": int(horizon),
+        "target_indices": idx,
+        "mean": float(np.mean(arr)),
+        "median": float(np.median(arr)),
+        "p95": float(np.percentile(arr, 95)),
+        "max": float(np.max(arr)),
+        "per_window": [float(v) for v in arr],
+    }
+
+
+def _corr_value(comp: Dict[str, object]) -> Optional[float]:
+    pearson = comp.get("pearson")
+    if isinstance(pearson, dict) and pearson.get("value") is not None:
+        return float(pearson["value"])
+    spearman = comp.get("spearman")
+    if spearman is not None:
+        return float(spearman)
+    return None
+
+
+def _semantic_thresholds(config: Dict[str, object]) -> Dict[str, object]:
+    return config["semantic_audit"]["thresholds"]  # type: ignore[index]
+
+
+def build_semantic_audit(
+    method: str,
+    model,
+    x,
+    graph,
+    target_indices: Sequence[int],
+    eval_out: Dict[str, object],
+    config: Dict[str, object],
+) -> Dict[str, object]:
+    thresholds = _semantic_thresholds(config)
+    audit_idx = audit_target_indices(config, target_indices)
+    audit: Dict[str, object] = {
+        "method": method,
+        "audit_window_indices": [int(i) for i in audit_idx],
+        "thresholds": thresholds,
+        "passed": True,
+        "failures": [],
+    }
+    failures: List[str] = []
+    if method in {"cp_depthwise", "fixed_fir3"}:
+        horizon = horizon_sensitivity_audit(
+            model,
+            x,
+            graph,
+            target_indices=audit_idx,
+            h_small=32,
+            h_large=64,
+        )
+        leak = float(eval_out["cross_variable_leakage"]["cross_variable_leakage"])  # type: ignore[index]
+        temporal = eval_out["temporal_horizon_mass"]  # type: ignore[assignment]
+        filt = eval_out["filter_diagnostics"]  # type: ignore[assignment]
+        if leak >= float(thresholds["leakage_max"]):
+            failures.append(f"cross_variable_leakage={leak:.6g} >= {thresholds['leakage_max']}")
+        if float(temporal["median"]) > float(thresholds["temporal_horizon_median_max"]):  # type: ignore[index]
+            failures.append(f"temporal_horizon_median={temporal['median']} > {thresholds['temporal_horizon_median_max']}")  # type: ignore[index]
+        if float(temporal["max"]) > float(thresholds["temporal_horizon_max_max"]):  # type: ignore[index]
+            failures.append(f"temporal_horizon_max={temporal['max']} > {thresholds['temporal_horizon_max_max']}")  # type: ignore[index]
+        for label in ["H32_vs_H64", "H32_vs_full_prefix"]:
+            comp = horizon[label]
+            corr = _corr_value(comp)  # type: ignore[arg-type]
+            if corr is None or corr < float(thresholds["score_corr_min"]):
+                failures.append(f"{label}_score_corr={corr} < {thresholds['score_corr_min']}")
+            if float(comp["topk_jaccard"]) < float(thresholds["topk_jaccard_min"]):  # type: ignore[index]
+                failures.append(f"{label}_topk_jaccard={comp['topk_jaccard']} < {thresholds['topk_jaccard_min']}")  # type: ignore[index]
+        omitted_max = float(horizon["omitted_gradient_mass"]["max"])  # type: ignore[index]
+        if omitted_max >= float(thresholds["omitted_gradient_mass_max"]):
+            failures.append(f"omitted_gradient_mass_max={omitted_max:.6g} >= {thresholds['omitted_gradient_mass_max']}")
+        if method == "cp_depthwise":
+            kernel_norm = float(filt["kernel_frobenius_norm"])  # type: ignore[index]
+            identity = float(filt["identity_deviation"])  # type: ignore[index]
+            if kernel_norm <= 0.0:
+                failures.append("kernel_frobenius_norm <= 0")
+            if not np.isfinite(identity) or identity <= 0.0:
+                failures.append("identity_deviation not finite and nonzero")
+        audit.update({
+            "track_role": "nominal_lag_candidate",
+            "cross_variable_leakage": leak,
+            "temporal_horizon_mass": jsonable(temporal),
+            "horizon_sensitivity": jsonable(horizon),
+            "filter_diagnostics": jsonable(filt),
+        })
+    elif method == "fixed_ema":
+        omitted = full_prefix_omitted_mass(model, x, audit_idx, horizon=64)
+        if float(omitted["max"]) >= float(thresholds["ema_omitted_gradient_mass_max"]):
+            failures.append(
+                f"ema_full_prefix_omitted_mass_max={omitted['max']} >= {thresholds['ema_omitted_gradient_mass_max']}"
+            )
+        audit.update({
+            "track_role": "full_H_reference",
+            "metric_track_required": "full_H",
+            "full_prefix_omitted_mass": jsonable(omitted),
+        })
+    elif method == "raw_chain_mamba":
+        audit.update({
+            "track_role": "limited_diagnostic_only",
+            "not_a_formal_nominal_lag_candidate": True,
+        })
+    else:
+        audit.update({"track_role": "baseline_no_filter_semantic_gate"})
+    audit["failures"] = failures
+    audit["passed"] = len(failures) == 0
+    return audit
 
 
 def output_complete(run_dir: Path, checkpoint_iter: int) -> bool:
@@ -420,13 +657,22 @@ def run_one(
         atomic_write_json(run_dir / "config_snapshot.json", config)
         atomic_write_text(run_dir / "config_sha256.txt", config_hash + "\n")
         atomic_write_text(run_dir / "commit_hash.txt", commit + "\n")
-        atomic_write_json(run_dir / "environment.json", environment_payload(config, device))
-
         x, graph, metadata = generate_cell(config, str(run["cell"]), int(run["data_seed"]))
         atomic_write_json(run_dir / "generator_metadata.json", jsonable(metadata))
 
         cfg = method_cfg(config, str(run["method"]))
         idx = common_target_indices(config)
+        audit_idx = audit_target_indices(config, idx)
+        seeds = {
+            "predictor_seed": predictor_seed(int(run["data_seed"]), int(run["train_seed"])),
+            "filter_seed": (
+                raw_chain_mamba_filter_seed(int(run["data_seed"]), int(run["train_seed"]))
+                if str(run["method"]) == "raw_chain_mamba"
+                else None
+            ),
+        }
+        deterministic_settings = configure_torch_determinism(int(seeds["predictor_seed"]), device)
+        atomic_write_json(run_dir / "environment.json", environment_payload(config, device, deterministic_settings))
         schedule = make_cyclic_schedule(
             idx,
             d=cfg.d,
@@ -439,12 +685,20 @@ def run_one(
         atomic_write_json(run_dir / "schedule.json", {
             "schedule_hash": digest,
             "schedule_seed": schedule_seed(int(run["data_seed"]), int(run["train_seed"])),
+            "predictor_seed": seeds["predictor_seed"],
+            "filter_seed": seeds["filter_seed"],
             "common_target_indices": [int(i) for i in idx],
+            "semantic_audit_target_indices": [int(i) for i in audit_idx],
             "schedule": schedule,
         })
 
-        torch.manual_seed(torch_seed(str(run["method"]), int(run["data_seed"]), int(run["train_seed"])))
-        model = instantiate_repaired_method(str(run["method"]), cfg).to(device)
+        model, init_seeds = instantiate_paired_method(
+            str(run["method"]),
+            cfg,
+            int(run["data_seed"]),
+            int(run["train_seed"]),
+        )
+        model = model.to(device)
         optimizer = torch.optim.Adam(
             model.parameters(),
             lr=float(config["training"]["lr"]),  # type: ignore[index]
@@ -478,6 +732,8 @@ def run_one(
             "schedule_hash": digest,
             "commit_hash": commit,
             "formal_result": bool(config["formal_result"]),
+            "predictor_seed": init_seeds["predictor_seed"],
+            "filter_seed": init_seeds["filter_seed"],
         })
 
         eval_started = time.perf_counter()
@@ -496,6 +752,15 @@ def run_one(
         mem = rss_mb()
         if mem is not None:
             peak = mem if peak is None else max(peak, mem)
+        semantic_audit = build_semantic_audit(
+            str(run["method"]),
+            model,
+            x,
+            graph,
+            target_indices=idx,
+            eval_out=eval_out,
+            config=config,
+        )
 
         scores_dir = run_dir / "scores"
         atomic_save_npy(scores_dir / "raw_chain_j_bar.npy", eval_out["raw_chain_j_bar"])
@@ -514,7 +779,8 @@ def run_one(
             "cross_variable_leakage": jsonable(eval_out["cross_variable_leakage"]),
             "filter_diagnostics": jsonable(eval_out["filter_diagnostics"]),
             "chunked_evaluator": jsonable(eval_out["chunked_evaluator"]),
-            "semantic_diagnostic_note": "cross-variable leakage evaluated on first 32 common windows; graph evaluation uses all 536 common windows",
+            "semantic_audit": jsonable(semantic_audit),
+            "semantic_diagnostic_note": "graph metrics use all 536 common windows; horizon/full-prefix audit uses preregistered deterministic 32 common target indices",
         })
         score_size = dir_size_bytes(scores_dir)
         checkpoint_size = ckpt_path.stat().st_size
@@ -530,6 +796,12 @@ def run_one(
             "jacobian_output_buffer_lower_bound_mb": (
                 int(config["evaluation"]["chunk_size"]) * cfg.d * cfg.d * cfg.attribution_horizon * 8 / (1024 ** 2)  # type: ignore[index]
             ),
+            "cuda_max_memory_allocated_mb": (
+                float(torch.cuda.max_memory_allocated(device) / (1024 ** 2)) if device.type == "cuda" else None
+            ),
+            "cuda_max_memory_reserved_mb": (
+                float(torch.cuda.max_memory_reserved(device) / (1024 ** 2)) if device.type == "cuda" else None
+            ),
         }
         atomic_write_json(run_dir / "runtime.json", runtime)
         no_nan_inf = finite_values_ok(loss_trace) and finite_values_ok({
@@ -537,6 +809,7 @@ def run_one(
             "metrics_full_H": eval_out["metrics_full_H"],
             "diag": eval_out["temporal_horizon_mass"],
             "loss": eval_out["eval_raw_prediction_loss"],
+            "semantic_audit": semantic_audit,
         })
         complete = output_complete(run_dir, checkpoint_iter)
         status = {
@@ -552,6 +825,10 @@ def run_one(
             "formal_result": bool(config["formal_result"]),
             "checkpoint_iteration": checkpoint_iter,
             "device": str(device),
+            "predictor_seed": init_seeds["predictor_seed"],
+            "filter_seed": init_seeds["filter_seed"],
+            "deterministic_settings": deterministic_settings,
+            "semantic_audit_passed": bool(semantic_audit["passed"]),
         }
         atomic_write_json(run_dir / "status.json", status)
         return status
@@ -611,7 +888,7 @@ def main() -> int:
     args = parse_args()
     config_path = Path(args.config)
     config = load_json(config_path)
-    validate_config(config, smoke=args.smoke)
+    validate_config(config, smoke=args.smoke, config_path=config_path)
     device = resolve_device(args.device)
     output_root = Path(args.output_root)
     output_root.mkdir(parents=True, exist_ok=True)

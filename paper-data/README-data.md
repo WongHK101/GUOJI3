@@ -306,3 +306,38 @@ python experiments/generate_eligibility_table.py
 - Blocking gates: passed.
 - Reference limitations: EMA and RawChainMamba are not valid nominal-lag main methods under P0.3 gates.
 - Development seed only: `data_seed=0` must not be used for confirmatory Stage 1 aggregate claims.
+
+---
+
+## 10. P0.3d Execution-Integrity Assets
+
+**Generated:** 2026-07-07
+**Directory:** `results_kbs/p0_3d_execution_integrity/20260707_155436/`
+**GPU used:** no
+**KBS manuscript modified:** no
+
+### Purpose
+- Close execution-integrity blockers before any GPU Stage 1a work.
+- Ensure paired predictor initialization across Baseline, CP-depthwise, FixedFIR3, and FixedEMA.
+- Enforce frozen config byte-level SHA locking.
+- Prevent aggregation from computing go/no-go on incomplete run subsets.
+- Propagate semantic gates into formal aggregation.
+- Provide a preapproved GPU infrastructure smoke config and commands, without running GPU locally.
+
+### Key files
+- `configs/stage1a_frozen_config.json`: formal frozen Stage 1a config, updated only for paired seed and semantic audit metadata.
+- `configs/stage1a_smoke_config.json`: CPU smoke config, `formal_result=false`.
+- `configs/stage1a_gpu_infrastructure_smoke_config.json`: post-P0.3d GPU smoke config, 5 runs.
+- `configs/approved_stage1a_*_sha256.txt`: byte-level config SHA whitelist.
+- `experiments/stage1a_gpu_benchmark.py`: runner with paired initialization, deterministic settings, semantic audit fields, strict config hash validation.
+- `experiments/aggregate_stage1a.py`: completeness-first and semantic-aware aggregation.
+- `experiments/compare_stage1a_determinism.py`: CP duplicate smoke comparator.
+- `experiments/stage1a_gpu_smoke_commands.md`: exact commands for the future limited GPU smoke.
+- `tests/test_stage1a_execution.py`: synthetic pass/fail tests for paired init, config lock, completeness, and semantic gates.
+- `formal_plan/run_manifest.json`: 100 planned runs, 96 formal + 4 RawChainMamba limited.
+- `gpu_smoke_plan/run_manifest.json`: 5 planned GPU-smoke runs.
+
+### Status
+- `py_compile` passed.
+- `tests/test_stage1a_execution.py` passed all 10 tests.
+- This asset is execution infrastructure only and must not be cited as performance evidence.

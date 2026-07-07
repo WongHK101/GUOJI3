@@ -321,3 +321,11 @@ P0.3 nonlinear-ground-truth closure (2026-07-07):
 - Local output: `results_kbs/p0_repaired_local/20260707_034141/`.
 - Status: `STAGE0_TRAJECTORY_COMPLETE_WITH_REFERENCE_LIMITATIONS`; blocking gates passed, with EMA and RawChainMamba retained only as reference/diagnostic for nominal-lag interpretation.
 - Stage 1 preregistration draft: `paper-data/p0_3_stage1_preregistration_plan_2026-07-07.md`.
+
+P0.3d execution-integrity patch (2026-07-07):
+- Advisor blocker: P0.3c runner still used method-offset predictor initialization, aggregation could compute on incomplete subsets, frozen config was not byte-locked, and semantic gates were not part of formal aggregation.
+- Local fix: paired predictor seed for all formal methods; separate RawChainMamba filter seed; strict approved config SHA whitelist; completeness-first aggregation; semantic-aware go/no-go; deterministic GPU settings; GPU infrastructure smoke config/commands.
+- Local output: `results_kbs/p0_3d_execution_integrity/20260707_155436/`.
+- Verification: `py_compile` passed; `tests/test_stage1a_execution.py` passed all 10 tests; formal plan-only has 100 runs; GPU-smoke plan-only has 5 runs.
+- Writing status: no KBS manuscript edits. P0.3d remains execution infrastructure only and should not be used as performance evidence.
+- Next gate: external advisor reviews `phase7_p0_3d_execution_integrity_v1.zip`; if approved, run limited GPU infrastructure smoke before full Stage 1a.

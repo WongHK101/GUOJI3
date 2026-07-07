@@ -1,6 +1,6 @@
 {
   "config_name": "stage1a_frozen_config",
-  "config_version": "p0.3c_v1",
+  "config_version": "p0.3d_v1",
   "formal_result": true,
   "frozen": true,
   "data": {
@@ -89,14 +89,8 @@
     },
     "seed_rules": {
       "schedule_seed": "7101 + 1000*data_seed + train_seed",
-      "torch_seed": "100000 + 1000*data_seed + 100*train_seed + method_offset",
-      "method_offsets": {
-        "baseline": 0,
-        "cp_depthwise": 1,
-        "fixed_fir3": 2,
-        "fixed_ema": 3,
-        "raw_chain_mamba": 4
-      }
+      "predictor_seed": "100000 + 1000*data_seed + 100*train_seed",
+      "raw_chain_mamba_filter_seed": "200000 + 1000*data_seed + 100*train_seed"
     }
   },
   "target_windows": {
@@ -128,6 +122,21 @@
     "accumulator_dtype": "float64",
     "ema_metric_track": "full_H_reference",
     "stage1a_significance_policy": "effect-size go/no-go triage only; no strong n=3 significance claims"
+  },
+  "semantic_audit": {
+    "audit_window_seed": 9301,
+    "audit_window_count": 32,
+    "audit_window_min_target": 64,
+    "audit_windows": "deterministic_sample_indices(common_target_indices, n=32, seed=9301, require_min_target=64)",
+    "thresholds": {
+      "leakage_max": 1e-8,
+      "temporal_horizon_median_max": 0.10,
+      "temporal_horizon_max_max": 0.20,
+      "score_corr_min": 0.99,
+      "topk_jaccard_min": 0.95,
+      "omitted_gradient_mass_max": 0.01,
+      "ema_omitted_gradient_mass_max": 0.01
+    }
   },
   "stage1a_go_no_go_gates": {
     "cp_vs_baseline": {
