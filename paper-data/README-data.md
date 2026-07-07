@@ -410,3 +410,50 @@ python experiments/generate_eligibility_table.py
   - `final_go=false`.
   - `performance_go=false`.
 - This run is official for the frozen P0.3e release environment, but it does not support starting Stage 1b under the preregistered gates.
+
+---
+
+## 13. Stage 1a Bounded Failure Analysis
+
+**Generated:** 2026-07-08
+**GPU used:** no
+**KBS manuscript modified:** no
+**Stage 1 release commit:** `65e6ae9afef552c84d8211a9d6e9aa70db48c276`
+**Stage 1 source manifest SHA256:** `be91dc2d3ee916690ebcd519d42811f3d3698ef4eddf053d96cdf96d0f4cab3d`
+**Analysis commit:** `ff806eb240e398aff7185b9f6ac2b15716211e03`
+
+### Purpose
+- Diagnose the accepted Stage 1a negative result without starting Stage 1b, viewing seeds 4-8, training a new method, or changing KBS text.
+- Use only the frozen 901 Stage 1a artifacts, saved checkpoints, and already available development artifacts.
+- Preserve the official 901 artifacts and verify their SHA256 inventory before and after analysis.
+
+### Key files
+- Remote output root: `/root/autodl-tmp/GUOJI/stage1a_release_65e6ae9/results_kbs/stage1a_bounded_failure_analysis/20260708_030924/`
+- Remote package: `/root/autodl-tmp/GUOJI/stage1a_release_65e6ae9/results_kbs/stage1a_bounded_failure_analysis/phase7_stage1a_bounded_failure_analysis_v1.zip`
+- Local advisor package: `E:\GUOJI\kbs_review_packages\phase7_stage1a_bounded_failure_analysis_v1.zip`
+  - SHA256: `cf98e6a017d1e4d1419c171cafd9302bd393dd180cbf93355e35b264c187bd3e`
+- Analysis script: `experiments/stage1a_bounded_failure_analysis.py`
+- Core JSON outputs:
+  - `p1_status.json`
+  - `artifact_inventory.json`
+  - `artifact_post_analysis_integrity.json`
+  - `frozen_aggregator_alignment.json`
+  - `score_map_equivalence.json`
+  - `prediction_equivalence.json`
+  - `counterfactual_filter_substitution.json`
+  - `learned_filter_audit.json`
+  - `gradient_decomposition_gate.json`
+  - `ab_decision_gates.json`
+
+### Status
+- Runtime estimate passed and the analysis ran CPU-only.
+- Artifact inventory and post-analysis integrity both passed; official Stage 1a files were unchanged.
+- Frozen aggregation recomputation aligned with the official aggregator with max absolute difference `0.0`.
+- Strict P1 final decision: `INCONCLUSIVE_BOUNDED_POSTMORTEM`.
+- Mechanistic evidence:
+  - A1 learned-CP-vs-identity counterfactual equivalence passed.
+  - A2 FIR3-substitution substantial-change gate failed.
+  - A3 gradient-conflict interpretation was disabled because no aligned data_seed=0 development artifact was available for valid replay.
+  - B nontrivial-filter-movement gate failed because median identity deviation and CP residual-kernel norm stayed below the preregistered thresholds.
+  - B no-filtering-benefit gate passed, but B overall did not pass.
+- This analysis is retrospective mechanism diagnosis only; it is not a new performance experiment and does not revive CP-depthwise for Stage 1b.

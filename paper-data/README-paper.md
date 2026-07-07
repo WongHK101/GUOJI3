@@ -345,3 +345,11 @@ Stage 1a 901 official GPU run (2026-07-07):
 - Aggregation output: `/root/autodl-tmp/GUOJI/stage1a_release_65e6ae9/results_kbs/stage1a_65e6ae9_901/stage1a_aggregate_go_no_go.json`.
 - Decision: `final_go=false` and `performance_go=false`; CP-depthwise did not meet the preregistered effect-size gates and Stage 1b should not start without advisor review.
 - Writing status: no KBS manuscript edits. Do not present Stage 1a as positive evidence for the repaired method.
+
+P1 bounded failure analysis (2026-07-08):
+- Scope respected: no GPU, no Stage 1b, no seeds 4-8, no new method training, and no KBS manuscript edits.
+- Output root: `/root/autodl-tmp/GUOJI/stage1a_release_65e6ae9/results_kbs/stage1a_bounded_failure_analysis/20260708_030924/`.
+- Advisor package: `E:\GUOJI\kbs_review_packages\phase7_stage1a_bounded_failure_analysis_v1.zip`, SHA256 `cf98e6a017d1e4d1419c171cafd9302bd393dd180cbf93355e35b264c187bd3e`.
+- Integrity status: official Stage 1a artifact inventory and post-analysis SHA256 manifest both passed; frozen aggregation recomputation matched the official aggregator.
+- Strict decision: `INCONCLUSIVE_BOUNDED_POSTMORTEM`. A1 learned-CP-vs-identity equivalence passed, but A2 failed and A3 was not interpretable because no aligned data_seed=0 development artifact existed; B also failed because the preregistered nontrivial-filter-movement thresholds were not met.
+- Writing status: continue freezing KBS text. Current CP-depthwise remains disqualified from Stage 1b and must not be restored as the KBS main method based on this P1 analysis.
