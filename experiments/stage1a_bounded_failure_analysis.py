@@ -195,6 +195,16 @@ def build_expected_run_index(stage1_root: Path) -> Tuple[List[Dict[str, object]]
     return runs, index
 
 
+def resolve_run_path(stage1_root: Path, run: Dict[str, object]) -> Path:
+    p = Path(str(run["output_path"]))
+    if p.is_absolute():
+        return p
+    # Stage 1a manifests store paths relative to the release checkout root.
+    # stage1_root = <release_root>/results_kbs/stage1a_...
+    release_root = stage1_root.parents[1]
+    return release_root / p
+
+
 def required_run_files(run_dir: Path) -> List[Path]:
     return [
         run_dir / "status.json",
@@ -241,7 +251,7 @@ def artifact_inventory(stage1_root: Path) -> Dict[str, object]:
         seen.add(key)
         role_counts[run["role"]] = role_counts.get(run["role"], 0) + 1
         method_counts[run["method"]] = method_counts.get(run["method"], 0) + 1
-        run_dir = Path(run["output_path"])
+        run_dir = resolve_run_path(stage1_root, run)
         if not run_dir.exists():
             failures.append({"type": "missing_run_dir", "run_id": key, "path": str(run_dir)})
             continue
@@ -288,7 +298,7 @@ def independent_aggregation(stage1_root: Path, out_dir: Path) -> Dict[str, objec
     _, index = build_expected_run_index(stage1_root)
     rows = []
     for (cell, method, data_seed, train_seed), run in sorted(index.items()):
-        run_dir = Path(run["output_path"])
+        run_dir = resolve_run_path(stage1_root, run)
         metrics = metric_payload(run_dir, method)
         status = load_json(run_dir / "status.json")
         row = {
@@ -442,8 +452,8 @@ def reconstruct_cell(config: Dict[str, object], cell: str, data_seed: int, stage
     return stage1_mod.generate_cell(config, cell, data_seed)
 
 
-def load_score(run: Dict[str, object], name: str = "score_nominal.npy") -> np.ndarray:
-    return np.load(Path(run["output_path"]) / "scores" / name)
+def load_score(stage1_root: Path, run: Dict[str, object], name: str = "score_nominal.npy") -> np.ndarray:
+    return np.load(resolve_run_path(stage1_root, run) / "scores" / name)
 
 
 def score_pair_stats(a: np.ndarray, b: np.ndarray, graph: np.ndarray, km) -> Dict[str, object]:
@@ -508,8 +518,8 @@ def score_map_equivalence(stage1_root: Path, out_dir: Path, config: Dict[str, ob
             for train_seed in TRAIN_SEEDS:
                 base = index[(cell, "baseline", data_seed, train_seed)]
                 cp = index[(cell, "cp_depthwise", data_seed, train_seed)]
-                s_base = load_score(base)
-                s_cp = load_score(cp)
+                s_base = load_score(stage1_root, base)
+                s_cp = load_score(stage1_root, cp)
                 stats = score_pair_stats(s_base, s_cp, graph, km)
                 pval = stats["pearson"]["value"]
                 sval = stats["spearman"]["value"]
@@ -519,8 +529,8 @@ def score_map_equivalence(stage1_root: Path, out_dir: Path, config: Dict[str, ob
                     "train_seed": train_seed,
                     "baseline_run_id": base["run_id"],
                     "cp_run_id": cp["run_id"],
-                    "baseline_score_sha256": file_sha256(Path(base["output_path"]) / "scores" / "score_nominal.npy"),
-                    "cp_score_sha256": file_sha256(Path(cp["output_path"]) / "scores" / "score_nominal.npy"),
+                    "baseline_score_sha256": file_sha256(resolve_run_path(stage1_root, base) / "scores" / "score_nominal.npy"),
+                    "cp_score_sha256": file_sha256(resolve_run_path(stage1_root, cp) / "scores" / "score_nominal.npy"),
                     "pearson": pval if pval is not None else "",
                     "pearson_undefined_reason": stats["pearson"]["undefined_reason"],
                     "spearman": sval if sval is not None else "",
@@ -564,11 +574,11 @@ def score_map_equivalence(stage1_root: Path, out_dir: Path, config: Dict[str, ob
     return {"rows": rows, "summary": summary}
 
 
-def instantiate_model_from_checkpoint(method: str, run: Dict[str, object], config: Dict[str, object], modules: Dict[str, object], device: torch.device):
+def instantiate_model_from_checkpoint(stage1_root: Path, method: str, run: Dict[str, object], config: Dict[str, object], modules: Dict[str, object], device: torch.device):
     stage1_mod = modules["stage1a_gpu_benchmark"]
     cfg = stage1_mod.method_cfg(config, method)
     model, _ = stage1_mod.instantiate_paired_method(method, cfg, int(run["data_seed"]), int(run["train_seed"]))
-    ckpt = torch.load(Path(run["output_path"]) / "checkpoints" / "iter_0500.pt", map_location=device)
+    ckpt = torch.load(resolve_run_path(stage1_root, run) / "checkpoints" / "iter_0500.pt", map_location=device)
     model.load_state_dict(ckpt["model_state"], strict=True)
     model.to(device)
     model.eval()
@@ -643,14 +653,14 @@ def prediction_equivalence(stage1_root: Path, out_dir: Path, config: Dict[str, o
             for train_seed in TRAIN_SEEDS:
                 base_run = index[(cell, "baseline", data_seed, train_seed)]
                 cp_run = index[(cell, "cp_depthwise", data_seed, train_seed)]
-                base_model, _ = instantiate_model_from_checkpoint("baseline", base_run, config, modules, device)
-                cp_model, _ = instantiate_model_from_checkpoint("cp_depthwise", cp_run, config, modules, device)
+                base_model, _ = instantiate_model_from_checkpoint(stage1_root, "baseline", base_run, config, modules, device)
+                cp_model, _ = instantiate_model_from_checkpoint(stage1_root, "cp_depthwise", cp_run, config, modules, device)
                 base_pred, target, base_loss_var, base_loss = predictions_for_model(base_model, x, idx)
                 cp_pred, target_cp, cp_loss_var, cp_loss = predictions_for_model(cp_model, x, idx)
                 if not np.allclose(target, target_cp):
                     raise RuntimeError(f"Target mismatch in prediction equivalence {cell} data{data_seed} train{train_seed}")
-                base_metrics_loss = float(load_json(Path(base_run["output_path"]) / "metrics.json")["eval_raw_prediction_loss"])
-                cp_metrics_loss = float(load_json(Path(cp_run["output_path"]) / "metrics.json")["eval_raw_prediction_loss"])
+                base_metrics_loss = float(load_json(resolve_run_path(stage1_root, base_run) / "metrics.json")["eval_raw_prediction_loss"])
+                cp_metrics_loss = float(load_json(resolve_run_path(stage1_root, cp_run) / "metrics.json")["eval_raw_prediction_loss"])
                 base_loss_diff = abs(base_loss - base_metrics_loss)
                 cp_loss_diff = abs(cp_loss - cp_metrics_loss)
                 if base_loss_diff > 1e-8 or cp_loss_diff > 1e-8:
@@ -785,11 +795,11 @@ def learned_filter_audit(stage1_root: Path, out_dir: Path, config: Dict[str, obj
         for data_seed in DATA_SEEDS:
             for train_seed in TRAIN_SEEDS:
                 run = index[(cell, "cp_depthwise", data_seed, train_seed)]
-                model, _ = instantiate_model_from_checkpoint("cp_depthwise", run, config, modules, device)
+                model, _ = instantiate_model_from_checkpoint(stage1_root, "cp_depthwise", run, config, modules, device)
                 h = cp_effective_h(model)
                 k = cp_kernel_lag_order(model)
                 cp_resid_norm = residual_norm_from_h(h)
-                diag = load_json(Path(run["output_path"]) / "diagnostics.json")["filter_diagnostics"]
+                diag = load_json(resolve_run_path(stage1_root, run) / "diagnostics.json")["filter_diagnostics"]
                 rows.append({
                     "cell": cell,
                     "data_seed": data_seed,
@@ -899,7 +909,7 @@ def counterfactual_substitution(stage1_root: Path, out_dir: Path, config: Dict[s
             idx = stage1_mod.common_target_indices(config)
             for train_seed in TRAIN_SEEDS:
                 cp_run = index[(cell, "cp_depthwise", data_seed, train_seed)]
-                cp_model, _ = instantiate_model_from_checkpoint("cp_depthwise", cp_run, config, modules, device)
+                cp_model, _ = instantiate_model_from_checkpoint(stage1_root, "cp_depthwise", cp_run, config, modules, device)
                 predictor_hash_before = state_predictor_hash(cp_model)
                 for kind in ["learned", "identity", "fixed_fir3"]:
                     if limit is not None and count >= limit:
@@ -959,7 +969,7 @@ def ceiling_effect_audit(stage1_root: Path, out_dir: Path, config: Dict[str, obj
             non_edge_count = int(gt.shape[0] * (gt.shape[0] - 1) - len(true_edges))
             for train_seed in TRAIN_SEEDS:
                 scores = {
-                    method: load_score(index[(cell, method, data_seed, train_seed)])
+                    method: load_score(stage1_root, index[(cell, method, data_seed, train_seed)])
                     for method in ["baseline", "cp_depthwise", "fixed_fir3"]
                 }
                 edge_sets = {method: topk_set(score, k, km) for method, score in scores.items()}
@@ -974,7 +984,7 @@ def ceiling_effect_audit(stage1_root: Path, out_dir: Path, config: Dict[str, obj
                         edge_rows.append({"cell": cell, "data_seed": data_seed, "train_seed": train_seed, "method": method, "change_type": "corrected_fp", "source": e[0], "target": e[1]})
                     for e in broken:
                         edge_rows.append({"cell": cell, "data_seed": data_seed, "train_seed": train_seed, "method": method, "change_type": "newly_broken_fp", "source": e[0], "target": e[1]})
-                base_metrics = metric_payload(Path(index[(cell, "baseline", data_seed, train_seed)]["output_path"]), "baseline")
+                base_metrics = metric_payload(resolve_run_path(stage1_root, index[(cell, "baseline", data_seed, train_seed)]), "baseline")
                 rows.append({
                     "cell": cell,
                     "data_seed": data_seed,
@@ -1011,7 +1021,7 @@ def estimate_runtime(stage1_root: Path, out_dir: Path, config: Dict[str, object]
     cp_run = index[(cell, "cp_depthwise", data_seed, train_seed)]
     x, graph, _ = reconstruct_cell(config, cell, data_seed, stage1_mod)
     idx = stage1_mod.common_target_indices(config)
-    cp_model, _ = instantiate_model_from_checkpoint("cp_depthwise", cp_run, config, modules, device)
+    cp_model, _ = instantiate_model_from_checkpoint(stage1_root, "cp_depthwise", cp_run, config, modules, device)
 
     # Prediction replay microbenchmark.
     t0 = time.perf_counter()
