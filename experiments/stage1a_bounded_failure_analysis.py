@@ -900,7 +900,9 @@ def counterfactual_substitution(stage1_root: Path, out_dir: Path, config: Dict[s
     stage1_mod = modules["stage1a_gpu_benchmark"]
     rows = []
     score_dir = out_dir / "counterfactual_scores"
+    pred_dir = out_dir / "counterfactual_predictions"
     score_dir.mkdir(parents=True, exist_ok=True)
+    pred_dir.mkdir(parents=True, exist_ok=True)
     count = 0
     for cell in CELLS:
         for data_seed in DATA_SEEDS:
@@ -920,11 +922,14 @@ def counterfactual_substitution(stage1_root: Path, out_dir: Path, config: Dict[s
                     started = time.perf_counter()
                     out = evaluate_model_full(model, x, graph, idx, config, modules)
                     elapsed = time.perf_counter() - started
+                    pred, target, loss_per_var, replay_loss = predictions_for_model(model, x, idx)
                     pred_hash_after = state_predictor_hash(model)
                     if pred_hash_before != pred_hash_after:
                         raise RuntimeError(f"Predictor hash changed during counterfactual eval {cp_run['run_id']} {kind}")
                     s_path = score_dir / f"{cp_run['run_id']}__{kind}__score_nominal.npy"
+                    p_path = pred_dir / f"{cp_run['run_id']}__{kind}__prediction.npy"
                     np.save(s_path, out["score_nominal"])
+                    np.save(p_path, pred)
                     metrics = out["metrics_nominal"]
                     rows.append({
                         "cell": cell,
@@ -937,7 +942,10 @@ def counterfactual_substitution(stage1_root: Path, out_dir: Path, config: Dict[s
                         "predictor_hash_after": pred_hash_after,
                         "cp_predictor_hash": predictor_hash_before,
                         "score_nominal_sha256": file_sha256(s_path),
+                        "prediction_sha256": file_sha256(p_path),
                         "eval_raw_prediction_loss": out["eval_raw_prediction_loss"],
+                        "prediction_replay_raw_loss": replay_loss,
+                        "prediction_replay_loss_abs_diff": abs(float(out["eval_raw_prediction_loss"]) - float(replay_loss)),
                         "auroc": metrics["auroc"],
                         "auprc": metrics["auprc"],
                         "mcc": metrics["mcc_exact_topk"],
@@ -1201,6 +1209,11 @@ def gradient_decomposition_replay(out_dir: Path, config: Dict[str, object], modu
             conflict_hits += 1
     domination_branch = sum(1 for c in CELLS if domination_hits_by_cell[c] >= 3) >= 3
     conflict_branch = conflict_hits >= 8
+    replay_alignment_valid = all(
+        item.get("alignment_status") == "ALIGNED_WITH_EXISTING_DEVELOPMENT_ARTIFACT"
+        for item in alignment
+    )
+    raw_a3_passed = bool(domination_branch or conflict_branch)
     gate = {
         "valid_ratio_combinations": valid_ratio,
         "near_zero_combinations": near_zero,
@@ -1208,7 +1221,10 @@ def gradient_decomposition_replay(out_dir: Path, config: Dict[str, object], modu
         "conflict_hits": conflict_hits,
         "domination_branch_passed": bool(domination_branch),
         "conflict_branch_passed": bool(conflict_branch),
-        "A3_passed": bool(domination_branch or conflict_branch),
+        "raw_A3_condition_passed_before_replay_alignment": raw_a3_passed,
+        "gradient_replay_alignment_valid": bool(replay_alignment_valid),
+        "A3_passed": bool(raw_a3_passed and replay_alignment_valid),
+        "A3_interpretation_disabled_reason": None if replay_alignment_valid else "existing_data_seed0_development_artifact_not_found_or_not_aligned",
         "component_sum_all_passed": all(bool(r["component_sum_passed"]) for r in rows),
     }
     save_json(out_dir / "gradient_decomposition_gate.json", gate)
@@ -1235,6 +1251,7 @@ def evaluate_a1_a2_b(out_dir: Path, aggregation: Dict[str, object], counterfactu
         # A1 pair-level learned vs identity.
         a1_hits = 0
         pred_corrs = []
+        a1_pair_rows = []
         for cell in CELLS:
             for data_seed in DATA_SEEDS:
                 for train_seed in TRAIN_SEEDS:
@@ -1249,10 +1266,15 @@ def evaluate_a1_a2_b(out_dir: Path, aggregation: Dict[str, object], counterfactu
                     e_learned = topk_edges_exact_np(s_learned, k)
                     e_ident = topk_edges_exact_np(s_ident, k)
                     jaccard = len(e_learned & e_ident) / max(len(e_learned | e_ident), 1)
+                    p_learned = np.load(out_dir / "counterfactual_predictions" / f"{learned['cp_run_id']}__learned__prediction.npy")
+                    p_ident = np.load(out_dir / "counterfactual_predictions" / f"{ident['cp_run_id']}__identity__prediction.npy")
+                    pcorr_payload = corr_or_reason(p_learned.ravel(), p_ident.ravel())
+                    pcorr = pcorr_payload["value"]
                     dauroc = float(ident["auroc"]) - float(learned["auroc"])
                     dauprc = float(ident["auprc"]) - float(learned["auprc"])
                     rel_loss = abs(float(ident["eval_raw_prediction_loss"]) - float(learned["eval_raw_prediction_loss"])) / max(abs(float(learned["eval_raw_prediction_loss"])), EPS)
-                    # Prediction correlation is computed in the prediction arrays only for baseline-vs-CP; keep A1 strict if absent.
+                    if pcorr is not None:
+                        pred_corrs.append(float(pcorr))
                     cond = (
                         pearson is not None and pearson >= 0.995
                         and spearman is not None and spearman >= 0.995
@@ -1260,15 +1282,33 @@ def evaluate_a1_a2_b(out_dir: Path, aggregation: Dict[str, object], counterfactu
                         and abs(dauroc) <= 0.005
                         and abs(dauprc) <= 0.005
                         and rel_loss <= 0.01
+                        and pcorr is not None and pcorr >= 0.995
                     )
                     if cond:
                         a1_hits += 1
+                    a1_pair_rows.append({
+                        "cell": cell,
+                        "data_seed": data_seed,
+                        "train_seed": train_seed,
+                        "pearson": pearson,
+                        "spearman": spearman,
+                        "exact_topk_jaccard": jaccard,
+                        "delta_auroc_identity_minus_learned": dauroc,
+                        "delta_auprc_identity_minus_learned": dauprc,
+                        "eval_raw_loss_relative_difference": rel_loss,
+                        "prediction_correlation": pcorr,
+                        "prediction_correlation_undefined_reason": pcorr_payload["undefined_reason"],
+                        "passed": cond,
+                    })
+        median_pcorr = float(np.median(pred_corrs)) if pred_corrs else None
         result["A1_cp_learned_vs_identity_equivalence"] = {
             "valid": True,
-            "passed": bool(a1_hits >= 20),
+            "passed": bool(a1_hits >= 20 and median_pcorr is not None and median_pcorr >= 0.995),
             "passing_pairs": a1_hits,
             "required_pairs": 20,
-            "note": "prediction_correlation component is unavailable unless counterfactual prediction arrays are generated; failed if absent",
+            "median_prediction_correlation": median_pcorr,
+            "required_median_prediction_correlation": 0.995,
+            "pair_rows": a1_pair_rows,
         }
         # A2 using data-seed-level effects.
         cell_hits_auroc = 0
@@ -1311,10 +1351,51 @@ def evaluate_a1_a2_b(out_dir: Path, aggregation: Dict[str, object], counterfactu
             "jaccard_metric_branch_cells": cell_hits_jaccard,
         }
         # B no filtering benefit requires no qualifying cells across four comparisons.
+        averaged = aggregation["averaged"]
+
+        def qualifying_from_per_seed(per_seed_values: List[float]) -> bool:
+            return float(np.mean(per_seed_values)) >= 0.03 and sum(v > 0 for v in per_seed_values) >= 2
+
+        formal_cp_qual = []
+        formal_fir_qual = []
+        identity_sub_qual = []
+        fir_sub_qual = []
+        for cell in CELLS:
+            formal_cp_vals = [
+                averaged[cell]["cp_depthwise"][data_seed]["auroc"] - averaged[cell]["baseline"][data_seed]["auroc"]
+                for data_seed in DATA_SEEDS
+            ]
+            formal_fir_vals = [
+                averaged[cell]["fixed_fir3"][data_seed]["auroc"] - averaged[cell]["baseline"][data_seed]["auroc"]
+                for data_seed in DATA_SEEDS
+            ]
+            identity_vals = []
+            fir_vals = []
+            for data_seed in DATA_SEEDS:
+                base = averaged[cell]["baseline"][data_seed]["auroc"]
+                ident_train = [
+                    float(by_key[(cell, data_seed, train_seed, "identity")]["auroc"])
+                    for train_seed in TRAIN_SEEDS
+                ]
+                fir_train = [
+                    float(by_key[(cell, data_seed, train_seed, "fixed_fir3")]["auroc"])
+                    for train_seed in TRAIN_SEEDS
+                ]
+                identity_vals.append(float(np.mean(ident_train)) - base)
+                fir_vals.append(float(np.mean(fir_train)) - base)
+            formal_cp_qual.append({"cell": cell, "qualifying": qualifying_from_per_seed(formal_cp_vals), "per_seed_delta_auroc": formal_cp_vals, "mean_delta_auroc": float(np.mean(formal_cp_vals))})
+            formal_fir_qual.append({"cell": cell, "qualifying": qualifying_from_per_seed(formal_fir_vals), "per_seed_delta_auroc": formal_fir_vals, "mean_delta_auroc": float(np.mean(formal_fir_vals))})
+            identity_sub_qual.append({"cell": cell, "qualifying": qualifying_from_per_seed(identity_vals), "per_seed_delta_auroc": identity_vals, "mean_delta_auroc": float(np.mean(identity_vals))})
+            fir_sub_qual.append({"cell": cell, "qualifying": qualifying_from_per_seed(fir_vals), "per_seed_delta_auroc": fir_vals, "mean_delta_auroc": float(np.mean(fir_vals))})
+        any_qual = any(item["qualifying"] for group in [formal_cp_qual, formal_fir_qual, identity_sub_qual, fir_sub_qual] for item in group)
         result["B_no_filtering_benefit"] = {
             "valid": True,
-            "passed": None,
-            "note": "computed in decision memo from formal aggregation plus counterfactual rows",
+            "passed": bool(not any_qual),
+            "formal_cp_vs_baseline": formal_cp_qual,
+            "formal_fir3_vs_baseline": formal_fir_qual,
+            "cp_predictor_identity_substitution_vs_formal_baseline": identity_sub_qual,
+            "cp_predictor_fir3_substitution_vs_formal_baseline": fir_sub_qual,
+            "note": "Counterfactual substitutions use the CP predictor and are mechanism diagnostics, not independently trained methods.",
         }
     a = result["A1_cp_learned_vs_identity_equivalence"].get("passed") and result["A2_fir3_substitution_substantial_change"].get("passed") and result["A3_identity_gradient_domination_or_conflict"].get("A3_passed", result["A3_identity_gradient_domination_or_conflict"].get("passed", False))
     b = bool(result["B_filter_movement"].get("b_nontrivial_filter_movement_passed")) and bool(result["B_no_filtering_benefit"].get("passed"))
