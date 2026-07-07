@@ -391,6 +391,8 @@ python experiments/generate_eligibility_table.py
 - Formal logs: `/root/autodl-tmp/GUOJI/stage1a_release_65e6ae9/results_kbs/stage1a_65e6ae9_901_logs/`
 - Aggregation output: `/root/autodl-tmp/GUOJI/stage1a_release_65e6ae9/results_kbs/stage1a_65e6ae9_901/stage1a_aggregate_go_no_go.json`
 - Completeness output: `/root/autodl-tmp/GUOJI/stage1a_release_65e6ae9/results_kbs/stage1a_65e6ae9_901/completeness_report.json`
+- Advisor review package: `E:\GUOJI\kbs_review_packages\phase7_stage1a_901_go_nogo_v1.zip`
+  - SHA256: `6a240f59ed2b64112cbbd1dc790f3d5aab02d14611011d138753d4392ca11ecd`
 
 ### Status
 - GPU smoke validator passed:
