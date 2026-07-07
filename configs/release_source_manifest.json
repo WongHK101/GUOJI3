@@ -1,0 +1,43 @@
+{
+  "files": {
+    ".gitignore": "e37380ec43019566ffe96a2039bd4c6162c736f20854e3b3d7c3e302e42b1b45",
+    "configs/approved_stage1a_frozen_config_sha256.txt": "35c61717de22e17ca949747fbba778e2a17e7ee596f9f00ad015dda4f3223839",
+    "configs/approved_stage1a_gpu_infrastructure_smoke_config_sha256.txt": "12138b8ef8cf138bf2d0e75cfe0942a0650c3e80fdf7b50dd3634354deaeb3ac",
+    "configs/approved_stage1a_smoke_config_sha256.txt": "03a0dca37001743af9719f56ec218535d6ae519123451ad793b7b702b54bff6e",
+    "configs/stage1a_frozen_config.json": "f777c6509839a40acd029e36d7b6a280d246c7774e89084efb7fe3fdc5eeee2f",
+    "configs/stage1a_gpu_infrastructure_smoke_config.json": "9fe56feab725671bb5de3e222e28592c93c18d29caeb24fab7133f72b508c325",
+    "configs/stage1a_smoke_config.json": "9ca04db5065364b8b4d322a462b95e120f17cc4254cba3c88209282c4eec188a",
+    "experiments/aggregate_stage1a.py": "91b46c580d5004250bf0370ebfc4490f446a51522b348c65f73f5f89a321423d",
+    "experiments/compare_stage1a_determinism.py": "93688385bb62aaf32629293ee3181db41a546812dfa93570e6f85d0477f222c3",
+    "experiments/release_lock.py": "b3d8c228bd412444245da833c8c607c0e3d6084ec206bf63eff6f0bc64565ee9",
+    "experiments/stage1a_gpu_benchmark.py": "100b1c891aeadd4be07133f413c9dd634256574164e11a7188c428c86dcc32d9",
+    "experiments/validate_gpu_infrastructure_smoke.py": "be47e88a33036aa3f03d8f437acc5ca1e38afa3a1341f776d6ec7229011c29d9",
+    "src/factorial_data.py": "38fe5331dd708d43d0bcfdf0498d3b36ef3073a880b2302a56e4242ef56313ba",
+    "src/knowledge_metrics.py": "28583e2597899656a197aa7cb358bbf571332534221421f6347bfd81012e42d8",
+    "src/minimal_mamba.py": "6aae1f47059f922c289fc1b37c4c4e028e3425e94dd430f469db2151888d1b07",
+    "src/repaired_istf.py": "9213d3aeec1bf627724e73322630c54fa88caea073e0f128066e42bb6abcb92b"
+  },
+  "generated_at": "2026-07-07 16:26:03",
+  "key_source_files": [
+    ".gitignore",
+    "experiments/stage1a_gpu_benchmark.py",
+    "experiments/aggregate_stage1a.py",
+    "experiments/compare_stage1a_determinism.py",
+    "experiments/validate_gpu_infrastructure_smoke.py",
+    "experiments/release_lock.py",
+    "src/repaired_istf.py",
+    "src/factorial_data.py",
+    "src/minimal_mamba.py",
+    "src/knowledge_metrics.py",
+    "configs/stage1a_frozen_config.json",
+    "configs/stage1a_smoke_config.json",
+    "configs/stage1a_gpu_infrastructure_smoke_config.json",
+    "configs/approved_stage1a_frozen_config_sha256.txt",
+    "configs/approved_stage1a_smoke_config_sha256.txt",
+    "configs/approved_stage1a_gpu_infrastructure_smoke_config_sha256.txt"
+  ],
+  "manifest_name": "stage1a_release_source_manifest",
+  "manifest_version": "p0.3e_v1",
+  "notes": "approved_stage1a_code_commit.txt is generated after the release commit and is intentionally git-ignored to avoid a self-referential commit hash.",
+  "purpose": "Lock key source/config files for Stage 1a GPU release execution."
+}

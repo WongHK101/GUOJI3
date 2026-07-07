@@ -329,3 +329,10 @@ P0.3d execution-integrity patch (2026-07-07):
 - Verification: `py_compile` passed; `tests/test_stage1a_execution.py` passed all 10 tests; formal plan-only has 100 runs; GPU-smoke plan-only has 5 runs.
 - Writing status: no KBS manuscript edits. P0.3d remains execution infrastructure only and should not be used as performance evidence.
 - Next gate: external advisor reviews `phase7_p0_3d_execution_integrity_v1.zip`; if approved, run limited GPU infrastructure smoke before full Stage 1a.
+
+P0.3e release-lock patch (2026-07-07):
+- Advisor blocker: release package/report commit mismatch, runner lacked approved code commit/source-tree guard, aggregator could accept modified config thresholds, and GPU smoke lacked a single hard validator.
+- Local fix: added release source manifest, ignored approved code commit artifact, runner code/worktree guard, aggregator frozen-config/root-snapshot guard, and unified two-root GPU smoke validator.
+- Verification: `py_compile` passed; `tests/test_stage1a_execution.py` passed all 12 tests; source manifest parity passed.
+- Writing status: no KBS manuscript edits. P0.3e remains release infrastructure only and should not be used as performance evidence.
+- Next gate: external advisor reviews `phase7_p0_3e_release_lock_v1.zip`; if approved, execute two 5-method GPU smoke roots and `validate_gpu_infrastructure_smoke.py` before full Stage 1a.

@@ -25,6 +25,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SRC_DIR = PROJECT_ROOT / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from release_lock import file_sha256, verify_release_lock  # noqa: E402
 
 
 METRIC_MAP = {
@@ -33,6 +37,7 @@ METRIC_MAP = {
     "mcc": "mcc_exact_topk",
 }
 FORMAL_METHODS = ["baseline", "cp_depthwise", "fixed_fir3", "fixed_ema"]
+APPROVED_FROZEN_CONFIG_SHA_PATH = PROJECT_ROOT / "configs" / "approved_stage1a_frozen_config_sha256.txt"
 
 
 def parse_args() -> argparse.Namespace:
@@ -59,6 +64,51 @@ def save_json(path: Path, payload) -> None:
 def canonical_config_hash(config: Dict[str, object]) -> str:
     payload = json.dumps(config, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
+
+
+def read_approved_frozen_config_sha() -> str:
+    if not APPROVED_FROZEN_CONFIG_SHA_PATH.exists():
+        raise RuntimeError(f"Approved frozen config SHA file missing: {APPROVED_FROZEN_CONFIG_SHA_PATH}")
+    return APPROVED_FROZEN_CONFIG_SHA_PATH.read_text(encoding="utf-8").strip().split()[0].lower()
+
+
+def validate_aggregation_inputs(
+    config_path: Path,
+    config: Dict[str, object],
+    stage1_root: Path | None,
+    require_release_lock: bool = True,
+) -> Dict[str, object]:
+    approved_file_sha = read_approved_frozen_config_sha()
+    actual_file_sha = file_sha256(config_path).lower()
+    if actual_file_sha != approved_file_sha:
+        raise RuntimeError(
+            f"Frozen aggregation config file SHA mismatch: actual {actual_file_sha}, approved {approved_file_sha}"
+        )
+    canonical_hash = canonical_config_hash(config)
+    snapshot_equivalent = None
+    root_hash = None
+    if stage1_root is not None:
+        root_hash = root_config_hash(stage1_root)
+        if canonical_hash != root_hash:
+            raise RuntimeError(
+                f"Aggregation config canonical hash {canonical_hash} does not match stage root {root_hash}"
+            )
+        snapshot_path = stage1_root / "config_snapshot.json"
+        if not snapshot_path.exists():
+            raise RuntimeError(f"Stage root config snapshot is missing: {snapshot_path}")
+        snapshot = load_json(snapshot_path)
+        snapshot_equivalent = canonical_config_hash(snapshot) == canonical_hash
+        if not snapshot_equivalent:
+            raise RuntimeError("Stage root config_snapshot.json is not canonically equivalent to aggregation config")
+    release_lock = verify_release_lock(require_clean_worktree=False) if require_release_lock else None
+    return {
+        "approved_config_file_sha256": approved_file_sha,
+        "actual_config_file_sha256": actual_file_sha,
+        "canonical_config_hash": canonical_hash,
+        "stage_root_config_hash": root_hash,
+        "root_config_snapshot_equivalent": snapshot_equivalent,
+        "source_release_lock": release_lock,
+    }
 
 
 def metric_track_for_method(method: str) -> str:
@@ -455,9 +505,12 @@ def aggregate(
 
 def main() -> int:
     args = parse_args()
-    config = load_json(Path(args.config))
+    config_path = Path(args.config)
+    config = load_json(config_path)
     if bool(config.get("formal_result")) is False:
         raise ValueError("Aggregation is intended for formal Stage 1a results; smoke config is not accepted.")
+    stage_root_for_guard = Path(args.stage1_root) if args.stage1_root else None
+    aggregation_guard = validate_aggregation_inputs(config_path, config, stage_root_for_guard)
     if args.results_json:
         payload = load_json(Path(args.results_json))
         rows = payload["rows"]
@@ -468,6 +521,11 @@ def main() -> int:
         expected_hash = root_config_hash(stage_root) or canonical_config_hash(config)
     else:
         raise ValueError("Either --stage1-root or --results-json is required")
+    if aggregation_guard["canonical_config_hash"] != expected_hash:
+        raise RuntimeError(
+            f"Aggregation expected hash {expected_hash} does not match canonical frozen config "
+            f"{aggregation_guard['canonical_config_hash']}"
+        )
     completeness = validate_completeness(rows, config, expected_hash)
     completeness_path = Path(args.output).with_name("completeness_report.json")
     save_json(completeness_path, completeness)
@@ -476,6 +534,7 @@ def main() -> int:
             "formal_result": True,
             "aggregation_status": "failed_completeness",
             "completeness_gate": completeness,
+            "aggregation_release_lock": aggregation_guard,
         }
         save_json(Path(args.output), out)
         print(json.dumps({
@@ -486,6 +545,7 @@ def main() -> int:
         }, indent=2))
         return 1
     out = aggregate(rows, config, expected_config_hash=expected_hash)
+    out["aggregation_release_lock"] = aggregation_guard
     save_json(Path(args.output), out)
     print(json.dumps({
         "output": args.output,

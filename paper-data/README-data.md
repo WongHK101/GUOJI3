@@ -341,3 +341,30 @@ python experiments/generate_eligibility_table.py
 - `py_compile` passed.
 - `tests/test_stage1a_execution.py` passed all 10 tests.
 - This asset is execution infrastructure only and must not be cited as performance evidence.
+
+---
+
+## 11. P0.3e Release-Lock Assets
+
+**Generated:** 2026-07-07
+**GPU used:** no
+**KBS manuscript modified:** no
+
+### Purpose
+- Lock the exact code/config state that may be used for the next GPU smoke.
+- Ensure runner startup rejects wrong commit, dirty worktree, or changed key source files.
+- Ensure aggregation cannot be rerun with edited thresholds/config after Stage 1 output exists.
+- Provide a single hard GPU-smoke validation script.
+
+### Key files
+- `configs/release_source_manifest.json`: SHA256 manifest for key source/config files.
+- `configs/approved_stage1a_code_commit.txt`: generated release artifact after the final P0.3e commit; git-ignored to avoid self-referential commit hashing.
+- `experiments/release_lock.py`: shared release-lock helper.
+- `experiments/stage1a_gpu_benchmark.py`: runner now enforces release lock on actual formal/smoke execution.
+- `experiments/aggregate_stage1a.py`: aggregator now enforces approved frozen config and root snapshot/canonical hash equivalence.
+- `experiments/validate_gpu_infrastructure_smoke.py`: validates two 5-method GPU smoke roots and CP duplicate determinism.
+- `experiments/stage1a_gpu_smoke_commands.md`: corrected two-root smoke workflow, 10 total 20-iteration runs.
+
+### Status
+- Local tests pass; no GPU results generated.
+- This asset is release infrastructure only and must not be cited as performance evidence.

@@ -43,6 +43,7 @@ from repaired_istf import (  # noqa: E402
     raw_chain_jacobian_for_windows,
     schedule_hash,
 )
+from release_lock import verify_release_lock  # noqa: E402
 
 
 CELL_FLAGS = {name: (stationary, linear) for name, stationary, linear in FACTORIAL_CELLS}
@@ -631,6 +632,7 @@ def run_one(
     output_root: Path,
     device: torch.device,
     resume: bool,
+    release_lock: Dict[str, object],
 ) -> Dict[str, object]:
     run_dir = Path(str(run["output_path"]))
     checkpoint_iter = int(config["training"]["primary_checkpoint"])  # type: ignore[index]
@@ -651,6 +653,7 @@ def run_one(
         "config_sha256": config_hash,
         "formal_result": bool(config["formal_result"]),
         "started_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "release_lock": release_lock,
     }
     atomic_write_json(run_dir / "status.json", status)
     try:
@@ -672,7 +675,9 @@ def run_one(
             ),
         }
         deterministic_settings = configure_torch_determinism(int(seeds["predictor_seed"]), device)
-        atomic_write_json(run_dir / "environment.json", environment_payload(config, device, deterministic_settings))
+        env_payload = environment_payload(config, device, deterministic_settings)
+        env_payload["release_lock"] = release_lock
+        atomic_write_json(run_dir / "environment.json", env_payload)
         schedule = make_cyclic_schedule(
             idx,
             d=cfg.d,
@@ -734,6 +739,7 @@ def run_one(
             "formal_result": bool(config["formal_result"]),
             "predictor_seed": init_seeds["predictor_seed"],
             "filter_seed": init_seeds["filter_seed"],
+            "release_lock": release_lock,
         })
 
         eval_started = time.perf_counter()
@@ -829,6 +835,11 @@ def run_one(
             "filter_seed": init_seeds["filter_seed"],
             "deterministic_settings": deterministic_settings,
             "semantic_audit_passed": bool(semantic_audit["passed"]),
+            "approved_commit": release_lock.get("approved_commit"),
+            "actual_commit": release_lock.get("actual_commit"),
+            "clean_worktree": release_lock.get("clean_worktree"),
+            "source_manifest_sha256": release_lock.get("source_manifest_sha256"),
+            "key_file_sha256": release_lock.get("key_file_sha256"),
         }
         atomic_write_json(run_dir / "status.json", status)
         return status
@@ -892,10 +903,15 @@ def main() -> int:
     device = resolve_device(args.device)
     output_root = Path(args.output_root)
     output_root.mkdir(parents=True, exist_ok=True)
+    release_lock = None if args.plan_only else verify_release_lock(require_clean_worktree=True)
     config_hash = canonical_config_hash(config)
     atomic_write_json(output_root / "config_snapshot.json", config)
     atomic_write_text(output_root / "config_sha256.txt", config_hash + "\n")
-    atomic_write_json(output_root / "environment.json", environment_payload(config, device))
+    root_env = environment_payload(config, device)
+    if release_lock is not None:
+        root_env["release_lock"] = release_lock
+        atomic_write_json(output_root / "release_lock.json", release_lock)
+    atomic_write_json(output_root / "environment.json", root_env)
     runs = build_run_manifest(config, output_root)
     write_manifest(output_root, config, config_hash, runs)
     atomic_write_json(output_root / "failed_runs.json", {"failed_runs": []})
@@ -910,7 +926,7 @@ def main() -> int:
     statuses = []
     failures = []
     for run in runs:
-        status = run_one(run, config, config_hash, output_root, device, resume=args.resume)
+        status = run_one(run, config, config_hash, output_root, device, resume=args.resume, release_lock=release_lock or {})
         statuses.append(status)
         if status.get("status") != "complete":
             failures.append(status)

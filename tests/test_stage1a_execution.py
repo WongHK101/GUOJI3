@@ -13,7 +13,12 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT / "experiments") not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT / "experiments"))
 
-from aggregate_stage1a import aggregate, validate_completeness  # noqa: E402
+from aggregate_stage1a import (  # noqa: E402
+    aggregate,
+    canonical_config_hash,
+    validate_aggregation_inputs,
+    validate_completeness,
+)
 from stage1a_gpu_benchmark import (  # noqa: E402
     atomic_write_json,
     instantiate_paired_method,
@@ -21,6 +26,7 @@ from stage1a_gpu_benchmark import (  # noqa: E402
     predictor_state_dict,
     status_matches_complete,
 )
+from validate_gpu_infrastructure_smoke import validate_cp_duplicate, validate_smoke_root  # noqa: E402
 
 
 CONFIG_PATH = PROJECT_ROOT / "configs" / "stage1a_frozen_config.json"
@@ -334,6 +340,149 @@ def test_frozen_config_sha_lock_rejects_scientific_field_changes():
             proc = _run_plan_with_config(_modified_config(tmp / f"edit_{i}", edit))
             assert proc.returncode != 0, edit
             assert "Frozen config SHA mismatch" in (proc.stderr + proc.stdout)
+    finally:
+        resolved = tmp.resolve()
+        if str(resolved).startswith(tempfile.gettempdir()):
+            shutil.rmtree(resolved, ignore_errors=True)
+
+
+def test_aggregation_config_guard_rejects_modified_frozen_config():
+    tmp = Path(tempfile.mkdtemp(prefix="stage1a_agg_guard_"))
+    try:
+        root = tmp / "stage_root"
+        root.mkdir()
+        cfg = _config()
+        (root / "config_snapshot.json").write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+        (root / "config_sha256.txt").write_text(canonical_config_hash(cfg), encoding="utf-8")
+        assert validate_aggregation_inputs(CONFIG_PATH, cfg, root, require_release_lock=False)["root_config_snapshot_equivalent"]
+        edits = [
+            {"stage1a_go_no_go_gates.cp_vs_baseline.mean_delta_auprc_min": -0.5},
+            {"methods.formal": ["baseline", "cp_depthwise", "fixed_ema"]},
+            {"data.data_seeds": [1, 2]},
+            {"semantic_audit.thresholds.score_corr_min": 0.5},
+        ]
+        for i, edit in enumerate(edits):
+            bad_path = _modified_config(tmp / f"agg_bad_{i}", edit)
+            with open(bad_path, encoding="utf-8") as f:
+                bad_cfg = json.load(f)
+            try:
+                validate_aggregation_inputs(bad_path, bad_cfg, root, require_release_lock=False)
+            except RuntimeError:
+                pass
+            else:
+                raise AssertionError(f"aggregation accepted modified config: {edit}")
+    finally:
+        resolved = tmp.resolve()
+        if str(resolved).startswith(tempfile.gettempdir()):
+            shutil.rmtree(resolved, ignore_errors=True)
+
+
+def _write_json(path, payload):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def _make_fake_gpu_smoke_root(root, score_delta=0.0):
+    import numpy as np
+    import torch
+    run_ids = [
+        ("stage1a__baseline__NS_Nonlinear__data1__train0", "formal", "baseline"),
+        ("stage1a__cp_depthwise__NS_Nonlinear__data1__train0", "formal", "cp_depthwise"),
+        ("stage1a__fixed_fir3__NS_Nonlinear__data1__train0", "formal", "fixed_fir3"),
+        ("stage1a__fixed_ema__NS_Nonlinear__data1__train0", "formal", "fixed_ema"),
+        ("stage1a_limited__raw_chain_mamba__NS_Nonlinear__data1__train0", "limited_ablation", "raw_chain_mamba"),
+    ]
+    release = {
+        "approved_commit": "release",
+        "actual_commit": "release",
+        "clean_worktree": True,
+        "source_manifest_sha256": "manifest",
+        "key_file_sha256": {"x": "y"},
+    }
+    _write_json(root / "release_lock.json", release)
+    _write_json(root / "run_manifest.json", {
+        "formal_result": False,
+        "run_count": 5,
+        "runs": [
+            {
+                "run_id": run_id,
+                "role": role,
+                "method": method,
+                "cell": "NS+Nonlinear",
+                "data_seed": 1,
+                "train_seed": 0,
+                "output_path": str(root / "runs" / run_id),
+            }
+            for run_id, role, method in run_ids
+        ],
+    })
+    base_score = np.asarray([[0.0, 0.9], [0.1, 0.0]], dtype=np.float64)
+    for run_id, role, method in run_ids:
+        rd = root / "runs" / run_id
+        rd.mkdir(parents=True, exist_ok=True)
+        status = {
+            "status": "complete",
+            "formal_result": False,
+            "no_nan_inf": True,
+            "output_complete": True,
+            "device": "cuda:0",
+            "config_sha256": "cfg",
+            "schedule_hash": "schedule",
+            "predictor_seed": 101000,
+            "semantic_audit_passed": method in {"baseline", "cp_depthwise", "fixed_fir3", "fixed_ema"},
+            "deterministic_settings": {"torch_use_deterministic_algorithms": True, "cudnn_deterministic": True},
+            "approved_commit": "release",
+            "actual_commit": "release",
+            "clean_worktree": True,
+            "source_manifest_sha256": "manifest",
+        }
+        if method == "raw_chain_mamba":
+            status["semantic_audit_passed"] = False
+        _write_json(rd / "status.json", status)
+        _write_json(rd / "runtime.json", {
+            "cuda_max_memory_allocated_mb": 10.0,
+            "cuda_max_memory_reserved_mb": 12.0,
+        })
+        _write_json(rd / "environment.json", {
+            "deterministic_settings": {"torch_use_deterministic_algorithms": True, "cudnn_deterministic": True},
+        })
+        _write_json(rd / "diagnostics.json", {"semantic_audit": {"passed": bool(status["semantic_audit_passed"])}})
+        metrics = {
+            "auroc": 0.7,
+            "auprc": 0.6,
+            "f1_exact_topk": 0.5,
+            "mcc_exact_topk": 0.4,
+            "shd_exact_topk": 1,
+            "nshd_exact_topk": 1.0,
+            "n_true_edges": 1,
+        }
+        _write_json(rd / "metrics.json", {
+            "metrics_nominal": metrics,
+            "metrics_full_H": metrics,
+            "metric_track_for_aggregation": "full_H" if method == "fixed_ema" else "nominal",
+        })
+        _write_json(rd / "loss_trace.json", [{"iter": 1, "loss": 1.0}, {"iter": 2, "loss": 0.9}])
+        (rd / "scores").mkdir(exist_ok=True)
+        score = base_score + (score_delta if method == "cp_depthwise" else 0.0)
+        np.save(rd / "scores" / "score_nominal.npy", score)
+        np.save(rd / "scores" / "score_full_H.npy", score)
+        (rd / "checkpoints").mkdir(exist_ok=True)
+        torch.save({"model_state": {"w": torch.tensor([1.0, 2.0])}}, rd / "checkpoints" / "iter_0020.pt")
+
+
+def test_gpu_smoke_validator_accepts_two_valid_roots_and_rejects_score_drift():
+    tmp = Path(tempfile.mkdtemp(prefix="gpu_smoke_validator_"))
+    try:
+        a = tmp / "a"
+        b = tmp / "b"
+        _make_fake_gpu_smoke_root(a)
+        _make_fake_gpu_smoke_root(b)
+        assert validate_smoke_root(a, "A")["passed"]
+        assert validate_smoke_root(b, "B")["passed"]
+        assert validate_cp_duplicate(a, b, 1e-6)["passed"]
+        drift = tmp / "drift"
+        _make_fake_gpu_smoke_root(drift, score_delta=1e-3)
+        assert not validate_cp_duplicate(a, drift, 1e-6)["passed"]
     finally:
         resolved = tmp.resolve()
         if str(resolved).startswith(tempfile.gettempdir()):
