@@ -368,3 +368,43 @@ python experiments/generate_eligibility_table.py
 ### Status
 - Local tests pass; no GPU results generated.
 - This asset is release infrastructure only and must not be cited as performance evidence.
+
+---
+
+## 12. Stage 1a 901 Official GPU Run
+
+**Generated:** 2026-07-07
+**GPU used:** yes, 901 AutoDL backup server
+**KBS manuscript modified:** no
+**Official remote checkout:** `/root/autodl-tmp/GUOJI/stage1a_release_65e6ae9`
+**Release commit:** `65e6ae9afef552c84d8211a9d6e9aa70db48c276`
+**Source manifest SHA256:** `be91dc2d3ee916690ebcd519d42811f3d3698ef4eddf053d96cdf96d0f4cab3d`
+
+### Purpose
+- Execute the approved P0.3e two-root GPU infrastructure smoke on the unified 901 environment.
+- If smoke passed, execute the frozen Stage 1a matrix exactly once under the approved release lock.
+- Evaluate the preregistered Stage 1a go/no-go gates.
+
+### Key remote files
+- Smoke root: `/root/autodl-tmp/GUOJI/stage1a_release_65e6ae9/results_kbs/stage1a_gpu_smoke_65e6ae9_901_20260707_214056/`
+- Formal Stage 1a root: `/root/autodl-tmp/GUOJI/stage1a_release_65e6ae9/results_kbs/stage1a_65e6ae9_901/`
+- Formal logs: `/root/autodl-tmp/GUOJI/stage1a_release_65e6ae9/results_kbs/stage1a_65e6ae9_901_logs/`
+- Aggregation output: `/root/autodl-tmp/GUOJI/stage1a_release_65e6ae9/results_kbs/stage1a_65e6ae9_901/stage1a_aggregate_go_no_go.json`
+- Completeness output: `/root/autodl-tmp/GUOJI/stage1a_release_65e6ae9/results_kbs/stage1a_65e6ae9_901/completeness_report.json`
+
+### Status
+- GPU smoke validator passed:
+  - `passed=true`
+  - `smoke_root_a.passed=true`
+  - `smoke_root_b.passed=true`
+  - `cp_duplicate.passed=true`
+- Formal Stage 1a completed 100/100 runs:
+  - 96 formal runs.
+  - 4 RawChainMamba limited diagnostic runs.
+  - `failed_count=0`.
+- Aggregation completed:
+  - completeness gate passed.
+  - semantic gate passed.
+  - `final_go=false`.
+  - `performance_go=false`.
+- This run is official for the frozen P0.3e release environment, but it does not support starting Stage 1b under the preregistered gates.

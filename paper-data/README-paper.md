@@ -336,3 +336,12 @@ P0.3e release-lock patch (2026-07-07):
 - Verification: `py_compile` passed; `tests/test_stage1a_execution.py` passed all 12 tests; source manifest parity passed.
 - Writing status: no KBS manuscript edits. P0.3e remains release infrastructure only and should not be used as performance evidence.
 - Next gate: external advisor reviews `phase7_p0_3e_release_lock_v1.zip`; if approved, execute two 5-method GPU smoke roots and `validate_gpu_infrastructure_smoke.py` before full Stage 1a.
+
+Stage 1a 901 official GPU run (2026-07-07):
+- User clarified that formal experiments must run on the unified 901 environment; local partial Stage 1a output is non-official and must not be used.
+- 901 release checkout: `/root/autodl-tmp/GUOJI/stage1a_release_65e6ae9`, commit `65e6ae9afef552c84d8211a9d6e9aa70db48c276`.
+- GPU infrastructure smoke passed with validator `passed=true`, including both smoke roots and CP duplicate.
+- Frozen Stage 1a completed 100/100 runs on 901 with `failed_count=0`; all formal methods passed completeness and semantic gates.
+- Aggregation output: `/root/autodl-tmp/GUOJI/stage1a_release_65e6ae9/results_kbs/stage1a_65e6ae9_901/stage1a_aggregate_go_no_go.json`.
+- Decision: `final_go=false` and `performance_go=false`; CP-depthwise did not meet the preregistered effect-size gates and Stage 1b should not start without advisor review.
+- Writing status: no KBS manuscript edits. Do not present Stage 1a as positive evidence for the repaired method.
