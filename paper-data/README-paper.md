@@ -382,3 +382,18 @@ P1 bounded failure analysis (2026-07-08):
 - Integrity status: official Stage 1a artifact inventory and post-analysis SHA256 manifest both passed; frozen aggregation recomputation matched the official aggregator.
 - Strict decision: `INCONCLUSIVE_BOUNDED_POSTMORTEM`. A1 learned-CP-vs-identity equivalence passed, but A2 failed and A3 was not interpretable because no aligned data_seed=0 development artifact existed; B also failed because the preregistered nontrivial-filter-movement thresholds were not met.
 - Writing status: continue freezing KBS text. Current CP-depthwise remains disqualified from Stage 1b and must not be restored as the KBS main method based on this P1 analysis.
+
+KBS Route-B Jacobian coverage direction v1.1 (2026-07-10):
+- Status: documentation-only correction package for advisor review; no experiments, no GPU, no seeds 4-8 inspection, no new method training, and no replacement of canonical `E:\GUOJI\elsarticle\istf_kbs.tex`.
+- Corrected claim-evidence matrix: `paper-data/docs/kbs_jacobian_coverage_claim_evidence_matrix_v1_1_2026-07-10.md`.
+- Corrected manuscript skeleton: `paper-data/docs/kbs_jacobian_coverage_manuscript_skeleton_v1_1_2026-07-10.md`.
+- Changelog: `paper-data/docs/kbs_jacobian_coverage_v1_to_v1_1_changelog_2026-07-10.md`.
+- Full-draft execution plan: `paper-data/docs/FULL_DRAFT_EXECUTION_PLAN.md`.
+- Companion LaTeX skeleton: `E:\GUOJI\elsarticle\istf_kbs_coverage_audit_skeleton_v1_1.tex`.
+- Key correction: the audit framework now separates score-route completeness, penalty-route completeness, score-penalty alignment, and coordinate/horizon validity. Score coverage and penalty coverage are not interchangeable.
+- Active title direction: `Jacobian Coverage Audits for Reliable Neural Granger Causality`.
+- Section 2 title locked for the skeleton as `Background and Related Work`.
+- Stage 1a remains a main-text boundary table: semantic gates passed, CP performance gate failed, FixedFIR3 novelty gate failed, EMA full-H dominance no-go did not trigger, and Stage 1b eligibility failed.
+- Legacy ISTF-Mamba is restricted to one score-semantics failure diagnostic claim: filtered-coordinate scores can diverge from original-input raw-chain attribution when cross-channel transformations destroy source-variable identity.
+- Old CausalTime benchmark tables and operating-regime claims are removed from the active mainline.
+- Root-cause synthetic diagnostics are downgraded to `Pending semantics/provenance audit; appendix candidate`.

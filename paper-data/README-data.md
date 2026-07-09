@@ -480,3 +480,40 @@ python experiments/generate_eligibility_table.py
   - B nontrivial-filter-movement gate failed because median identity deviation and CP residual-kernel norm stayed below the preregistered thresholds.
   - B no-filtering-benefit gate passed, but B overall did not pass.
 - This analysis is retrospective mechanism diagnosis only; it is not a new performance experiment and does not revive CP-depthwise for Stage 1b.
+
+---
+
+## 14. KBS Route-B Jacobian Coverage Direction v1.1 Documentation Assets
+
+**Generated:** 2026-07-10
+**GPU used:** no
+**New experiments:** no
+**Seeds 4-8 output arrays inspected:** no
+**KBS canonical manuscript modified:** no
+
+### Purpose
+- Provide corrected documentation for the Route-B KBS manuscript direction before full drafting.
+- Replace the incorrect "score or penalty" audit question with four separate audit dimensions.
+- Register exact artifact paths, score types, model architectures, and permitted claims for the current evidence base.
+
+### Key files
+- Claim-evidence matrix: `E:\GUOJI\mamba_enhanced\paper-data\docs\kbs_jacobian_coverage_claim_evidence_matrix_v1_1_2026-07-10.md`
+- Manuscript skeleton: `E:\GUOJI\mamba_enhanced\paper-data\docs\kbs_jacobian_coverage_manuscript_skeleton_v1_1_2026-07-10.md`
+- Changelog: `E:\GUOJI\mamba_enhanced\paper-data\docs\kbs_jacobian_coverage_v1_to_v1_1_changelog_2026-07-10.md`
+- Full draft execution plan: `E:\GUOJI\mamba_enhanced\paper-data\docs\FULL_DRAFT_EXECUTION_PLAN.md`
+- LaTeX skeleton: `E:\GUOJI\elsarticle\istf_kbs_coverage_audit_skeleton_v1_1.tex`
+- Review package: `E:\GUOJI\kbs_review_packages\phase7_kbs_jacobian_coverage_direction_v1_1.zip`
+
+### Evidence-provenance status
+- d_cond sweep: `E:\GUOJI\mamba_enhanced\diagnostic_results\exp2_dcond_sweep.json`
+- mask/shuffle: `E:\GUOJI\mamba_enhanced\diagnostic_results\mask_shuffle_results.json`; `E:\GUOJI\mamba_enhanced\results\raw\mask_supplement_results.json`
+- coefficient recovery: `E:\GUOJI\mamba_enhanced\diagnostic_results\exp4_coefficient_recovery.json`
+- full auxiliary-Jacobian penalty: `E:\GUOJI\mamba_enhanced\risk_mitigation_results\full_aux_jacobian_penalty.json`; `E:\GUOJI\mamba_enhanced\risk_mitigation_results\full_aux_jacobian_penalty.csv`
+- root-cause synthetic: pending semantics/provenance audit; appendix candidate only.
+- legacy ISTF-Mamba: semantic-failure diagnostic only, sourced from `E:\GUOJI\mamba_enhanced\paper-data\p0_jacobian_semantics_audit_2026-07-06.md` and `E:\GUOJI\mamba_enhanced\results\p0_audit\`.
+- Stage 1a: `E:\GUOJI\kbs_review_packages\phase7_stage1a_901_go_nogo_v1.zip`
+- P1: `E:\GUOJI\kbs_review_packages\phase7_stage1a_bounded_failure_analysis_v1.zip`
+
+### Status
+- This asset set is a planning and documentation package only.
+- Root-cause synthetic artifacts must not be promoted to main-text A-tier evidence until their provenance and score semantics are audited.
