@@ -396,4 +396,22 @@ KBS Route-B Jacobian coverage direction v1.1 (2026-07-10):
 - Stage 1a remains a main-text boundary table: semantic gates passed, CP performance gate failed, FixedFIR3 novelty gate failed, EMA full-H dominance no-go did not trigger, and Stage 1b eligibility failed.
 - Legacy ISTF-Mamba is restricted to one score-semantics failure diagnostic claim: filtered-coordinate scores can diverge from original-input raw-chain attribution when cross-channel transformations destroy source-variable identity.
 - Old CausalTime benchmark tables and operating-regime claims are removed from the active mainline.
+
+### Route-B Full Draft v1: COMPLETE PENDING GPT REVIEW (2026-07-10)
+- [x] Separate LaTeX draft created: E:\GUOJI\elsarticle\istf_kbs_jacobian_coverage_draft_v1.tex.
+- [x] Working title: Jacobian Coverage Audits for Reliable Neural Granger Causality.
+- [x] Eight-section route: Introduction; Background and Related Work; Structural Shortcut in Auxiliary Predictive Pathways; Jacobian Coverage Audit Framework; Diagnostic Evidence for Coverage Failures; Semantic Repair as a Boundary Case; Discussion; Limitations and Conclusion.
+- [x] Draft uses only frozen controlled concat diagnostics, the limited P0 score-semantics diagnostic, official Stage 1a, and bounded P1 evidence.
+- [x] Root-cause synthetic, old CausalTime, old operating-regime claims, and all ISTF/Mamba performance claims are excluded from the active mainline.
+- [x] CP-depthwise is reported as a semantic-pass/performance-fail boundary case, not as a successful method.
+- [x] Draft evidence documents:
+  - paper-data/docs/kbs_jacobian_coverage_claim_evidence_matrix_v1_2_draft_2026-07-10.md
+  - paper-data/docs/DRAFT_V1_CHANGELOG.md
+  - paper-data/docs/DRAFT_V1_OPEN_ISSUES.md
+  - paper-data/docs/DRAFT_V1_EVIDENCE_TRACEABILITY.md
+- [x] Current compile status: 3-pass PDF build completed; visual review found no overlap or clipped table/figure content. Underfull warnings remain in dense tables and narrow columns.
+
+### Next Step
+1. Send the dedicated draft v1 review ZIP to GPT for a scientific and claim-boundary review.
+2. Do not replace istf_kbs.tex, run training, start Stage 1b, or inspect seeds 4-8 before GPT approves the Route-B draft.
 - Root-cause synthetic diagnostics are downgraded to `Pending semantics/provenance audit; appendix candidate`.

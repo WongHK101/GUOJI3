@@ -517,3 +517,27 @@ python experiments/generate_eligibility_table.py
 ### Status
 - This asset set is a planning and documentation package only.
 - Root-cause synthetic artifacts must not be promoted to main-text A-tier evidence until their provenance and score semantics are audited.
+
+## 2026-07-10 Route-B Full Draft Figure Assets
+
+Status: draft-only manuscript assets generated from frozen source files. These
+assets do not contain new experimental results.
+
+- Figure source script: E:\GUOJI\mamba_enhanced\tools\generate_coverage_audit_draft_v1_figures.py
+- Generated figure folder: E:\GUOJI\elsarticle\figures\coverage_audit_draft_v1\
+  - fig1_coverage_mismatch_draft_v1.{pdf,svg,png}
+  - fig2_controlled_concat_diagnostics_draft_v1.{pdf,svg,png}
+  - fig3_score_semantics_audit_draft_v1.{pdf,svg,png}
+  - figure_data_manifest_draft_v1.json
+- Frozen data inputs:
+  - diagnostic_results/exp2_dcond_sweep.json
+  - results/raw/mask_supplement_results.json
+  - diagnostic_results/exp4_coefficient_recovery.json
+  - risk_mitigation_results/full_aux_jacobian_penalty.json
+  - results/p0_audit/p0_jacobian_semantics_d6_iter120_refactor_seed0.json
+- Source and claim traceability: paper-data/docs/DRAFT_V1_EVIDENCE_TRACEABILITY.md.
+
+Restrictions:
+- Root-cause synthetic artifacts remain unassessed.
+- Old CausalTime and operating-regime result assets remain outside the active Route-B manuscript.
+- Legacy ISTF-Mamba is usable only for the stated filtered-coordinate/raw-chain semantic diagnostic.
