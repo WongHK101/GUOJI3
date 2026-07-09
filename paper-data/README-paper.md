@@ -415,3 +415,23 @@ KBS Route-B Jacobian coverage direction v1.1 (2026-07-10):
 1. Send the dedicated draft v1 review ZIP to GPT for a scientific and claim-boundary review.
 2. Do not replace istf_kbs.tex, run training, start Stage 1b, or inspect seeds 4-8 before GPT approves the Route-B draft.
 - Root-cause synthetic diagnostics are downgraded to `Pending semantics/provenance audit; appendix candidate`.
+# CURRENT ROUTE-B KBS STATUS (2026-07-10)
+
+The active KBS writing artifact is the separate, frozen-evidence manuscript
+`E:\GUOJI\elsarticle\istf_kbs_jacobian_coverage_draft_v2.tex`, titled
+*Jacobian Coverage Audits for Reliable Neural Granger Causality*. It is a
+reliability/audit manuscript, not an ISTF performance-method manuscript, and
+does not replace canonical `E:\GUOJI\elsarticle\istf_kbs.tex`.
+
+Route-B boundaries: no new training, GPU, Stage 1b, CP revival, inspection of
+seeds 4--8 model-training/model-performance outputs, canonical-manuscript
+replacement, historical CausalTime performance narrative, operating-regime
+claims, root-cause synthetic main-text claims, or legacy ISTF-Mamba performance
+claims. Legacy Mamba is a filtered-coordinate versus raw-chain score-semantics
+diagnostic only. Stage 1a is a semantic-pass/performance-fail boundary table;
+P1 is `INCONCLUSIVE_BOUNDED_POSTMORTEM`, and A3 may only be described as
+uninterpretable because `gradient_replay_alignment_valid=false`.
+
+Active V2 evidence docs: `paper-data/docs/kbs_jacobian_coverage_claim_evidence_matrix_v2_2026-07-10.md`,
+`DRAFT_V2_EVIDENCE_TRACEABILITY.md`, `DIAGNOSTIC_REPLICATION_AUDIT.md`,
+`BIBLIOGRAPHY_AUDIT.md`, and `DRAFT_V2_OPEN_ISSUES.md`.

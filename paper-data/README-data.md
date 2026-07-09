@@ -541,3 +541,29 @@ Restrictions:
 - Root-cause synthetic artifacts remain unassessed.
 - Old CausalTime and operating-regime result assets remain outside the active Route-B manuscript.
 - Legacy ISTF-Mamba is usable only for the stated filtered-coordinate/raw-chain semantic diagnostic.
+# CURRENT ROUTE-B DRAFT V2 ASSETS (2026-07-10)
+
+The active KBS writing artifact is the separate, frozen-evidence Route-B draft
+`E:\GUOJI\elsarticle\istf_kbs_jacobian_coverage_draft_v2.tex`. It does not
+replace canonical `E:\GUOJI\elsarticle\istf_kbs.tex`. The figure source is
+`tools/generate_coverage_audit_draft_v2_figures.py`; exports are in
+`E:\GUOJI\elsarticle\figures\coverage_audit_draft_v2\`.
+
+The V2 evidence set is limited to: single-run controlled concat diagnostics
+(`diagnostic_results/exp2_dcond_sweep.json`,
+`results/raw/mask_supplement_results.json`,
+`diagnostic_results/exp4_coefficient_recovery.json`); the five-seed
+full-auxiliary-penalty diagnostic
+(`risk_mitigation_results/full_aux_jacobian_penalty.{json,csv}`); five fixed P0
+semantic diagnostics
+(`results/p0_audit/p0_jacobian_semantics_d6_iter120_refactor_seed{0,1,2,3,4}.json`);
+the official Stage 1a boundary artifact
+(`E:\GUOJI\kbs_review_packages\phase7_stage1a_901_go_nogo_v1.zip`); and the
+bounded P1 postmortem
+(`E:\GUOJI\kbs_review_packages\phase7_stage1a_bounded_failure_analysis_v1.zip`).
+
+Exact hashes, score semantics, architecture, replication status, and permitted
+claims are in `paper-data/docs/DRAFT_V2_EVIDENCE_TRACEABILITY.md`. Root-cause
+synthetic material, historical CausalTime/operating-regime results, and legacy
+ISTF-Mamba performance records are intentionally excluded. Do not inspect seeds
+4--8 model-training or model-performance output arrays for this route.
