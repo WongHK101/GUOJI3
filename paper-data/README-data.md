@@ -567,3 +567,22 @@ claims are in `paper-data/docs/DRAFT_V2_EVIDENCE_TRACEABILITY.md`. Root-cause
 synthetic material, historical CausalTime/operating-regime results, and legacy
 ISTF-Mamba performance records are intentionally excluded. Do not inspect seeds
 4--8 model-training or model-performance output arrays for this route.
+
+# CURRENT ROUTE-B DRAFT V2.1 ASSETS (2026-07-10)
+
+The separate V2.1 manuscript is
+`E:\GUOJI\elsarticle\istf_kbs_jacobian_coverage_draft_v2_1.tex`; its source is
+`mamba_enhanced/tools/generate_coverage_audit_draft_v2_1_figures.py`, and the
+vector/raster exports are under
+`E:\GUOJI\elsarticle\figures\coverage_audit_draft_v2_1\`.
+
+The V2.1 frozen evidence inventory is fixed by
+`paper-data/docs/DRAFT_V2_1_EVIDENCE_EXTRACTS_INDEX.md` and
+`DRAFT_V2_1_EVIDENCE_TRACEABILITY.md`. It adds one bounded, read-only five-seed
+concat post-hoc Jacobian artifact:
+`risk_mitigation_results/concat_posthoc_jacobian.json`, with provenance script
+`experiments/risk_mitigation_20260515/run_concat_posthoc_jacobian.py`. It is
+usable only as an auxiliary-route usage diagnostic, never as a graph-score,
+conditional-Granger, or performance result. All other assets retain the V2
+restrictions above; canonical manuscript and frozen source artifacts are not
+modified.

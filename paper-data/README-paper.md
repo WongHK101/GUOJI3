@@ -435,3 +435,27 @@ uninterpretable because `gradient_replay_alignment_valid=false`.
 Active V2 evidence docs: `paper-data/docs/kbs_jacobian_coverage_claim_evidence_matrix_v2_2026-07-10.md`,
 `DRAFT_V2_EVIDENCE_TRACEABILITY.md`, `DIAGNOSTIC_REPLICATION_AUDIT.md`,
 `BIBLIOGRAPHY_AUDIT.md`, and `DRAFT_V2_OPEN_ISSUES.md`.
+
+# CURRENT ROUTE-B KBS STATUS: V2.1 (2026-07-10)
+
+The active review artifact is now the separate frozen-evidence manuscript
+`E:\GUOJI\elsarticle\istf_kbs_jacobian_coverage_draft_v2_1.tex`. It remains a
+documentation-only Route-B draft and does not replace canonical
+`E:\GUOJI\elsarticle\istf_kbs.tex`.
+
+V2.1 corrects the shortcut proposition so that the controlled shortcut requires
+the auxiliary route to be omitted from both the x-only graph score and its
+corresponding Jacobian penalty. It keeps score-only incompleteness,
+penalty-only incompleteness, coordinate ambiguity, and horizon truncation as
+separate audit outcomes. Table 1 is explicitly controlled-diagnostic and
+claim-specific. The main manuscript contains no historical benchmark,
+operating-regime, or legacy-Mamba performance claims.
+
+The documentation set is `paper-data/docs/*V2_1*`, including the claim-evidence
+matrix, evidence traceability register, replication audit, official-source
+bibliography audit, bibliography correction changelog, final audit report,
+open issues, and evidence-extract index. The local final three-pass build is
+14 pages with 0 errors, 0 undefined references/citations, 0 missing files, and
+0 Overfull hboxes. The remaining decision is GPT review of the separate V2.1
+package; no experiment, GPU, Stage 1b, CP revival, or seeds 4--8 inspection is
+permitted before that review closes.
