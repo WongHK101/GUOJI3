@@ -459,3 +459,31 @@ open issues, and evidence-extract index. The local final three-pass build is
 0 Overfull hboxes. The remaining decision is GPT review of the separate V2.1
 package; no experiment, GPU, Stage 1b, CP revival, or seeds 4--8 inspection is
 permitted before that review closes.
+
+# CURRENT ROUTE-B KBS STATUS: V2.2 (2026-07-10)
+
+The active review artifact is the separate frozen-evidence manuscript
+`E:\GUOJI\elsarticle\istf_kbs_jacobian_coverage_draft_v2_2.tex`, titled
+*Auditing Jacobian Coverage in Neural Granger Causality*. It does not replace
+canonical `E:\GUOJI\elsarticle\istf_kbs.tex`.
+
+V2.2 is a focused scientific-writing pass. Proposition 3.1 is restricted to
+the structural possibility that a predictor can use an auxiliary route omitted
+from both the x-only graph score and the corresponding x-only Jacobian penalty,
+while frozen diagnostics separately establish empirical graph-ranking and
+coefficient-fidelity degradation. Section 4 is the constructive center: it
+starts from the declared graph object and keeps score-route completeness,
+penalty-route completeness, score--penalty alignment, coordinate validity, and
+horizon validity distinct. Table 1 retains its V2.1 five-column geometry.
+
+The five-seed `|J_c|/|J_x| = 3.689 +/- 0.750` value is retained only as a
+post-hoc sensitivity-mass route-usage diagnostic. It is not a graph score,
+conditional-Granger estimate, benchmark result, performance result, or
+confirmatory result. Stage 1a and P1 claim boundaries are unchanged. The local
+three-pass build is 14 pages with 0 errors, 0 undefined references/citations,
+0 missing figures, and 0 Overfull hboxes/vboxes.
+
+Review documents are `paper-data/docs/*V2_2*`. No new experiment, GPU, Stage
+1b, CP revival, inspection of seeds 4--8 model-training/model-performance
+arrays, or canonical-manuscript replacement is permitted by this drafting
+pass.
