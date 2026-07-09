@@ -4,6 +4,29 @@
 **Status:** 176 canonical entries. 104/104 baseline+mamba have gc_score_path. PlanA removed from all active files. Phase 5 root-cause synthetic charting complete. No further data changes without expert re-audit.
 **Data package size:** `paper-data/` contains metadata, tables, canonical JSON, manifests, and figures (~2 MB). The full GC score archive is stored separately under `results/scores/` and contains 208 `.npy` files totaling approximately 2.0 GB.
 
+## KBS Audit-Pivot Planning Assets (2026-07-09)
+
+The KBS paper route is now planned as a Jacobian coverage audit paper rather than an ISTF performance-method paper. The following planning assets index frozen evidence and allowed claims without running new experiments:
+
+| Asset | Path | Purpose |
+|---|---|---|
+| Claim-evidence matrix | `paper-data/docs/kbs_jacobian_coverage_claim_evidence_matrix_2026-07-09.md` | Maps each manuscript claim to frozen evidence, evidence tier, supported wording, and forbidden overclaim. |
+| Manuscript skeleton | `paper-data/docs/kbs_jacobian_coverage_manuscript_skeleton_2026-07-09.md` | Provides the new section-level KBS structure for the audit route. |
+| LaTeX skeleton | `E:\GUOJI\elsarticle\istf_kbs_coverage_audit_skeleton.tex` | Compile-ready starting skeleton for later KBS migration; it does not replace `istf_kbs.tex`. |
+
+Frozen evidence sources for this route:
+
+- Stage 1a official aggregate: `E:\GUOJI\kbs_review_packages\phase7_stage1a_901_go_nogo_v1.zip`, `formal_root/stage1a_aggregate_go_no_go.json`.
+- P1 bounded postmortem: `E:\GUOJI\kbs_review_packages\phase7_stage1a_bounded_failure_analysis_v1.zip`.
+- Handoff clarification: `E:\GUOJI\kbs_review_packages\NEW_GPT_HANDOFF_CLARIFICATION_ADDENDUM.md`.
+
+Data-use constraints:
+
+- No Stage 1b data are available or allowed.
+- Do not inspect seeds 4-8 output arrays.
+- Seeds 4 and 5 are not pristine confirmatory seeds because they were used in P0.3b generator-only diagnostics.
+- Legacy ISTF-Mamba benchmark data are historical diagnostics only and must not support graph-recovery or performance claims.
+
 ## P0.3b Stage-1 Readiness Assets (2026-07-07)
 
 - Scope: local CPU readiness closure only; no GPU/AutoDL run and no KBS manuscript edit.

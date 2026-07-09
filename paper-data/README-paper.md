@@ -176,6 +176,35 @@ ISTF is NOT a universal booster. We characterize **when** it helps, when it is n
 
 ---
 
+## KBS Route-B Audit Pivot Override (2026-07-09)
+
+Current writing direction for the KBS manuscript has pivoted away from an ISTF performance-method paper. The active planning direction is:
+
+> Jacobian coverage audits for reliable neural Granger causality.
+
+This route treats the paper as a mechanism/audit contribution about prediction-knowledge decoupling in Jacobian-regularized neural Granger causality. It does not claim that ISTF-Mamba, CP-depthwise, Mamba, TCN, or any learned filter is a successful benchmark method.
+
+New planning assets:
+
+- `paper-data/docs/kbs_jacobian_coverage_claim_evidence_matrix_2026-07-09.md`
+- `paper-data/docs/kbs_jacobian_coverage_manuscript_skeleton_2026-07-09.md`
+- `E:\GUOJI\elsarticle\istf_kbs_coverage_audit_skeleton.tex`
+
+Locked claim boundaries:
+
+- Use `Jacobian coverage audit framework`, not `coverage certificate`.
+- Use Stage 1a as semantic-pass/performance-fail boundary evidence.
+- CP-depthwise remains disqualified from Stage 1b and KBS main-method status.
+- Legacy ISTF-Mamba can be used only as historical shortcut/score-semantics diagnostic, not as graph-recovery evidence.
+- P1 A3 wording is limited to: `A3 was uninterpretable and did not pass because gradient_replay_alignment_valid=false`.
+- Seeds 4 and 5 are not strict future confirmatory candidates; seeds 6-8 require sealed-boundary audit before any use, with fresh seeds preferred.
+
+Preferred KBS rebuild strategy:
+
+- Do not patch the old ISTF-performance narrative line by line.
+- Rebuild from a new skeleton and migrate only valid equations, diagnostics, figures, tables, and literature positioning.
+- Keep the canonical submitted draft `E:\GUOJI\elsarticle\istf_kbs.tex` unchanged until the advisor approves the new skeleton migration.
+
 ## 7. Writing Progress Tracker
 
 ### KBS Status Override (2026-07-05)
