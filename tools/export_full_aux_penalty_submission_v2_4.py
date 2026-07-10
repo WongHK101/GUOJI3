@@ -17,10 +17,12 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE_ROOT = PROJECT_ROOT.parent
-DEFAULT_INPUT = PROJECT_ROOT / "risk_mitigation_results" / "full_aux_jacobian_penalty.json"
+OUTPUT_ROOT = WORKSPACE_ROOT / "elsarticle" if (WORKSPACE_ROOT / "elsarticle").is_dir() else PROJECT_ROOT
+PROJECT_INPUT = PROJECT_ROOT / "risk_mitigation_results" / "full_aux_jacobian_penalty.json"
+PACKAGE_INPUT = PROJECT_ROOT / "frozen_evidence" / "full_aux_penalty" / "full_aux_jacobian_penalty.json"
+DEFAULT_INPUT = PROJECT_INPUT if PROJECT_INPUT.is_file() else PACKAGE_INPUT
 DEFAULT_OUTPUT = (
-    WORKSPACE_ROOT
-    / "elsarticle"
+    OUTPUT_ROOT
     / "tables"
     / "coverage_audit_submission_v2_4"
 )

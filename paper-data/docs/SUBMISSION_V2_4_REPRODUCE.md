@@ -2,7 +2,7 @@
 
 ## Figures and frozen table
 
-From a checkout containing the packaged source and `frozen_evidence/` layout:
+From either the repository layout or the extracted package root:
 
 ```powershell
 python tools/generate_coverage_audit_submission_v2_4_figures.py
@@ -11,6 +11,10 @@ python tools/export_full_aux_penalty_submission_v2_4.py
 
 These commands only read frozen JSON/CSV files and write figures or formatted
 tables. They do not train or evaluate a model.
+
+The scripts auto-detect the repository layout (`../elsarticle`) or the package
+layout (`./figures`, `./tables`, and `./frozen_evidence`). Explicit
+`--output-dir` and `--input` arguments remain available for audit use.
 
 ## Manuscript
 

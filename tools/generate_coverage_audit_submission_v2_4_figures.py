@@ -37,8 +37,9 @@ plt.rcParams.update(
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE_ROOT = PROJECT_ROOT.parent
+OUTPUT_ROOT = WORKSPACE_ROOT / "elsarticle" if (WORKSPACE_ROOT / "elsarticle").is_dir() else PROJECT_ROOT
 DEFAULT_OUTPUT_DIR = (
-    WORKSPACE_ROOT / "elsarticle" / "figures" / "coverage_audit_submission_v2_4"
+    OUTPUT_ROOT / "figures" / "coverage_audit_submission_v2_4"
 )
 
 PALETTE = {
