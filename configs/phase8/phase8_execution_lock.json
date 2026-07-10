@@ -1,0 +1,152 @@
+{
+  "config_name": "phase8_execution_lock_v1_3",
+  "config_version": "implementation_cpu_preflight_v1",
+  "approved_plan_version": "phase8_experimental_upgrade_plan_v1_3",
+  "approved_plan_zip_sha256": "9258c8a864e806b2018b8be807896720d1aeb1c20532d55f949aeb906c1bd45d",
+  "base_commit": "6e1de5f6ccc5b8d6fb1cf24db64e6fa57f7d21ee",
+  "frozen": true,
+  "gpu_allowed": false,
+  "run_matrix": {
+    "path": "configs/phase8/phase8_run_matrix.csv",
+    "sha256": "cc82b4283dfb28f5180891f1d0716d868bc10ddad53e64dbf174b9a36a04ac1a",
+    "record_count": 135,
+    "formal_count": 130,
+    "non_evidentiary_count": 5,
+    "confirmation_count": 50
+  },
+  "graph_objects": {
+    "primary": "S_GC_total_nominal",
+    "definition": "max_{1<=h<=K} mean_{u in U_h} abs(d y_hat[u,target] / d X[source,u-h])",
+    "coefficient_metric": "coefficient_r_total_lag1",
+    "coefficient_definition": "corr(vec_off(J_bar_total[:,:,1]),vec_off(abs(A)))",
+    "secondary": "S_reliable_history",
+    "exploratory": "S_prefix_all",
+    "n_min_rule": "max(20,ceil(0.10*eligible_target_count))",
+    "score_tensor_orientation": "target_source"
+  },
+  "estimator": {
+    "name": "lag_balanced_full_prefix_raw_chain",
+    "lags_per_step": 2,
+    "eligible_windows_per_lag": 1,
+    "output_targets_per_step": 2,
+    "source_variables": "all",
+    "create_graph": true,
+    "normalization": "H_max/(lags*windows_per_lag*outputs*d_source*K)",
+    "lambda": 0.01,
+    "formal_pilot_schedule_seed": 32001,
+    "sealed_confirmation_schedule_seed": 33001
+  },
+  "optimizer": {
+    "name": "Adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "grad_clip_norm": 1.0
+  },
+  "method_classes": {
+    "baseline_jrngc": "LegacyBaselineAdapter(BaselineJRNGC)",
+    "concat_x_only": "LegacyConcatXOnlyAdapter(MambaJRNGC)",
+    "concat_dcond_1": "LegacyConcatXOnlyAdapter(MambaJRNGC)",
+    "concat_dcond_2": "LegacyConcatXOnlyAdapter(MambaJRNGC)",
+    "concat_dcond_4": "LegacyConcatXOnlyAdapter(MambaJRNGC)",
+    "concat_dcond_8": "LegacyConcatXOnlyAdapter(MambaJRNGC)",
+    "concat_dcond_16": "LegacyConcatXOnlyAdapter(MambaJRNGC)",
+    "full_aux_equal_lambda": "LegacyFullAuxAdapter(MambaConcatFullPenaltyJRNGC,equal)",
+    "full_aux_lc10": "LegacyFullAuxAdapter(MambaConcatFullPenaltyJRNGC,lc10)",
+    "coverage_aligned_raw_chain": "CoverageAlignedRawChainJRNGC",
+    "concat_fixed_target_interventions": "LegacyConcatXOnlyAdapter(MambaJRNGC)",
+    "no_aux_fixed_target_interventions": "RawChainMambaISTFJRNGC(new_matched_control)"
+  },
+  "blocks": {
+    "capacity_replication": {
+      "checkpoint_policy": "legacy_min_total_objective_restore",
+      "check_every": 50,
+      "lookback": 10,
+      "early_stop_after_iteration": 1000,
+      "gating_checkpoint": "restored_legacy_best",
+      "layers": 3,
+      "hidden": 32,
+      "d_state": 4
+    },
+    "fixed_target_interventions": {
+      "checkpoint_policy": "legacy_min_total_objective_restore",
+      "check_every": 50,
+      "lookback": 10,
+      "early_stop_after_iteration": 1000,
+      "gating_checkpoint": "restored_legacy_best",
+      "layers": 5,
+      "hidden": 50,
+      "d_state": 4,
+      "no_aux_control_status": "new_matched_input_space_control_not_legacy_replication"
+    },
+    "coefficient_replication": {
+      "checkpoint_policy": "legacy_min_total_objective_restore",
+      "check_every": 50,
+      "lookback": 10,
+      "early_stop_after_iteration": 1000,
+      "gating_checkpoint": "restored_legacy_best",
+      "layers": 3,
+      "hidden": 32,
+      "d_state": 4
+    },
+    "repair_pilot": {
+      "checkpoint_policy": "fixed_full_budget_final",
+      "gating_checkpoint": "final",
+      "max_iter": 2000,
+      "early_stop": false,
+      "layers": 3,
+      "hidden": 32,
+      "d_state": 4
+    },
+    "repair_confirmation": {
+      "checkpoint_policy": "fixed_full_budget_final",
+      "gating_checkpoint": "final",
+      "max_iter": 2000,
+      "early_stop": false,
+      "sealed": true,
+      "layers": 3,
+      "hidden": 32,
+      "d_state": 4
+    },
+    "infrastructure_smoke": {
+      "checkpoint_policy": "fixed_full_budget_final_non_evidentiary",
+      "gating_checkpoint": "final",
+      "early_stop": false
+    },
+    "repair_scale_benchmark": {
+      "checkpoint_policy": "fixed_full_budget_final_non_evidentiary",
+      "gating_checkpoint": "final",
+      "early_stop": false
+    }
+  },
+  "output_roots": {
+    "preflight": "results_kbs/phase8_preflight",
+    "formal": "results_kbs/phase8_execution",
+    "gated_confirmation": "results_kbs/phase8_confirmation"
+  },
+  "confirmation_release_token": {
+    "required": true,
+    "included_in_cpu_preflight_package": false,
+    "required_authorization": "GPT_APPROVED_PHASE8_CONFIRMATION",
+    "required_fields": [
+      "pilot_go_passed",
+      "authorization",
+      "config_sha256",
+      "run_matrix_sha256",
+      "estimator_schedule_sha256"
+    ]
+  },
+  "cpu_preflight_thresholds": {
+    "finite_difference_atol": 0.00001,
+    "finite_difference_rtol": 0.001,
+    "estimator_relative_objective_error_max": 0.05,
+    "estimator_gradient_cosine_min": 0.95,
+    "baseline_partial_total_max_abs": 1e-7,
+    "deterministic_max_abs": 1e-6
+  },
+  "compute_limits": {
+    "expected_gpu_hours_min": 20,
+    "expected_gpu_hours_max": 34,
+    "hard_gpu_hours": 48,
+    "gpu_execution_in_current_task": false
+  }
+}

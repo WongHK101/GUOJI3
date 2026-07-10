@@ -44,6 +44,7 @@ results/*.log
 results/processed/*.json
 results_kbs/
 results_kbs_test/
+risk_mitigation_results/
 
 # Stage 1 release artifact generated after the release-lock commit.
 configs/approved_stage1a_code_commit.txt
