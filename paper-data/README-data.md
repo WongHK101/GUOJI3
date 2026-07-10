@@ -626,3 +626,35 @@ The plotting script supports both the original project layout and the review
 package's `frozen_evidence/` layout. Package-layout regeneration produced PNGs
 pixel-identical to all three included exports. P1 did not inspect or use Stage
 1b model-training or model-performance outputs for seeds 4--8.
+
+# CURRENT ROUTE-B SUBMISSION CANDIDATE V2.4 ASSETS (2026-07-10)
+
+V2.4 uses the frozen V2.3 numerical evidence and adds no experiment, model
+output, seed, or checkpoint. Its manuscript is
+`E:\GUOJI\elsarticle\istf_kbs_jacobian_coverage_submission_candidate_v2_4.tex`;
+canonical `istf_kbs.tex` remains unchanged.
+
+New source-verified and formatted assets:
+
+- Controlled concat definition:
+  `paper-data/docs/CONTROLLED_CONCAT_ARCHITECTURE_V2_4.md`.
+- Figure source and exports:
+  `tools/generate_coverage_audit_submission_v2_4_figures.py` and
+  `E:\GUOJI\elsarticle\figures\coverage_audit_submission_v2_4\`.
+- Full-penalty table exporter:
+  `tools/export_full_aux_penalty_submission_v2_4.py`.
+- All-variant frozen table source:
+  `E:\GUOJI\elsarticle\tables\coverage_audit_submission_v2_4\`.
+- V2.4 claim matrix, traceability and replication audit:
+  `paper-data/docs/*V2_4*`.
+
+The post-hoc `3.689 +/- 0.750` value is now defined exactly as the ratio of
+blockwise mean absolute Jacobian magnitudes computed with `torch.mean`. It is
+coordinate-scale dependent and usable only as a local route-use diagnostic
+under fixed preprocessing and coordinates. The full-penalty appendix discloses
+baseline, concat x-only, equal-lambda, budget-normalized, lambda-ratio 0.1 and
+lambda-ratio 10 variants with frozen five-seed means and population SDs.
+
+Root-cause synthetic evidence remains `UNASSESSED`; CausalTime performance,
+legacy Mamba performance, Stage 1b and seeds 4--8 model-performance arrays
+remain outside the active evidence set.

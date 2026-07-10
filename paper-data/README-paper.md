@@ -517,3 +517,36 @@ The 14-page three-pass build has 0 errors, 0 undefined references/citations, 0
 missing figures, and 0 overfull boxes. All pages passed visual inspection.
 Further structural drafting is stopped; the next action is a full adversarial
 paper review and journal-strategy decision.
+
+# CURRENT ROUTE-B KBS STATUS: V2.4 SUBMISSION CANDIDATE (2026-07-10)
+
+The separate manuscript is now
+`E:\GUOJI\elsarticle\istf_kbs_jacobian_coverage_submission_candidate_v2_4.tex`.
+It retains the accepted Route-B thesis and does not replace canonical
+`istf_kbs.tex`.
+
+Critical corrections completed:
+
+- Table 1 defines the controlled concat implementation from source:
+  `c_u=g_phi(X_{0:u})`, causal full-prefix support, exact predictor tensor,
+  detach behavior, partial x-only score/penalty, full-penalty coordinates and
+  the still-partial inherited graph score.
+- The abstract marks the capacity and coefficient diagnostics as two single
+  runs before giving their numerical values.
+- The frozen post-hoc ratio is called a mean absolute Jacobian-magnitude ratio,
+  with explicit coordinate-scale and reparameterization limitations.
+- Every frozen full auxiliary-penalty variant is reported in an appendix table;
+  `full_lc_10` is one exploratory setting, not an optimum.
+- Related Work now distinguishes the graph-score audit from attribution axioms,
+  saliency sanity checks, faithfulness evaluation and explanation
+  regularization using officially verified primary sources.
+- Main-text internal protocol language is reduced; the boundary study remains a
+  go/no-go table, and the postmortem remains inconclusive.
+- Submission metadata placeholders and journal-strategy records are present.
+
+The local three-pass build is 17 pages with 0 errors, 0 undefined
+references/citations, 0 missing files and 0 overfull boxes. Visual inspection
+found no clipping, overlap or float-order error after the Appendix B/C barrier
+fix. The next permitted action is GPT submission-readiness review of the v2.4
+ZIP. No new experiment, GPU, Stage 1b, canonical replacement, or seeds 4--8
+model-performance inspection is permitted.
