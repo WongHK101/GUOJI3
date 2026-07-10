@@ -487,3 +487,33 @@ Review documents are `paper-data/docs/*V2_2*`. No new experiment, GPU, Stage
 1b, CP revival, inspection of seeds 4--8 model-training/model-performance
 arrays, or canonical-manuscript replacement is permitted by this drafting
 pass.
+
+# CURRENT ROUTE-B KBS STATUS: V2.3 SCIENCE LOCK (2026-07-10)
+
+The active review artifact is the separate manuscript
+`E:\GUOJI\elsarticle\istf_kbs_jacobian_coverage_draft_v2_3.tex`, titled
+*Auditing Jacobian Coverage in Neural Granger Causality*. Canonical
+`E:\GUOJI\elsarticle\istf_kbs.tex` remains unchanged.
+
+V2.3 adds a bounded objective-level non-certification remark: under the
+controlled shortcut assumptions, an auxiliary-only predictor has `R_x=0`, so a
+low x-only regularized objective does not itself certify that the x-only score
+represents information used for prediction. This is an existence statement,
+not an optimizer-selection or empirical-degradation claim.
+
+The framework is science-locked with five separate dimensions: score-route
+completeness, penalty-route completeness, score-penalty alignment, coordinate
+validity, and horizon validity. Its output is a claim-specific set of all
+applicable flags; `CLAIM-COVERED` requires every applicable dimension to pass
+with no required unknown. Score, penalty, and exemption status are recorded
+independently for each architecture-declared predictive route class.
+
+The exact P1 boundary is: P1 did not inspect or use Stage 1b model-training or
+model-performance outputs for seeds 4--8. Stage 1a tables and gate outcomes are
+unchanged from V2.2. Root-cause, CausalTime performance, Stage 1b, legacy-Mamba
+performance, and P1 A3 raw values remain excluded.
+
+The 14-page three-pass build has 0 errors, 0 undefined references/citations, 0
+missing figures, and 0 overfull boxes. All pages passed visual inspection.
+Further structural drafting is stopped; the next action is a full adversarial
+paper review and journal-strategy decision.

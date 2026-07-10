@@ -603,3 +603,26 @@ post-hoc ratio remains a sensitivity-mass diagnostic only. Root-cause
 synthetic, historical CausalTime/operating-regime evidence, legacy ISTF-Mamba
 performance evidence, Stage 1b, and seeds 4--8 model-training/model-performance
 arrays remain outside the active evidence set.
+
+# CURRENT ROUTE-B DRAFT V2.3 ASSETS (2026-07-10)
+
+V2.3 uses the same frozen numerical evidence as V2.2. It adds no experimental
+result or model output. Updated assets are:
+
+- Manuscript: `E:\GUOJI\elsarticle\istf_kbs_jacobian_coverage_draft_v2_3.tex`.
+- Figure source: `tools/generate_coverage_audit_draft_v2_3_figures.py`.
+- Figure exports: `E:\GUOJI\elsarticle\figures\coverage_audit_draft_v2_3\`.
+- Figure source manifest:
+  `figures/coverage_audit_draft_v2_3/figure_data_manifest_draft_v2_3.json`.
+- Claim/evidence matrix:
+  `paper-data/docs/kbs_jacobian_coverage_claim_evidence_matrix_v2_3_2026-07-10.md`.
+- Traceability and frozen-extract index:
+  `paper-data/docs/DRAFT_V2_3_EVIDENCE_TRACEABILITY.md` and
+  `DRAFT_V2_3_EVIDENCE_EXTRACTS_INDEX.md`.
+- Reusable profile template:
+  `paper-data/docs/DRAFT_V2_3_AUDIT_REPORT_TEMPLATE.md`.
+
+The plotting script supports both the original project layout and the review
+package's `frozen_evidence/` layout. Package-layout regeneration produced PNGs
+pixel-identical to all three included exports. P1 did not inspect or use Stage
+1b model-training or model-performance outputs for seeds 4--8.
