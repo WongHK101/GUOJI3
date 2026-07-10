@@ -29,5 +29,5 @@ This register is the provenance companion for `istf_kbs_jacobian_coverage_submis
 6. Proposition 3.1 supports structural possibility only. Empirical graph-ranking and coefficient-fidelity degradation is supported by the frozen controlled diagnostics, not by the proposition.
 7. Remark 3.2 is an objective non-certification result only. It does not claim that optimization always selects the auxiliary shortcut or extend beyond Proposition 3.1's assumptions.
 8. Audit output is a profile of all applicable flags, not a single precedence-ordered label. Coordinate validity and horizon validity remain separate dimensions even when displayed in one table column.
-9. The frozen Jacobian-magnitude ratio uses `torch.mean` within each coordinate block. It is not a total sensitivity mass and is explicitly scale dependent.
+9. The frozen Jacobian-magnitude ratio uses `torch.mean` within each coordinate block. It is not a sum-over-coordinates quantity and is explicitly scale dependent.
 10. `full_lc_10` was one exploratory frozen setting, not a pre-registered optimum; every saved full-penalty variant is disclosed in the appendix table.
