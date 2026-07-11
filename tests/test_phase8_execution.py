@@ -14,6 +14,7 @@ for path in [PROJECT_ROOT, SRC_DIR]:
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
+from phase8_coverage import build_stratified_lag_schedule, schedule_sha256  # noqa: E402
 from phase8_protocol import file_sha256, load_json, load_run_matrix  # noqa: E402
 from phase8_results import aggregate_pilot, aggregate_replication, validate_gpu_preflight  # noqa: E402
 from experiments.phase8_gpu_runner import generate_var1_data  # noqa: E402
@@ -181,14 +182,26 @@ def test_gpu_preflight_validator_checks_duplicate_and_hard_stops(tmp_path):
         "model_state_dict": state,
         "objective_trace_first20": [1.0 - index * 0.01 for index in range(20)],
     }
-    schedule = [{"lag_ids": [1, 2], "target_indices": [2, 3], "output_targets": [0, 1]} for _ in range(100)]
     for row in rows:
+        row = dict(row)
         metrics = _metric_payload(row)
         extras = {}
         if row["record_id"] in {"P8-PRE-004", "P8-PRE-005"}:
             extras["checkpoint_iter20.pt"] = checkpoint
-            count = 20 if row["record_id"] == "P8-PRE-004" else 100
-            extras["jacobian_schedule.json"] = {"entries": schedule[:count], "seed": 32001, "sha256": "test"}
+            schedule = build_stratified_lag_schedule(
+                T=int(row["T"]),
+                lag=int(row["K"]),
+                d_out=int(row["d"]),
+                max_iter=int(row["max_iter"]),
+                seed=int(row["jacobian_seed"]),
+            )
+            row["schedule_seed"] = int(row["jacobian_seed"])
+            row["schedule_sha256"] = schedule_sha256(schedule)
+            extras["jacobian_schedule.json"] = {
+                "entries": schedule,
+                "seed": int(row["jacobian_seed"]),
+                "sha256": row["schedule_sha256"],
+            }
         if row["record_id"] == "P8-PRE-005":
             scale_snapshot = {
                 "fixed_target_prediction_mse": 0.90,
@@ -211,10 +224,11 @@ def test_gpu_preflight_validator_checks_duplicate_and_hard_stops(tmp_path):
             iteration_rows = [
                 {
                     "completed_iteration": index + 1,
-                    "historical_stratum": ["B1", "B2", "B3"][index % 3],
-                    "historical_lag": 2 + index,
+                    "nominal_lag": 1,
+                    "historical_stratum": entry["historical_stratum"],
+                    "historical_lag": entry["historical_lag"],
                 }
-                for index in range(100)
+                for index, entry in enumerate(schedule)
             ]
             metrics["stratified_benchmark_trace"] = {
                 "iterations": iteration_rows,
@@ -236,6 +250,8 @@ def test_gpu_preflight_validator_checks_duplicate_and_hard_stops(tmp_path):
         cpu_preflight_summary={"passed": True},
     )
     assert report["passed"]
+    assert all(item["passed"] for item in report["schedule_integrity"].values())
+    assert report["stratified_trace_schedule_mismatch_count"] == 0
     assert report["determinism"]["checkpoint_state_max_abs_difference"] == 0.0
     assert report["compute_projection"]["includes_confirmation_cost_projection_only"] is True
     assert report["compute_projection"]["confirmation_execution_authorized"] is False
@@ -260,6 +276,32 @@ def test_gpu_preflight_validator_checks_duplicate_and_hard_stops(tmp_path):
     assert any(
         failure["gate"] == "historical_stratum_nonzero_float32_draw" and failure["stratum"] == "B2"
         for failure in rejected["failures"]
+    )
+
+    # Restore the B2 count, then prove that a manifest-consistent edit to the
+    # schedule is rejected by comparison with the frozen deterministic stream.
+    changed["stratified_benchmark_trace"]["strata"]["B2"]["nonzero_float32_contribution_count"] = 10
+    _write_json(metrics_path, changed)
+    artifact["files"]["metrics.json"] = file_sha256(metrics_path)
+    _write_json(artifact_path, artifact)
+    schedule_path = tmp_path / "runs" / "P8-PRE-005" / "jacobian_schedule.json"
+    changed_schedule = load_json(schedule_path)
+    changed_schedule["entries"][0]["historical_lag"] += 1
+    _write_json(schedule_path, changed_schedule)
+    artifact = load_json(artifact_path)
+    artifact["files"]["jacobian_schedule.json"] = file_sha256(schedule_path)
+    _write_json(artifact_path, artifact)
+    rejected_schedule = validate_gpu_preflight(
+        tmp_path,
+        config_path=CONFIG,
+        matrix_path=MATRIX,
+        cpu_preflight_summary={"passed": True},
+    )
+    assert not rejected_schedule["passed"]
+    assert any(
+        failure["gate"] == "frozen_stratified_schedule_integrity"
+        and failure["record_id"] == "P8-PRE-005"
+        for failure in rejected_schedule["failures"]
     )
 
 

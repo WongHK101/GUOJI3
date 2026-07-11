@@ -11,6 +11,7 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 import numpy as np
 import torch
 
+from phase8_coverage import build_stratified_lag_schedule, schedule_sha256
 from phase8_protocol import file_sha256, load_json, load_run_matrix
 
 
@@ -547,6 +548,42 @@ def validate_gpu_preflight(
     )))
     smoke_schedule = load_json(runs["P8-PRE-004"]["run_dir"] / "jacobian_schedule.json")
     benchmark_schedule = load_json(runs["P8-PRE-005"]["run_dir"] / "jacobian_schedule.json")
+    schedule_integrity = {}
+    for record_id, actual_schedule in [
+        ("P8-PRE-004", smoke_schedule),
+        ("P8-PRE-005", benchmark_schedule),
+    ]:
+        resolved = runs[record_id]["resolved"]
+        expected_schedule = build_stratified_lag_schedule(
+            T=int(resolved["T"]),
+            lag=int(resolved["K"]),
+            d_out=int(resolved["d"]),
+            max_iter=int(resolved["max_iter"]),
+            seed=int(resolved["jacobian_seed"]),
+        )
+        expected_hash = schedule_sha256(expected_schedule)
+        checks = {
+            "entry_count": len(actual_schedule.get("entries", [])) == len(expected_schedule),
+            "entries_exact": actual_schedule.get("entries") == expected_schedule,
+            "file_sha_field": actual_schedule.get("sha256") == expected_hash,
+            "file_seed_field": int(actual_schedule.get("seed", -1)) == int(resolved["jacobian_seed"]),
+            "resolved_sha_field": resolved.get("schedule_sha256") == expected_hash,
+            "resolved_seed_field": int(resolved.get("schedule_seed", -1)) == int(resolved["jacobian_seed"]),
+        }
+        schedule_integrity[record_id] = {
+            "passed": all(checks.values()),
+            "checks": checks,
+            "expected_sha256": expected_hash,
+            "actual_sha256": actual_schedule.get("sha256"),
+            "expected_entry_count": len(expected_schedule),
+            "actual_entry_count": len(actual_schedule.get("entries", [])),
+        }
+        if not schedule_integrity[record_id]["passed"]:
+            failures.append({
+                "gate": "frozen_stratified_schedule_integrity",
+                "record_id": record_id,
+                **schedule_integrity[record_id],
+            })
     schedule_prefix_equal = smoke_schedule["entries"] == benchmark_schedule["entries"][:20]
     deterministic_max = float(config["gpu_preflight_gates"]["deterministic_max_abs"])
     if checkpoint_difference > deterministic_max or trace_difference > deterministic_max or not schedule_prefix_equal:
@@ -594,8 +631,32 @@ def validate_gpu_preflight(
             failures.append({"gate": f"{field}_finite_nonzero", "actual": value})
     strata = stratified_trace.get("strata", {})
     iterations = stratified_trace.get("iterations", [])
+    expected_benchmark_entries = benchmark_schedule.get("entries", [])
+    trace_schedule_mismatches = []
+    if len(iterations) != len(expected_benchmark_entries):
+        failures.append({
+            "gate": "stratified_trace_length",
+            "actual": len(iterations),
+            "expected": len(expected_benchmark_entries),
+        })
+    for index, (row, expected_entry) in enumerate(zip(iterations, expected_benchmark_entries)):
+        expected_fields = {
+            "completed_iteration": index + 1,
+            "nominal_lag": 1,
+            "historical_stratum": expected_entry["historical_stratum"],
+            "historical_lag": expected_entry["historical_lag"],
+        }
+        mismatched = {
+            key: {"actual": row.get(key), "expected": value}
+            for key, value in expected_fields.items()
+            if row.get(key) != value
+        }
+        if mismatched:
+            trace_schedule_mismatches.append({"iteration": index + 1, "fields": mismatched})
+    if trace_schedule_mismatches:
+        failures.append({"gate": "stratified_trace_schedule_alignment", "mismatches": trace_schedule_mismatches})
     expected_stratum_counts = {
-        name: sum(1 for index in range(len(iterations)) if ["B1", "B2", "B3"][index % 3] == name)
+        name: sum(1 for entry in expected_benchmark_entries if entry.get("historical_stratum") == name)
         for name in ["B1", "B2", "B3"]
     }
     cycle_mismatches = [
@@ -654,6 +715,8 @@ def validate_gpu_preflight(
             "loss_trace_max_abs_difference": trace_difference,
             "schedule_prefix_equal": schedule_prefix_equal,
         },
+        "schedule_integrity": schedule_integrity,
+        "stratified_trace_schedule_mismatch_count": len(trace_schedule_mismatches),
         "regularizer_scale": scale,
         "stratified_benchmark_trace": stratified_trace,
         "pure_mse_relative_improvement": mse_improvement,
