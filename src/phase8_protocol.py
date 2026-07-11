@@ -24,6 +24,39 @@ EXPECTED_FORMAL = 130
 EXPECTED_NON_EVIDENTIARY = 5
 EXPECTED_CONFIRMATION = 50
 FORBIDDEN_PHASE7_DATA_SEEDS = frozenset({4, 5, 6, 7, 8})
+EXPECTED_GATE_OBJECTS = {
+    "capacity_replication": {
+        "gate_graph_score": "S_partial_nominal",
+        "gate_prediction_metric": "fixed_target_prediction_mse",
+        "secondary_graph_score": "S_GC_total_nominal",
+        "gate_coefficient_metric": "not_applicable",
+    },
+    "coefficient_replication": {
+        "gate_graph_score": "S_partial_nominal",
+        "gate_prediction_metric": "not_applicable",
+        "secondary_graph_score": "S_GC_total_nominal",
+        "gate_coefficient_metric": "coefficient_r_partial_lag1",
+        "secondary_coefficient_metric": "coefficient_r_total_lag1",
+    },
+    "fixed_target_interventions": {
+        "gate_graph_score": "not_applicable",
+        "gate_prediction_metric": "fixed_target_prediction_mse_delta",
+        "secondary_graph_score": "not_applicable",
+        "gate_coefficient_metric": "not_applicable",
+    },
+    "repair_pilot": {
+        "gate_graph_score": "S_GC_total_nominal",
+        "gate_prediction_metric": "fixed_target_prediction_mse",
+        "secondary_graph_score": "S_reliable_history",
+        "gate_coefficient_metric": "coefficient_r_total_lag1",
+    },
+    "repair_confirmation": {
+        "gate_graph_score": "S_GC_total_nominal",
+        "gate_prediction_metric": "fixed_target_prediction_mse",
+        "secondary_graph_score": "S_reliable_history",
+        "gate_coefficient_metric": "coefficient_r_total_lag1",
+    },
+}
 
 
 def file_sha256(path: Path) -> str:
@@ -82,6 +115,12 @@ def resolve_run_record(
     phase_root = "preflight" if phase == "preflight" else ("gated_confirmation" if phase == "gated_confirmation" else "formal")
     root = str(output_roots[phase_root])  # type: ignore[index]
     block_cfg = blocks[block]  # type: ignore[index]
+    gate_mapping = EXPECTED_GATE_OBJECTS.get(block, {
+        "gate_graph_score": "not_applicable_preflight",
+        "gate_prediction_metric": "not_applicable_preflight",
+        "secondary_graph_score": row["secondary_history_score"],
+        "gate_coefficient_metric": "not_applicable_preflight",
+    })
     resolved = {
         "record_id": row["record_id"],
         "formal_result": _bool(row["formal_result"]),
@@ -100,6 +139,7 @@ def resolve_run_record(
         "max_iter": _int(row, "max_iter"),
         "primary_graph_score": row["primary_graph_score"],
         "coefficient_metric": row["coefficient_metric"],
+        **gate_mapping,
         "checkpoint_policy": block_cfg["checkpoint_policy"],  # type: ignore[index]
         "gating_checkpoint": block_cfg["gating_checkpoint"],  # type: ignore[index]
         "output_root": f"{root}/{config_sha256}/runs/{row['record_id']}",
@@ -113,6 +153,42 @@ def validate_run_matrix(config_path: Path, matrix_path: Path) -> Dict[str, objec
     config_sha = file_sha256(config_path)
     matrix_sha = file_sha256(matrix_path)
     failures: List[Dict[str, object]] = []
+    configured_gate_objects = config.get("gate_objects", {})
+    expected_config_projection = {
+        "capacity_replication": {
+            "replication_claim_graph_score": "S_partial_nominal",
+            "replication_claim_prediction_metric": "fixed_target_prediction_mse",
+            "semantic_secondary_graph_score": "S_GC_total_nominal",
+        },
+        "coefficient_replication": {
+            "replication_claim_graph_score": "S_partial_nominal",
+            "replication_claim_coefficient_metric": "coefficient_r_partial_lag1",
+            "semantic_secondary_graph_score": "S_GC_total_nominal",
+            "semantic_secondary_coefficient_metric": "coefficient_r_total_lag1",
+        },
+        "fixed_target_interventions": {
+            "replication_claim_graph_score": "not_applicable",
+            "replication_claim_prediction_metric": "fixed_target_prediction_mse_delta",
+            "legacy_secondary_metric": "legacy_objective_delta",
+        },
+        "repair_pilot": {
+            "method_gate_graph_score": "S_GC_total_nominal",
+            "method_gate_coefficient_metric": "coefficient_r_total_lag1",
+        },
+        "repair_confirmation": {
+            "method_gate_graph_score": "S_GC_total_nominal",
+            "method_gate_coefficient_metric": "coefficient_r_total_lag1",
+        },
+    }
+    for block_name, expected_mapping in expected_config_projection.items():
+        actual_mapping = configured_gate_objects.get(block_name) if isinstance(configured_gate_objects, dict) else None
+        if actual_mapping != expected_mapping:
+            failures.append({
+                "type": "block_gate_object_mapping",
+                "block": block_name,
+                "actual": actual_mapping,
+                "expected": expected_mapping,
+            })
     if matrix_sha != EXPECTED_MATRIX_SHA256:
         failures.append({"type": "matrix_sha256", "actual": matrix_sha, "expected": EXPECTED_MATRIX_SHA256})
     rows = load_run_matrix(matrix_path)
@@ -141,6 +217,17 @@ def validate_run_matrix(config_path: Path, matrix_path: Path) -> Dict[str, objec
                 failures.append({"type": "primary_score", "record_id": item["record_id"], "actual": item["primary_graph_score"]})
             if item["coefficient_metric"] != "coefficient_r_total_lag1":
                 failures.append({"type": "coefficient_metric", "record_id": item["record_id"], "actual": item["coefficient_metric"]})
+        expected_gate = EXPECTED_GATE_OBJECTS.get(str(item["block"]))
+        if expected_gate is not None:
+            for key, expected_value in expected_gate.items():
+                if item.get(key) != expected_value:
+                    failures.append({
+                        "type": "resolved_gate_object",
+                        "record_id": item["record_id"],
+                        "field": key,
+                        "actual": item.get(key),
+                        "expected": expected_value,
+                    })
 
     formal = [item for item in resolved if item["formal_result"]]
     non_evidentiary = [item for item in resolved if not item["formal_result"]]
@@ -173,6 +260,7 @@ def validate_run_matrix(config_path: Path, matrix_path: Path) -> Dict[str, objec
             item["record_id"] for item in resolved if item["data_seed"] in FORBIDDEN_PHASE7_DATA_SEEDS
         ],
         "all_confirmation_records_sealed": all(item["confirmation_sealed"] for item in confirmation),
+        "block_gate_objects": EXPECTED_GATE_OBJECTS,
         "resolved_records": resolved,
         "failures": failures,
     }

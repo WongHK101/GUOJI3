@@ -8,7 +8,7 @@ later reviewed.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import Dict, Mapping, Optional, Sequence
+from typing import Dict, List, Mapping, MutableMapping, Optional, Sequence
 
 import numpy as np
 import torch
@@ -16,6 +16,7 @@ import torch
 from phase8_coverage import (
     CoverageAlignedRawChainJRNGC,
     LegacyComparatorAdapter,
+    Phase8NoAuxInputSpaceControl,
     as_raw_bdt,
 )
 
@@ -48,14 +49,14 @@ def _state_to_cpu(model: torch.nn.Module) -> Dict[str, torch.Tensor]:
     return {name: value.detach().cpu().clone() for name, value in model.state_dict().items()}
 
 
-def _objective(
+def separated_loss_components(
     handle,
     x_full,
     *,
     schedule_entry: Optional[Mapping[str, object]],
-) -> torch.Tensor:
+) -> Dict[str, torch.Tensor]:
     if isinstance(handle, LegacyComparatorAdapter):
-        return handle.direct_total_objective(x_full)
+        return handle.loss_components(x_full)
     if isinstance(handle, CoverageAlignedRawChainJRNGC):
         if schedule_entry is None:
             raise ValueError("Coverage-aligned repair requires a frozen schedule entry")
@@ -65,8 +66,27 @@ def _objective(
             dtype=handle.dtype,
             require_grad=True,
         )
-        return handle.loss_components(raw, schedule_entry)["total_regularized_objective"]
+        return handle.loss_components(raw, schedule_entry)
+    if isinstance(handle, Phase8NoAuxInputSpaceControl):
+        if schedule_entry is None:
+            raise ValueError("No-auxiliary matched control requires its frozen cyclic schedule")
+        return handle.loss_components(x_full, schedule_entry=schedule_entry)
     raise TypeError(f"Unsupported Phase 8 training handle: {type(handle).__name__}")
+
+
+def _objective(
+    handle,
+    x_full,
+    *,
+    schedule_entry: Optional[Mapping[str, object]],
+) -> torch.Tensor:
+    if isinstance(handle, LegacyComparatorAdapter):
+        return handle.direct_total_objective(x_full)
+    return separated_loss_components(
+        handle,
+        x_full,
+        schedule_entry=schedule_entry,
+    )["total_regularized_objective"]
 
 
 def train_with_frozen_checkpoint_policy(
@@ -81,6 +101,10 @@ def train_with_frozen_checkpoint_policy(
     gradient_clip_norm: float = 1.0,
     check_every: int = 50,
     lookback: int = 10,
+    objective_trace: Optional[List[float]] = None,
+    capture_completed_iterations: Sequence[int] = (),
+    captured_states: Optional[MutableMapping[int, Dict[str, torch.Tensor]]] = None,
+    component_trace: Optional[MutableMapping[str, List[float]]] = None,
 ) -> TrainingMetadata:
     """Train under either exact legacy restore or fixed-final semantics."""
     if checkpoint_policy not in {
@@ -91,25 +115,38 @@ def train_with_frozen_checkpoint_policy(
         raise ValueError(f"Unsupported checkpoint policy: {checkpoint_policy}")
     if schedule is not None and len(schedule) != max_iter:
         raise ValueError("Frozen estimator schedule length must equal max_iter")
-    model = handle.model if isinstance(handle, LegacyComparatorAdapter) else handle
+    model = handle.model if isinstance(handle, (LegacyComparatorAdapter, Phase8NoAuxInputSpaceControl)) else handle
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     best_total = float("inf")
     best_iteration = -1
     best_state: Optional[Dict[str, torch.Tensor]] = None
     early_stopped = False
     iterations_completed = 0
+    capture_set = set(int(value) for value in capture_completed_iterations)
 
     for iteration in range(max_iter):
         model.train()
         optimizer.zero_grad(set_to_none=True)
         entry = None if schedule is None else schedule[iteration]
-        objective = _objective(handle, x_full, schedule_entry=entry)
+        if component_trace is None:
+            objective = _objective(handle, x_full, schedule_entry=entry)
+        else:
+            components = separated_loss_components(handle, x_full, schedule_entry=entry)
+            objective = components["total_regularized_objective"]
+            for name, value in components.items():
+                component_trace.setdefault(name, []).append(float(value.detach()))
         if not torch.isfinite(objective):
             raise FloatingPointError(f"Nonfinite total objective at iteration {iteration}")
         objective.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_clip_norm)
         optimizer.step()
         iterations_completed = iteration + 1
+        if objective_trace is not None:
+            objective_trace.append(float(objective.detach()))
+        if iterations_completed in capture_set:
+            if captured_states is None:
+                raise ValueError("captured_states mapping is required when checkpoint capture is requested")
+            captured_states[iterations_completed] = _state_to_cpu(model)
 
         if iteration % check_every == 0:
             value = float(objective.detach())

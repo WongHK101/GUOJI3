@@ -39,6 +39,7 @@ class Phase8ModelConfig:
     d_conv: int = 4
     expand: int = 2
     jacobian_lam: float = 0.01
+    attribution_horizon: int = 32
     dtype: str = "float32"
 
 
@@ -278,6 +279,27 @@ class Phase8NoAuxInputSpaceControl:
         target = self.raw_targets(clean_target_bdt, indices)
         return torch.mean((prediction - target) ** 2)
 
+    def loss_components(
+        self,
+        x_full,
+        *,
+        schedule_entry: Mapping[str, object],
+    ) -> Dict[str, torch.Tensor]:
+        all_raw_target_indices = target_indices(np.asarray(x_full).shape[1], self.lag)
+        components = self.model.compute_loss_components(
+            x_full,
+            schedule_entry={
+                "target_indices": [int(value) for value in schedule_entry["target_indices"]],  # type: ignore[index]
+                "output_targets": [int(value) for value in schedule_entry["output_targets"]],  # type: ignore[index]
+            },
+            target_indices=all_raw_target_indices,
+        )
+        return {
+            "fixed_target_prediction_mse": components["train_prediction_loss"],
+            "jacobian_penalty": components["raw_chain_jacobian_penalty"],
+            "total_regularized_objective": components["total_training_objective"],
+        }
+
 
 class CoverageAlignedRawChainJRNGC(nn.Module):
     """New Phase 8 candidate with full-prefix raw-chain regularization."""
@@ -424,7 +446,7 @@ def make_no_aux_input_space_control(cfg: Phase8ModelConfig) -> Phase8NoAuxInputS
     repaired_cfg = RepairedISTFConfig(
         d=cfg.d,
         lag=cfg.lag,
-        attribution_horizon=max(32, cfg.lag),
+        attribution_horizon=max(cfg.attribution_horizon, cfg.lag),
         layers=cfg.layers,
         hidden=cfg.hidden,
         dropout=cfg.dropout,
@@ -436,6 +458,33 @@ def make_no_aux_input_space_control(cfg: Phase8ModelConfig) -> Phase8NoAuxInputS
         dtype=cfg.dtype,
     )
     return Phase8NoAuxInputSpaceControl(RawChainMambaISTFJRNGC(repaired_cfg))
+
+
+def no_aux_schedule_seed(model_seed: int) -> int:
+    return 100000 + int(model_seed)
+
+
+def build_no_aux_control_schedule(
+    control: Phase8NoAuxInputSpaceControl,
+    *,
+    T: int,
+    max_iter: int,
+    model_seed: int,
+) -> Tuple[List[Dict[str, List[int]]], int, str]:
+    from repaired_istf import eligible_target_indices, make_cyclic_schedule, schedule_hash
+
+    seed = no_aux_schedule_seed(model_seed)
+    horizon = int(control.model.attribution_horizon)
+    eligible = eligible_target_indices(T, control.lag, horizon)
+    schedule = make_cyclic_schedule(
+        eligible,
+        d=control.d,
+        max_iter=max_iter,
+        windows_per_step=2,
+        targets_per_step=2,
+        seed=seed,
+    )
+    return schedule, seed, schedule_hash(schedule)
 
 
 METHOD_IMPLEMENTATION_REGISTRY = {
@@ -696,8 +745,24 @@ def extract_attribution_objects(
     undefined_tail = 0
     offdiag = ~np.eye(model.d, dtype=bool)
 
-    for u in idx.tolist():
-        total = total_raw_chain_at_target(model, x_np, u, h_max=H, create_graph=False)
+    device, dtype = _model_device_dtype(model)
+    raw_total = as_raw_bdt(x_np, device=device, dtype=dtype, require_grad=True)
+    predictions_total = model.predict_from_raw(raw_total, idx)
+
+    for row_index, u in enumerate(idx.tolist()):
+        total_rows = []
+        for output in range(model.d):
+            grad = torch.autograd.grad(
+                predictions_total[row_index, output],
+                raw_total,
+                create_graph=False,
+                retain_graph=True,
+                allow_unused=False,
+            )[0]
+            total_rows.append(torch.stack([
+                grad[0, :, u - h] for h in range(1, u + 1)
+            ], dim=1))
+        total = torch.stack(total_rows, dim=0)
         partial = partial_raw_chain_at_target(model, x_np, u)
         total_np = total.detach().cpu().numpy().astype(np.float64, copy=False)
         partial_np = partial.detach().cpu().numpy().astype(np.float64, copy=False)
@@ -783,6 +848,66 @@ def extract_attribution_objects(
         m_missing_undefined_reason=m_reason,
         nominal_partial_total_pearson=pearson,
         nominal_pearson_undefined_reason=pearson_reason,
+        nominal_partial_total_topk_jaccard=jaccard,
+    )
+
+
+def extract_baseline_attribution_objects(
+    adapter: LegacyBaselineAdapter,
+    x_full,
+    *,
+    true_edge_count: Optional[int] = None,
+    n_min: Optional[int] = None,
+) -> AttributionResult:
+    """Exact baseline shortcut: no auxiliary route and no out-of-K support."""
+    x_np = np.asarray(x_full)
+    T = int(x_np.shape[1])
+    H = T - 1
+    idx = target_indices(T, adapter.lag)
+    legacy = np.asarray(adapter.model.get_gc_matrix(x_np), dtype=np.float64)
+    if legacy.ndim == 2:
+        legacy = legacy[:, :, None]
+    # Legacy axis is oldest-to-newest; Phase 8 raw-lag axis is h=1 first.
+    nominal = legacy[:, :, ::-1]
+    j_total = np.zeros((adapter.d, adapter.d, H), dtype=np.float64)
+    j_total[:, :, :adapter.lag] = nominal
+    counts = np.asarray([len(eligible_targets_for_lag(T, adapter.lag, h)) for h in range(1, T)], dtype=np.int64)
+    s_gc = np.max(j_total[:, :, :adapter.lag], axis=2)
+    frozen_n_min = max(20, int(math.ceil(0.10 * len(idx)))) if n_min is None else int(n_min)
+    reliable_positions = np.flatnonzero(counts >= frozen_n_min)
+    s_reliable = np.max(j_total[:, :, reliable_positions], axis=2)
+    max_pos = np.argmax(j_total, axis=2)
+    max_lag = max_pos + 1
+    reliable_set = set((reliable_positions + 1).tolist())
+    max_outside = np.vectorize(lambda h: int(h) not in reliable_set)(max_lag)
+    jaccard = None if true_edge_count is None else exact_topk_jaccard(s_gc, s_gc, true_edge_count)
+    return AttributionResult(
+        j_bar_total=j_total,
+        j_bar_partial=j_total.copy(),
+        j_bar_missing=np.zeros_like(j_total),
+        eligible_window_count_by_lag=counts,
+        s_partial_nominal=s_gc.copy(),
+        s_gc_total=s_gc,
+        j_bar_total_lag1=j_total[:, :, 0],
+        s_reliable_history=s_reliable,
+        s_prefix_all=np.max(j_total, axis=2),
+        prefix_maximizing_lag=max_lag,
+        prefix_maximizing_lag_window_count=counts[max_pos],
+        prefix_max_outside_reliable=max_outside,
+        h_reliable=reliable_positions + 1,
+        n_min=frozen_n_min,
+        temporal_tail_statistics={
+            "defined_window_count": int(len(idx)),
+            "undefined_window_count": 0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "maximum": 0.0,
+        },
+        m_missing=0.0,
+        m_missing_undefined_reason=None,
+        nominal_partial_total_pearson=1.0,
+        nominal_pearson_undefined_reason=None,
         nominal_partial_total_topk_jaccard=jaccard,
     )
 
@@ -901,6 +1026,37 @@ def fixed_target_concat_interventions(
         "mask_value": 0.0,
         "shuffle_axis": "time_within_each_coordinate",
         "perturbation_seed": int(perturbation_seed),
+    }
+
+
+def fixed_target_no_aux_interventions(
+    control: Phase8NoAuxInputSpaceControl,
+    x_full,
+    *,
+    perturbation_seed: int,
+) -> Dict[str, object]:
+    raw = as_raw_bdt(x_full, device=control.device, dtype=control.dtype, require_grad=False)
+    idx = target_indices(raw.shape[2], control.lag)
+    zero_x = torch.zeros_like(raw)
+    shuffled_x = _shuffle_time_per_variable(raw, perturbation_seed)
+    conditions = {
+        "clean": raw,
+        "mask_x": zero_x,
+        "shuffle_x": shuffled_x,
+    }
+    values = {
+        name: float(control.fixed_target_prediction_mse(route, raw, idx).detach().cpu())
+        for name, route in conditions.items()
+    }
+    deltas = {name: value - values["clean"] for name, value in values.items()}
+    return {
+        "fixed_target_prediction_mse": values,
+        "fixed_target_prediction_mse_delta": deltas,
+        "target_policy": "clean_raw_target_fixed",
+        "control_status": control.control_status,
+        "graph_recovery_evidence_allowed": False,
+        "perturbation_seed": int(perturbation_seed),
+        "shuffle_axis": "time_within_each_source_variable",
     }
 
 

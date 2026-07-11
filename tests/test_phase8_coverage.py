@@ -23,6 +23,7 @@ from phase8_coverage import (  # noqa: E402
     Phase8ModelConfig,
     as_raw_bdt,
     build_balanced_lag_schedule,
+    build_no_aux_control_schedule,
     coefficient_r_total_lag1,
     comparator_parity_audit,
     deterministic_schedule_audit,
@@ -32,6 +33,7 @@ from phase8_coverage import (  # noqa: E402
     extract_attribution_objects,
     finite_difference_total_raw_chain_audit,
     fixed_target_concat_interventions,
+    fixed_target_no_aux_interventions,
     make_legacy_baseline,
     make_legacy_concat,
     make_no_aux_input_space_control,
@@ -240,7 +242,15 @@ def test_13_primary_reliable_and_unrestricted_scores_are_separate():
 
 def test_14_fixed_target_intervention_semantics_and_field_names():
     torch.manual_seed(160)
-    cfg = Phase8ModelConfig(d=3, lag=2, layers=1, hidden=5, d_cond=2, d_state=2)
+    cfg = Phase8ModelConfig(
+        d=3,
+        lag=2,
+        layers=1,
+        hidden=5,
+        d_cond=2,
+        d_state=2,
+        attribution_horizon=4,
+    )
     adapter = make_legacy_concat(cfg)
     x = _x(seed=161, T=10, dtype=np.float32)
     result = fixed_target_concat_interventions(adapter, x, perturbation_seed=31101)
@@ -351,13 +361,56 @@ def test_21_checkpoint_and_no_aux_classification_are_frozen():
 
 def test_22_no_aux_control_is_raw_target_and_non_graph_evidence():
     torch.manual_seed(180)
-    cfg = Phase8ModelConfig(d=3, lag=2, layers=1, hidden=5, d_cond=2, d_state=2)
+    cfg = Phase8ModelConfig(
+        d=3,
+        lag=2,
+        layers=1,
+        hidden=5,
+        d_cond=2,
+        d_state=2,
+        attribution_horizon=4,
+    )
     control = make_no_aux_input_space_control(cfg)
     x = _x(seed=181, T=10, dtype=np.float32)
     raw = as_raw_bdt(x, device=torch.device("cpu"), dtype=torch.float32)
     idx = target_indices(10, 2)
     mse = control.fixed_target_prediction_mse(raw, raw, idx)
     assert torch.isfinite(mse)
+    schedule, schedule_seed, schedule_hash = build_no_aux_control_schedule(
+        control,
+        T=10,
+        max_iter=3,
+        model_seed=21101,
+    )
+    assert schedule_seed == 121101
+    repeated_schedule = build_no_aux_control_schedule(control, T=10, max_iter=3, model_seed=21101)
+    assert schedule == repeated_schedule[0]
+    assert schedule_hash == repeated_schedule[2]
+    components = control.loss_components(x, schedule_entry=schedule[0])
+    assert set(components) == {
+        "fixed_target_prediction_mse",
+        "jacobian_penalty",
+        "total_regularized_objective",
+    }
+    torch.testing.assert_close(components["fixed_target_prediction_mse"], mse)
+    torch.testing.assert_close(
+        components["fixed_target_prediction_mse"] + components["jacobian_penalty"],
+        components["total_regularized_objective"],
+    )
+    metadata = train_with_frozen_checkpoint_policy(
+        control,
+        x,
+        max_iter=3,
+        checkpoint_policy=LEGACY_RESTORE_POLICY,
+        schedule=schedule,
+    )
+    assert metadata.gating_checkpoint == "restored_legacy_best"
+    assert metadata.selected_iteration == 0
+    first = fixed_target_no_aux_interventions(control, x, perturbation_seed=31101)
+    second = fixed_target_no_aux_interventions(control, x, perturbation_seed=31101)
+    assert first == second
+    assert first["target_policy"] == "clean_raw_target_fixed"
+    assert first["graph_recovery_evidence_allowed"] is False
     assert control.control_status == "new_matched_input_space_control_not_legacy_replication"
     assert control.graph_recovery_evidence_allowed is False
 
@@ -385,3 +438,28 @@ def test_23_checkpoint_helpers_separate_legacy_restore_from_fixed_final():
     assert restored_meta.selected_iteration == 0
     assert final_meta.gating_checkpoint == "final"
     assert final_meta.selected_iteration == 1
+
+
+def test_24_block_specific_replication_and_repair_gate_objects(tmp_path):
+    config_path = PROJECT_ROOT / "configs" / "phase8" / "phase8_execution_lock.json"
+    matrix_path = PROJECT_ROOT / "configs" / "phase8" / "phase8_run_matrix.csv"
+    report = validate_run_matrix(config_path, matrix_path)
+    assert report["passed"]
+    by_block = {}
+    for record in report["resolved_records"]:
+        by_block.setdefault(record["block"], record)
+    assert by_block["capacity_replication"]["gate_graph_score"] == "S_partial_nominal"
+    assert by_block["capacity_replication"]["secondary_graph_score"] == "S_GC_total_nominal"
+    assert by_block["coefficient_replication"]["gate_graph_score"] == "S_partial_nominal"
+    assert by_block["coefficient_replication"]["gate_coefficient_metric"] == "coefficient_r_partial_lag1"
+    assert by_block["repair_pilot"]["gate_graph_score"] == "S_GC_total_nominal"
+    assert by_block["repair_pilot"]["gate_coefficient_metric"] == "coefficient_r_total_lag1"
+    assert by_block["repair_confirmation"]["gate_graph_score"] == "S_GC_total_nominal"
+
+    changed = json.loads(config_path.read_text(encoding="utf-8"))
+    changed["gate_objects"]["capacity_replication"]["replication_claim_graph_score"] = "S_GC_total_nominal"
+    changed_path = tmp_path / "changed_config.json"
+    changed_path.write_text(json.dumps(changed), encoding="utf-8")
+    rejected = validate_run_matrix(changed_path, matrix_path)
+    assert not rejected["passed"]
+    assert any(item["type"] == "block_gate_object_mapping" for item in rejected["failures"])

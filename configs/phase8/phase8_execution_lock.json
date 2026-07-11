@@ -5,7 +5,8 @@
   "approved_plan_zip_sha256": "9258c8a864e806b2018b8be807896720d1aeb1c20532d55f949aeb906c1bd45d",
   "base_commit": "6e1de5f6ccc5b8d6fb1cf24db64e6fa57f7d21ee",
   "frozen": true,
-  "gpu_allowed": false,
+  "gpu_allowed": true,
+  "gpu_authorization_scope": "GPT_APPROVED_PHASE8_GPU_PREFLIGHT_REPLICATION_PILOT",
   "run_matrix": {
     "path": "configs/phase8/phase8_run_matrix.csv",
     "sha256": "cc82b4283dfb28f5180891f1d0716d868bc10ddad53e64dbf174b9a36a04ac1a",
@@ -23,6 +24,118 @@
     "exploratory": "S_prefix_all",
     "n_min_rule": "max(20,ceil(0.10*eligible_target_count))",
     "score_tensor_orientation": "target_source"
+  },
+  "gate_objects": {
+    "capacity_replication": {
+      "replication_claim_graph_score": "S_partial_nominal",
+      "replication_claim_prediction_metric": "fixed_target_prediction_mse",
+      "semantic_secondary_graph_score": "S_GC_total_nominal"
+    },
+    "coefficient_replication": {
+      "replication_claim_graph_score": "S_partial_nominal",
+      "replication_claim_coefficient_metric": "coefficient_r_partial_lag1",
+      "semantic_secondary_graph_score": "S_GC_total_nominal",
+      "semantic_secondary_coefficient_metric": "coefficient_r_total_lag1"
+    },
+    "fixed_target_interventions": {
+      "replication_claim_graph_score": "not_applicable",
+      "replication_claim_prediction_metric": "fixed_target_prediction_mse_delta",
+      "legacy_secondary_metric": "legacy_objective_delta"
+    },
+    "repair_pilot": {
+      "method_gate_graph_score": "S_GC_total_nominal",
+      "method_gate_coefficient_metric": "coefficient_r_total_lag1"
+    },
+    "repair_confirmation": {
+      "method_gate_graph_score": "S_GC_total_nominal",
+      "method_gate_coefficient_metric": "coefficient_r_total_lag1"
+    }
+  },
+  "replication_classification_gates": {
+    "classification_unit": "paired_data_model_seed",
+    "replicated_min_consistent_pairs": 4,
+    "partial_replication_min_consistent_pairs": 3,
+    "capacity_replication": {
+      "contrast": "mean_over_dcond_4_8_16_minus_paired_baseline",
+      "required_pairwise_directions": {
+        "fixed_target_prediction_mse": "negative",
+        "partial_nominal_auroc": "negative"
+      },
+      "joint_direction_required_within_pair": true,
+      "magnitude_threshold": null
+    },
+    "coefficient_replication": {
+      "contrast": "paired_concat_minus_baseline",
+      "required_pairwise_directions": {
+        "partial_nominal_auroc": "negative",
+        "coefficient_r_partial_lag1": "negative"
+      },
+      "joint_direction_required_within_pair": true,
+      "magnitude_threshold": null
+    },
+    "fixed_target_interventions": {
+      "contrast": "within_concat_fixed_clean_target",
+      "required_pairwise_directions": {
+        "mask_c_delta_minus_mask_x_delta": "positive",
+        "mask_both_delta_minus_mask_x_delta": "positive",
+        "shuffle_c_only_delta_minus_shuffle_x_only_delta": "positive"
+      },
+      "joint_direction_required_within_pair": true,
+      "magnitude_threshold": null,
+      "no_aux_control_is_nonhistorical_context_only": true
+    }
+  },
+  "pilot_go_gates": {
+    "statistical_unit": "data_seed_after_averaging_two_model_seeds",
+    "all_gates_jointly_required": true,
+    "repair_minus_concat": {
+      "mean_delta_auroc_min": 0.05,
+      "mean_delta_auprc_min": 0.03,
+      "mean_delta_coefficient_r_min": 0.05,
+      "positive_data_seeds_min": 2,
+      "data_seed_count": 3
+    },
+    "pure_mse": {
+      "mean_relative_degradation_max": 0.10,
+      "per_data_seed_relative_degradation_max": 0.20
+    },
+    "comparator_safety": {
+      "comparators": ["baseline_jrngc", "full_aux_equal_lambda", "full_aux_lc10"],
+      "mean_delta_auroc_min": -0.10,
+      "mean_delta_auprc_min": -0.10,
+      "mean_delta_coefficient_r_min": -0.15,
+      "per_data_seed_delta_auroc_min": -0.20
+    },
+    "direct_missing_route": {
+      "pearson_lt": 0.95,
+      "topk_jaccard_lt": 0.90,
+      "either_branch": true,
+      "passing_data_seeds_min": 2
+    },
+    "historical_missing_route": {
+      "M_missing_min": 0.05,
+      "passing_data_seeds_min": 2
+    }
+  },
+  "gpu_preflight_gates": {
+    "deterministic_max_abs": 1e-6,
+    "pure_mse_relative_improvement_min": 0.01,
+    "output_target_variance_ratio_min": 1e-6,
+    "projected_repair_runtime_seconds_max": 3600,
+    "full_attribution_evaluation_seconds_max": 1800,
+    "peak_reserved_fraction_max": 0.80,
+    "projected_total_gpu_hours_max": 48,
+    "required_finite_nonzero_gradient_groups": ["predictor", "preprocessor"]
+  },
+  "gpu_preflight_reporting_completed_iterations": [0, 20, 40, 60, 80, 100],
+  "data_generators": {
+    "capacity_replication": "legacy_shortcut_diagnostics_var1_numpy_seed_equals_data_seed",
+    "coefficient_replication": "legacy_shortcut_diagnostics_var1_numpy_seed_equals_data_seed",
+    "fixed_target_interventions": "nonstationary_var._generate_one_with_frozen_record_seed",
+    "repair_pilot": "legacy_full_aux_penalty_var1_numpy_seed_equals_data_seed_plus_1",
+    "repair_confirmation": "legacy_full_aux_penalty_var1_numpy_seed_equals_data_seed_plus_1",
+    "infrastructure_smoke": "legacy_full_aux_penalty_var1_numpy_seed_equals_data_seed_plus_1",
+    "repair_scale_benchmark": "legacy_full_aux_penalty_var1_numpy_seed_equals_data_seed_plus_1"
   },
   "estimator": {
     "name": "lag_balanced_full_prefix_raw_chain",
@@ -76,7 +189,10 @@
       "layers": 5,
       "hidden": 50,
       "d_state": 4,
-      "no_aux_control_status": "new_matched_input_space_control_not_legacy_replication"
+      "no_aux_control_status": "new_matched_input_space_control_not_legacy_replication",
+      "no_aux_schedule_seed_rule": "100000 + model_seed",
+      "no_aux_schedule_type": "repaired_istf.make_cyclic_schedule",
+      "no_aux_graph_performance_gate_allowed": false
     },
     "coefficient_replication": {
       "checkpoint_policy": "legacy_min_total_objective_restore",
@@ -147,6 +263,6 @@
     "expected_gpu_hours_min": 20,
     "expected_gpu_hours_max": 34,
     "hard_gpu_hours": 48,
-    "gpu_execution_in_current_task": false
+    "gpu_execution_in_current_task": true
   }
 }
