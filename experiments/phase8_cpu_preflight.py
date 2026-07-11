@@ -45,6 +45,8 @@ from phase8_protocol import (  # noqa: E402
     git_commit,
     validate_run_matrix,
 )
+from phase8_final_protocol import validate_final_run_matrix  # noqa: E402
+from experiments.phase8_gpu_runner import instantiate_handle, model_config  # noqa: E402
 
 
 DEFAULT_CONFIG = PROJECT_ROOT / "configs" / "phase8" / "phase8_execution_lock.json"
@@ -72,6 +74,17 @@ CRITICAL_SOURCE_PATHS = [
     "src/nonstationary_var.py",
     "experiments/risk_mitigation_20260515/run_full_aux_penalty.py",
     "experiments/test_mask_supplement.py",
+]
+FINAL_CRITICAL_SOURCE_PATHS = [
+    "src/phase8_final_protocol.py",
+    "src/phase8_final_results.py",
+    "experiments/aggregate_phase8_final.py",
+    "experiments/execute_phase8_final_stage.py",
+    "experiments/freeze_phase8_final_confirmation.py",
+    "experiments/prepare_phase8_final_release.py",
+    "tests/test_phase8_final.py",
+    "configs/phase8_final/phase8_lambda_tradeoff_config.json",
+    "configs/phase8_final/phase8_lambda_tradeoff_matrix.csv",
 ]
 
 
@@ -162,6 +175,52 @@ def provenance_field_validation() -> dict:
     }
 
 
+def lambda_binding_validation(config: dict) -> dict:
+    base = {
+        "block": "repair_lambda_tradeoff",
+        "method": "coverage_aligned_raw_chain",
+        "d": 3,
+        "K": 1,
+        "d_cond": 2,
+    }
+    low_record = {**base, "raw_chain_lambda": 0.0003}
+    high_record = {**base, "raw_chain_lambda": 0.003}
+    torch.manual_seed(917)
+    low = instantiate_handle(low_record, config)
+    torch.manual_seed(917)
+    high = instantiate_handle(high_record, config)
+    state_equal = all(torch.equal(value, high.state_dict()[name]) for name, value in low.state_dict().items())
+    rng = np.random.default_rng(55)
+    x = rng.normal(size=(3, 20)).astype(np.float32)
+    raw_low = as_raw_bdt(x, device=low.device, dtype=low.dtype, require_grad=True)
+    raw_high = as_raw_bdt(x, device=high.device, dtype=high.dtype, require_grad=True)
+    indices = np.arange(1, 20)
+    prediction_equal = bool(torch.equal(
+        low.predict_from_raw(raw_low, indices),
+        high.predict_from_raw(raw_high, indices),
+    ))
+    entry = build_stratified_lag_schedule(T=20, lag=1, d_out=3, max_iter=1, seed=32001)[0]
+    low_components = low.loss_components(raw_low, entry)
+    high_components = high.loss_components(raw_high, entry)
+    ratio = float(high_components["jacobian_penalty"] / low_components["jacobian_penalty"])
+    passed = bool(
+        model_config(low_record, config).jacobian_lam == 0.0003
+        and model_config(high_record, config).jacobian_lam == 0.003
+        and state_equal
+        and prediction_equal
+        and abs(ratio - 10.0) <= 1e-5
+    )
+    return {
+        "passed": passed,
+        "low_lambda": 0.0003,
+        "high_lambda": 0.003,
+        "penalty_ratio": ratio,
+        "expected_penalty_ratio": 10.0,
+        "initial_state_equal": state_equal,
+        "initial_prediction_equal": prediction_equal,
+    }
+
+
 def main() -> int:
     args = parse_args()
     if args.device != "cpu":
@@ -180,9 +239,12 @@ def main() -> int:
         "torch_num_threads": torch.get_num_threads(),
         "CUDA_VISIBLE_DEVICES": os.environ.get("CUDA_VISIBLE_DEVICES"),
     })
+    execution_config = json.loads(args.config.read_text(encoding="utf-8"))
+    final_protocol = execution_config.get("protocol_mode") == "phase8_final"
+    critical_paths = CRITICAL_SOURCE_PATHS + (FINAL_CRITICAL_SOURCE_PATHS if final_protocol else [])
     manifest = critical_source_manifest(
         PROJECT_ROOT,
-        CRITICAL_SOURCE_PATHS,
+        critical_paths,
         release_commit=args.release_commit or git_commit(PROJECT_ROOT),
     )
     save_json(args.output_root / "environment.json", environment)
@@ -203,8 +265,13 @@ def main() -> int:
     exact = estimator_exact_reference_audit(draw_count=1536)
     schedule = deterministic_schedule_audit()
     parity = comparator_parity_audit()
-    matrix = validate_run_matrix(args.config, args.run_matrix)
+    matrix = (
+        validate_final_run_matrix(args.config, args.run_matrix)
+        if final_protocol
+        else validate_run_matrix(args.config, args.run_matrix)
+    )
     provenance = provenance_field_validation()
+    lambda_binding = lambda_binding_validation(execution_config) if final_protocol else {"passed": True, "not_applicable": True}
 
     save_json(args.output_root / "finite_difference_and_chain_decomposition_report.json", {
         "passed": bool(fd["passed"] and chain["passed"]),
@@ -220,6 +287,7 @@ def main() -> int:
     save_json(args.output_root / "comparator_parity_report.json", parity)
     save_json(args.output_root / "run_matrix_dry_validation_report.json", matrix)
     save_json(args.output_root / "provenance_field_validation_report.json", provenance)
+    save_json(args.output_root / "lambda_binding_validation_report.json", lambda_binding)
     passed = all([
         fd["passed"],
         chain["passed"],
@@ -228,6 +296,7 @@ def main() -> int:
         parity["passed"],
         matrix["passed"],
         provenance["passed"],
+        lambda_binding["passed"],
     ])
     summary = {
         "passed": bool(passed),

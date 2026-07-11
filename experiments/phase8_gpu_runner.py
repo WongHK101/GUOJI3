@@ -57,6 +57,11 @@ from phase8_protocol import (  # noqa: E402
     validate_run_matrix,
     verify_release_lock,
 )
+from phase8_final_protocol import (  # noqa: E402
+    resolve_final_run_record,
+    validate_final_authorization,
+    validate_final_run_matrix,
+)
 from phase8_training import (  # noqa: E402
     separated_loss_components,
     train_with_frozen_checkpoint_policy,
@@ -75,6 +80,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--record-id", required=True)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--confirmation-token", type=Path)
     return parser.parse_args()
 
 
@@ -235,6 +241,12 @@ def generate_record_data(record: Mapping[str, object]):
 
 def model_config(record: Mapping[str, object], execution_config: Mapping[str, object]) -> Phase8ModelConfig:
     block_cfg = execution_config["blocks"][record["block"]]  # type: ignore[index]
+    raw_chain_lambda = record.get("raw_chain_lambda")
+    jacobian_lam = (
+        float(raw_chain_lambda)
+        if record.get("method") == "coverage_aligned_raw_chain" and raw_chain_lambda is not None
+        else 0.01
+    )
     return Phase8ModelConfig(
         d=int(record["d"]),
         lag=int(record["K"]),
@@ -244,7 +256,7 @@ def model_config(record: Mapping[str, object], execution_config: Mapping[str, ob
         d_state=int(block_cfg.get("d_state", 4)),
         d_conv=4,
         expand=2,
-        jacobian_lam=0.01,
+        jacobian_lam=jacobian_lam,
         attribution_horizon=32,
         dtype="float32",
     )
@@ -484,21 +496,35 @@ def stratified_trace_summary(
 
 def run_record(args: argparse.Namespace) -> int:
     config = load_json(args.config)
-    matrix_report = validate_run_matrix(args.config, args.run_matrix)
+    final_protocol = config.get("protocol_mode") == "phase8_final"
+    matrix_report = (
+        validate_final_run_matrix(args.config, args.run_matrix)
+        if final_protocol
+        else validate_run_matrix(args.config, args.run_matrix)
+    )
     if not matrix_report["passed"]:
         raise RuntimeError(f"Run matrix validation failed: {matrix_report['failures']}")
     rows = {row["record_id"]: row for row in load_run_matrix(args.run_matrix)}
     if args.record_id not in rows:
         raise KeyError(f"Unknown record id: {args.record_id}")
-    resolved = resolve_run_record(rows[args.record_id], config, config_sha256=file_sha256(args.config))
+    resolver = resolve_final_run_record if final_protocol else resolve_run_record
+    resolved = resolver(rows[args.record_id], config, config_sha256=file_sha256(args.config))
     release = verify_release_lock(PROJECT_ROOT, args.release_lock_dir, require_clean=True)
-    authorization = validate_authorization(
-        args.authorization,
-        release_commit=str(release["actual_commit"] or release["approved_commit"]),
-        config_sha256=file_sha256(args.config),
-        matrix_sha256=file_sha256(args.run_matrix),
-        phase=str(resolved["phase"]),
-        block=str(resolved["block"]),
+    authorization_args = {
+        "release_commit": str(release["actual_commit"] or release["approved_commit"]),
+        "config_sha256": file_sha256(args.config),
+        "matrix_sha256": file_sha256(args.run_matrix),
+        "phase": str(resolved["phase"]),
+        "block": str(resolved["block"]),
+    }
+    authorization = (
+        validate_final_authorization(
+            args.authorization,
+            **authorization_args,
+            confirmation_token_path=args.confirmation_token,
+        )
+        if final_protocol
+        else validate_authorization(args.authorization, **authorization_args)
     )
 
     device = torch.device(args.device)
@@ -592,6 +618,7 @@ def run_record(args: argparse.Namespace) -> int:
         scores_to_save: Dict[str, np.ndarray] = {}
         metrics_payload: Dict[str, object] = {
             **separated,
+            "raw_chain_lambda": resolved.get("raw_chain_lambda"),
             "output_variance": output_variance,
             "target_variance": target_variance,
             "output_target_variance_ratio": output_variance / max(target_variance, 1e-12),
@@ -779,6 +806,7 @@ def run_record(args: argparse.Namespace) -> int:
             "phase": resolved["phase"],
             "block": resolved["block"],
             "method": method,
+            "raw_chain_lambda": resolved.get("raw_chain_lambda"),
             "completed_at_unix": time.time(),
         })
         print(json.dumps({"record_id": args.record_id, "status": "complete", "runtime": runtime}, indent=2))
