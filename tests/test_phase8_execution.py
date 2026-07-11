@@ -193,6 +193,9 @@ def test_gpu_preflight_validator_checks_duplicate_and_hard_stops(tmp_path):
             scale_snapshot = {
                 "fixed_target_prediction_mse": 0.90,
                 "output_target_variance_ratio": 0.5,
+                "nominal_jacobian_penalty": 0.01,
+                "nominal_regularizer_predictor_gradient_norm": 0.1,
+                "nominal_regularizer_preprocessor_gradient_norm": 0.1,
                 "predictor_gradient_reachable": True,
                 "preprocessor_gradient_reachable": True,
                 "gradients_finite": True,
@@ -205,6 +208,26 @@ def test_gpu_preflight_validator_checks_duplicate_and_hard_stops(tmp_path):
                 },
                 "pure_mse_relative_change": -0.10,
             }
+            iteration_rows = [
+                {
+                    "completed_iteration": index + 1,
+                    "historical_stratum": ["B1", "B2", "B3"][index % 3],
+                    "historical_lag": 2 + index,
+                }
+                for index in range(100)
+            ]
+            metrics["stratified_benchmark_trace"] = {
+                "iterations": iteration_rows,
+                "strata": {
+                    "B1": {"sample_count": 34, "nonzero_float32_contribution_count": 20},
+                    "B2": {"sample_count": 33, "nonzero_float32_contribution_count": 10},
+                    "B3": {"sample_count": 33, "nonzero_float32_contribution_count": 0},
+                },
+                "cumulative_historical_contribution": 0.1,
+                "cumulative_historical_predictor_gradient_norm": 0.2,
+                "cumulative_historical_preprocessor_gradient_norm": 0.3,
+                "all_strata_sampled": True,
+            }
         _create_run(tmp_path, row, metrics=metrics, extras=extras)
     report = validate_gpu_preflight(
         tmp_path,
@@ -216,6 +239,28 @@ def test_gpu_preflight_validator_checks_duplicate_and_hard_stops(tmp_path):
     assert report["determinism"]["checkpoint_state_max_abs_difference"] == 0.0
     assert report["compute_projection"]["includes_confirmation_cost_projection_only"] is True
     assert report["compute_projection"]["confirmation_execution_authorized"] is False
+
+    # Long-stratum zero draws are disclosed but allowed; a zero-only medium
+    # stratum must fail the revised aggregate gate.
+    metrics_path = tmp_path / "runs" / "P8-PRE-005" / "metrics.json"
+    changed = load_json(metrics_path)
+    changed["stratified_benchmark_trace"]["strata"]["B2"]["nonzero_float32_contribution_count"] = 0
+    _write_json(metrics_path, changed)
+    artifact_path = metrics_path.parent / "artifact_manifest.json"
+    artifact = load_json(artifact_path)
+    artifact["files"]["metrics.json"] = file_sha256(metrics_path)
+    _write_json(artifact_path, artifact)
+    rejected = validate_gpu_preflight(
+        tmp_path,
+        config_path=CONFIG,
+        matrix_path=MATRIX,
+        cpu_preflight_summary={"passed": True},
+    )
+    assert not rejected["passed"]
+    assert any(
+        failure["gate"] == "historical_stratum_nonzero_float32_draw" and failure["stratum"] == "B2"
+        for failure in rejected["failures"]
+    )
 
 
 def test_confirmation_rows_are_never_selected_by_authorized_stage_sets():

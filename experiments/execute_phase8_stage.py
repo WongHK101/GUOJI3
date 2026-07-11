@@ -45,6 +45,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--authorization", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--independent-replication-report", type=Path)
     return parser.parse_args()
 
 
@@ -65,13 +66,13 @@ def select_rows(stage: str, matrix_path: Path) -> List[Dict[str, str]]:
     return rows
 
 
-def prerequisite_check(stage: str, root: Path) -> None:
+def prerequisite_check(stage: str, root: Path, independent_replication_report: Path | None = None) -> None:
     if stage in {"replication", "pilot"}:
         preflight_path = root / "gpu_preflight_validation.json"
         if not preflight_path.is_file() or load_json(preflight_path).get("passed") is not True:
             raise PermissionError("Formal execution requires a passing GPU preflight report")
     if stage == "pilot":
-        replication_path = root / "replication_aggregate_and_gates.json"
+        replication_path = independent_replication_report or (root / "replication_aggregate_and_gates.json")
         if not replication_path.is_file() or load_json(replication_path).get("passed_execution_completeness") is not True:
             raise PermissionError("Pilot execution requires complete replication aggregation")
 
@@ -105,12 +106,18 @@ def main() -> int:
         raise RuntimeError(f"Frozen matrix/config validation failed: {matrix_report['failures']}")
     release = verify_release_lock(PROJECT_ROOT, args.release_lock_dir, require_clean=True)
     authorization = load_json(args.authorization)
-    if authorization.get("authorization") != "GPT_APPROVED_PHASE8_GPU_PREFLIGHT_REPLICATION_PILOT":
+    if authorization.get("authorization") != "GPT_APPROVED_PHASE8_REPLICATION_AND_REPAIR_RECOVERY":
         raise PermissionError("Wrong Phase 8 execution authorization")
     if authorization.get("release_commit") != (release["actual_commit"] or release["approved_commit"]):
         raise PermissionError("Authorization release commit mismatch")
-    prerequisite_check(args.stage, args.output_root)
+    prerequisite_check(args.stage, args.output_root, args.independent_replication_report)
     initialize_root(args, release)
+    if args.stage == "pilot" and args.independent_replication_report is not None:
+        snapshot = args.output_root / "execution_lock" / "independent_track_a_replication_report.json"
+        if snapshot.is_file() and file_sha256(snapshot) != file_sha256(args.independent_replication_report):
+            raise RuntimeError("Independent Track A replication report snapshot changed")
+        if not snapshot.exists():
+            shutil.copy2(args.independent_replication_report, snapshot)
     rows = select_rows(args.stage, args.run_matrix)
     ledger_path = args.output_root / "execution_ledger.json"
     ledger = load_json(ledger_path) if ledger_path.is_file() else {

@@ -570,16 +570,60 @@ def validate_gpu_preflight(
     if sorted(actual_points, key=int) != expected_points:
         failures.append({"gate": "scale_reporting_points", "actual": sorted(actual_points, key=int), "expected": expected_points})
     for point, snapshot in actual_points.items():
-        for field in ["predictor_gradient_reachable", "preprocessor_gradient_reachable", "gradients_finite"]:
-            if not snapshot.get(field):
-                failures.append({"gate": field, "completed_iteration": point, "actual": snapshot.get(field)})
+        if not snapshot.get("gradients_finite"):
+            failures.append({"gate": "gradients_finite", "completed_iteration": point, "actual": False})
+        for field in [
+            "nominal_jacobian_penalty",
+            "nominal_regularizer_predictor_gradient_norm",
+            "nominal_regularizer_preprocessor_gradient_norm",
+        ]:
+            value = snapshot.get(field)
+            if value is None or not np.isfinite(value) or value <= 0:
+                failures.append({"gate": f"{field}_finite_nonzero", "completed_iteration": point, "actual": value})
+    stratified_trace = benchmark_metrics.get("stratified_benchmark_trace")
+    if not isinstance(stratified_trace, dict):
+        failures.append({"gate": "stratified_benchmark_trace", "actual": stratified_trace})
+        stratified_trace = {}
+    for field in [
+        "cumulative_historical_contribution",
+        "cumulative_historical_predictor_gradient_norm",
+        "cumulative_historical_preprocessor_gradient_norm",
+    ]:
+        value = stratified_trace.get(field)
+        if value is None or not np.isfinite(value) or value <= 0:
+            failures.append({"gate": f"{field}_finite_nonzero", "actual": value})
+    strata = stratified_trace.get("strata", {})
+    iterations = stratified_trace.get("iterations", [])
+    expected_stratum_counts = {
+        name: sum(1 for index in range(len(iterations)) if ["B1", "B2", "B3"][index % 3] == name)
+        for name in ["B1", "B2", "B3"]
+    }
+    cycle_mismatches = [
+        {"iteration": index + 1, "actual": row.get("historical_stratum"), "expected": ["B1", "B2", "B3"][index % 3]}
+        for index, row in enumerate(iterations)
+        if row.get("historical_stratum") != ["B1", "B2", "B3"][index % 3]
+    ]
+    if cycle_mismatches:
+        failures.append({"gate": "historical_stratum_cycle", "mismatches": cycle_mismatches})
+    for name in ["B1", "B2", "B3"]:
+        actual_count = strata.get(name, {}).get("sample_count")
+        if actual_count != expected_stratum_counts[name]:
+            failures.append({
+                "gate": "historical_stratum_sampling_frequency",
+                "stratum": name,
+                "actual": actual_count,
+                "expected": expected_stratum_counts[name],
+            })
+    for name in gates["historical_strata_requiring_nonzero_float32_draw"]:
+        count = strata.get(name, {}).get("nonzero_float32_contribution_count", 0)
+        if count <= 0:
+            failures.append({"gate": "historical_stratum_nonzero_float32_draw", "stratum": name, "actual": count})
+    if not stratified_trace.get("all_strata_sampled"):
+        failures.append({"gate": "all_historical_strata_sampled", "actual": stratified_trace.get("all_strata_sampled")})
     if mse_improvement < gates["pure_mse_relative_improvement_min"]:
         failures.append({"gate": "pure_mse_learning", "relative_improvement": mse_improvement})
     if final["output_target_variance_ratio"] < gates["output_target_variance_ratio_min"]:
         failures.append({"gate": "output_variance", "ratio": final["output_target_variance_ratio"]})
-    for field in ["predictor_gradient_reachable", "preprocessor_gradient_reachable", "gradients_finite"]:
-        if not final.get(field):
-            failures.append({"gate": field, "actual": final.get(field)})
     benchmark_runtime = runs["P8-PRE-005"]["runtime"]
     if benchmark_runtime["projected_2000_iteration_training_seconds"] > gates["projected_repair_runtime_seconds_max"]:
         failures.append({
@@ -611,6 +655,7 @@ def validate_gpu_preflight(
             "schedule_prefix_equal": schedule_prefix_equal,
         },
         "regularizer_scale": scale,
+        "stratified_benchmark_trace": stratified_trace,
         "pure_mse_relative_improvement": mse_improvement,
         "peak_reserved_fraction": peak_fraction,
         "compute_projection": projection,

@@ -49,6 +49,30 @@ def _state_to_cpu(model: torch.nn.Module) -> Dict[str, torch.Tensor]:
     return {name: value.detach().cpu().clone() for name, value in model.state_dict().items()}
 
 
+def _group_gradient_norms(loss: torch.Tensor, model: torch.nn.Module) -> Dict[str, object]:
+    named = [(name, parameter) for name, parameter in model.named_parameters() if parameter.requires_grad]
+    gradients = torch.autograd.grad(
+        loss,
+        tuple(parameter for _, parameter in named),
+        retain_graph=True,
+        allow_unused=True,
+    )
+    sums = {"predictor": 0.0, "preprocessor": 0.0}
+    finite = {"predictor": True, "preprocessor": True}
+    for (name, _), gradient in zip(named, gradients):
+        if gradient is None:
+            continue
+        group = "preprocessor" if name.startswith("preprocessor.") else "predictor"
+        finite[group] = finite[group] and bool(torch.isfinite(gradient).all())
+        sums[group] += float(torch.sum(gradient.detach() ** 2))
+    return {
+        "predictor_gradient_norm": sums["predictor"] ** 0.5,
+        "preprocessor_gradient_norm": sums["preprocessor"] ** 0.5,
+        "predictor_gradient_finite": finite["predictor"],
+        "preprocessor_gradient_finite": finite["preprocessor"],
+    }
+
+
 def separated_loss_components(
     handle,
     x_full,
@@ -105,6 +129,7 @@ def train_with_frozen_checkpoint_policy(
     capture_completed_iterations: Sequence[int] = (),
     captured_states: Optional[MutableMapping[int, Dict[str, torch.Tensor]]] = None,
     component_trace: Optional[MutableMapping[str, List[float]]] = None,
+    gradient_component_trace: Optional[MutableMapping[str, List[object]]] = None,
 ) -> TrainingMetadata:
     """Train under either exact legacy restore or fixed-final semantics."""
     if checkpoint_policy not in {
@@ -135,6 +160,13 @@ def train_with_frozen_checkpoint_policy(
             objective = components["total_regularized_objective"]
             for name, value in components.items():
                 component_trace.setdefault(name, []).append(float(value.detach()))
+            if gradient_component_trace is not None:
+                for component_name in ["nominal_jacobian_penalty", "historical_jacobian_penalty"]:
+                    if component_name not in components:
+                        raise KeyError(f"Missing stratified estimator component: {component_name}")
+                    diagnostics = _group_gradient_norms(components[component_name], model)
+                    for field, value in diagnostics.items():
+                        gradient_component_trace.setdefault(f"{component_name}_{field}", []).append(value)
         if not torch.isfinite(objective):
             raise FloatingPointError(f"Nonfinite total objective at iteration {iteration}")
         objective.backward()

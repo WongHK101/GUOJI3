@@ -23,6 +23,7 @@ from phase8_coverage import (  # noqa: E402
     Phase8ModelConfig,
     as_raw_bdt,
     build_balanced_lag_schedule,
+    build_stratified_lag_schedule,
     build_no_aux_control_schedule,
     coefficient_r_total_lag1,
     comparator_parity_audit,
@@ -34,10 +35,12 @@ from phase8_coverage import (  # noqa: E402
     finite_difference_total_raw_chain_audit,
     fixed_target_concat_interventions,
     fixed_target_no_aux_interventions,
+    historical_strata_for_hmax,
     make_legacy_baseline,
     make_legacy_concat,
     make_no_aux_input_space_control,
     sampled_lag_balanced_penalty,
+    stratified_penalty_components,
     target_indices,
     total_raw_chain_at_target,
 )
@@ -50,6 +53,7 @@ from phase8_training import (  # noqa: E402
     LEGACY_RESTORE_POLICY,
     train_with_frozen_checkpoint_policy,
 )
+from experiments.phase8_numerical_forensics import classification, scalar_status  # noqa: E402
 
 
 os.environ.setdefault("CUDA_VISIBLE_DEVICES", "-1")
@@ -181,12 +185,7 @@ def test_09_second_order_predictor_and_preprocessor_gradients():
     model = CoverageAlignedRawChainJRNGC(_repair_cfg(dtype="float32", lag=1)).train()
     x = _x(seed=141, dtype=np.float32)
     raw = as_raw_bdt(x, device=torch.device("cpu"), dtype=torch.float32, require_grad=True)
-    entry = {
-        "iteration": 0,
-        "lags": [1, 2],
-        "eligible_windows": [6, 7],
-        "output_targets": [0, 1],
-    }
+    entry = build_stratified_lag_schedule(T=12, lag=1, d_out=3, max_iter=1, seed=1401)[0]
     penalty = sampled_lag_balanced_penalty(model, raw, entry, create_graph=True)
     penalty.backward()
     predictor = []
@@ -212,17 +211,39 @@ def test_10_baseline_partial_total_nominal_equivalence():
     assert np.max(np.abs(partial - total)) <= 1e-7
 
 
-def test_11_exact_lag_balanced_objective_and_512_draw_estimator():
-    report = estimator_exact_reference_audit(draw_count=512)
+def test_11_exact_lag_balanced_objective_and_stratified_estimator():
+    report = estimator_exact_reference_audit(draw_count=1536)
     assert report["passed"]
     assert report["relative_objective_error"] <= 0.05
     assert report["parameter_gradient_cosine"] >= 0.95
+    assert report["exact_stratum_frequency"]
+    assert report["historical_lag_frequency_balanced_within_stratum"]
+    assert report["importance_weights_valid"]
 
 
-def test_12_deterministic_schedule_reproduction_and_factor():
+def test_12_deterministic_stratified_schedule_and_weights():
     report = deterministic_schedule_audit()
     assert report["passed"]
-    assert report["sampled_sum_factor"] == pytest.approx(499 / 32)
+    assert report["stratum_counts"] == {"B1": 667, "B2": 667, "B3": 666}
+    assert report["formal_importance_weights"] == {"B1": 93, "B2": 288, "B3": 1113}
+    assert report["nominal_lag_always_sampled"]
+
+
+def test_12b_stratified_estimator_components_match_locked_formula():
+    torch.manual_seed(145)
+    model = CoverageAlignedRawChainJRNGC(_repair_cfg(dtype="float64", lag=1)).train()
+    x = _x(seed=146)
+    raw = as_raw_bdt(x, device=torch.device("cpu"), dtype=torch.float64, require_grad=True)
+    entry = build_stratified_lag_schedule(T=12, lag=1, d_out=3, max_iter=1, seed=147)[0]
+    pieces = stratified_penalty_components(model, raw, entry, create_graph=True)
+    assert entry["lags"][0] == 1
+    assert entry["historical_importance_weight"] == 3 * entry["historical_stratum_size"]
+    torch.testing.assert_close(
+        pieces["historical_importance_weighted"],
+        entry["historical_importance_weight"] * pieces["historical_raw"],
+    )
+    torch.testing.assert_close(pieces["total"], pieces["nominal"] + pieces["historical_importance_weighted"])
+    assert historical_strata_for_hmax(499) == {"B1": (2, 32), "B2": (33, 128), "B3": (129, 499)}
 
 
 def test_13_primary_reliable_and_unrestricted_scores_are_separate():
@@ -357,6 +378,13 @@ def test_21_checkpoint_and_no_aux_classification_are_frozen():
     assert config["blocks"]["fixed_target_interventions"]["no_aux_control_status"] == (
         "new_matched_input_space_control_not_legacy_replication"
     )
+    assert config["estimator"]["name"] == "stratified_nominal_plus_history_full_prefix_raw_chain"
+    assert config["estimator"]["historical_strata"] == {
+        "B1": [2, 32],
+        "B2": [33, 128],
+        "B3": [129, 499],
+    }
+    assert config["estimator"]["lambda"] == 0.01
 
 
 def test_22_no_aux_control_is_raw_target_and_non_graph_evidence():
@@ -438,6 +466,45 @@ def test_23_checkpoint_helpers_separate_legacy_restore_from_fixed_final():
     assert restored_meta.selected_iteration == 0
     assert final_meta.gating_checkpoint == "final"
     assert final_meta.selected_iteration == 1
+
+
+def test_23b_stratified_training_trace_separates_components_and_gradients():
+    torch.manual_seed(191)
+    model = CoverageAlignedRawChainJRNGC(_repair_cfg(dtype="float32", lag=1)).train()
+    x = _x(seed=192, dtype=np.float32)
+    schedule = build_stratified_lag_schedule(T=12, lag=1, d_out=3, max_iter=3, seed=193)
+    components = {}
+    gradients = {}
+    train_with_frozen_checkpoint_policy(
+        model,
+        x,
+        max_iter=3,
+        checkpoint_policy=FIXED_FINAL_POLICY,
+        schedule=schedule,
+        component_trace=components,
+        gradient_component_trace=gradients,
+    )
+    assert len(components["nominal_jacobian_penalty"]) == 3
+    assert len(components["historical_jacobian_penalty"]) == 3
+    for name in [
+        "nominal_jacobian_penalty_predictor_gradient_norm",
+        "nominal_jacobian_penalty_preprocessor_gradient_norm",
+        "historical_jacobian_penalty_predictor_gradient_norm",
+        "historical_jacobian_penalty_preprocessor_gradient_norm",
+    ]:
+        assert len(gradients[name]) == 3
+        assert all(np.isfinite(value) for value in gradients[name])
+    assert all(value > 0 for value in gradients["nominal_jacobian_penalty_predictor_gradient_norm"])
+    assert all(value > 0 for value in gradients["nominal_jacobian_penalty_preprocessor_gradient_norm"])
+
+
+def test_23c_forensic_classification_is_bounded_and_dtype_aware():
+    assert scalar_status(0.0, torch.float32) == "exact_zero"
+    assert scalar_status(float(torch.finfo(torch.float32).tiny / 2), torch.float32) == "subnormal"
+    base = {"normalized_blockwise_absolute_total_jacobian": 0.0, "value_status": "exact_zero"}
+    double_nonzero = {"normalized_blockwise_absolute_total_jacobian": 1e-100}
+    assert classification("iteration_20", 384, base, double_nonzero, 1.0) == "float32_underflow"
+    assert classification("initialization", 8, base, base, 1.0) == "structural_initialization_zero"
 
 
 def test_24_block_specific_replication_and_repair_gate_objects(tmp_path):

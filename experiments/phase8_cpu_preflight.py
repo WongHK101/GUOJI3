@@ -24,7 +24,10 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from phase8_coverage import (  # noqa: E402
+    CoverageAlignedRawChainJRNGC,
     Phase8ModelConfig,
+    as_raw_bdt,
+    build_stratified_lag_schedule,
     comparator_parity_audit,
     deterministic_schedule_audit,
     direct_indirect_chain_decomposition_audit,
@@ -53,6 +56,7 @@ CRITICAL_SOURCE_PATHS = [
     "src/phase8_training.py",
     "experiments/phase8_cpu_preflight.py",
     "experiments/phase8_gpu_runner.py",
+    "experiments/phase8_numerical_forensics.py",
     "experiments/execute_phase8_stage.py",
     "experiments/validate_phase8_gpu_preflight.py",
     "experiments/aggregate_phase8.py",
@@ -103,6 +107,11 @@ def provenance_field_validation() -> dict:
     concat = make_legacy_concat(cfg)
     baseline_components = baseline.loss_components(x)
     concat_components = concat.loss_components(x)
+    repair_cfg = Phase8ModelConfig(d=3, lag=1, layers=1, hidden=5, d_cond=2, d_state=2)
+    repair = CoverageAlignedRawChainJRNGC(repair_cfg)
+    repair_raw = as_raw_bdt(x, device=torch.device("cpu"), dtype=torch.float32, require_grad=True)
+    repair_entry = build_stratified_lag_schedule(T=10, lag=1, d_out=3, max_iter=1, seed=8143)[0]
+    repair_components = repair.loss_components(repair_raw, repair_entry)
     interventions = fixed_target_concat_interventions(concat, x, perturbation_seed=31101)
     required_components = {
         "fixed_target_prediction_mse",
@@ -114,9 +123,18 @@ def provenance_field_validation() -> dict:
         "fixed_target_prediction_mse_delta",
         "legacy_objective_delta",
     }
+    required_repair_components = required_components | {
+        "nominal_jacobian_penalty",
+        "historical_jacobian_penalty",
+    }
     passed = (
         set(baseline_components) == required_components
         and set(concat_components) == required_components
+        and set(repair_components) == required_repair_components
+        and torch.allclose(
+            repair_components["nominal_jacobian_penalty"] + repair_components["historical_jacobian_penalty"],
+            repair_components["jacobian_penalty"],
+        )
         and required_intervention.issubset(interventions)
         and not contains_prohibited_prediction_loss_key(baseline_components)
         and not contains_prohibited_prediction_loss_key(concat_components)
@@ -129,10 +147,13 @@ def provenance_field_validation() -> dict:
         "required_intervention_fields": sorted(required_intervention),
         "baseline_fields": sorted(baseline_components),
         "concat_fields": sorted(concat_components),
+        "repair_fields": sorted(repair_components),
+        "required_repair_component_fields": sorted(required_repair_components),
         "intervention_fields": sorted(interventions),
         "prohibited_prediction_loss_key_found": contains_prohibited_prediction_loss_key({
             "baseline": baseline_components,
             "concat": concat_components,
+            "repair": repair_components,
             "interventions": interventions,
         }),
         "target_policy": interventions["target_policy"],
@@ -179,7 +200,7 @@ def main() -> int:
 
     fd = finite_difference_total_raw_chain_audit()
     chain = direct_indirect_chain_decomposition_audit()
-    exact = estimator_exact_reference_audit(draw_count=512)
+    exact = estimator_exact_reference_audit(draw_count=1536)
     schedule = deterministic_schedule_audit()
     parity = comparator_parity_audit()
     matrix = validate_run_matrix(args.config, args.run_matrix)

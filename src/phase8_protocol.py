@@ -15,7 +15,7 @@ from typing import Dict, List, Mapping, Optional, Sequence
 import numpy as np
 import torch
 
-from phase8_coverage import METHOD_IMPLEMENTATION_REGISTRY, build_balanced_lag_schedule, schedule_sha256
+from phase8_coverage import METHOD_IMPLEMENTATION_REGISTRY, build_stratified_lag_schedule, schedule_sha256
 
 
 EXPECTED_MATRIX_SHA256 = "cc82b4283dfb28f5180891f1d0716d868bc10ddad53e64dbf174b9a36a04ac1a"
@@ -369,8 +369,8 @@ def environment_snapshot(*, deterministic_settings: Optional[Mapping[str, object
 
 
 def formal_estimator_schedule_report() -> Dict[str, object]:
-    pilot = build_balanced_lag_schedule(T=500, lag=1, d_out=8, max_iter=2000, seed=32001)
-    confirmation = build_balanced_lag_schedule(T=500, lag=1, d_out=8, max_iter=2000, seed=33001)
+    pilot = build_stratified_lag_schedule(T=500, lag=1, d_out=8, max_iter=2000, seed=32001)
+    confirmation = build_stratified_lag_schedule(T=500, lag=1, d_out=8, max_iter=2000, seed=33001)
     return {
         "pilot": {"seed": 32001, "entries": len(pilot), "sha256": schedule_sha256(pilot)},
         "confirmation": {"seed": 33001, "entries": len(confirmation), "sha256": schedule_sha256(confirmation)},

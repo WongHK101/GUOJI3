@@ -1,12 +1,13 @@
 {
-  "config_name": "phase8_execution_lock_v1_3",
-  "config_version": "implementation_cpu_preflight_v1",
+  "config_name": "phase8_repair_recovery_execution_lock_v1",
+  "config_version": "stratified_nominal_history_recovery_v1",
   "approved_plan_version": "phase8_experimental_upgrade_plan_v1_3",
   "approved_plan_zip_sha256": "9258c8a864e806b2018b8be807896720d1aeb1c20532d55f949aeb906c1bd45d",
-  "base_commit": "6e1de5f6ccc5b8d6fb1cf24db64e6fa57f7d21ee",
+  "base_commit": "dee0d30de66b84db1747d27debfedcfb93a15c93",
+  "recovery_protocol": "GPT_PHASE8_REPLICATION_AND_REPAIR_RECOVERY_2026_07_11",
   "frozen": true,
   "gpu_allowed": true,
-  "gpu_authorization_scope": "GPT_APPROVED_PHASE8_GPU_PREFLIGHT_REPLICATION_PILOT",
+  "gpu_authorization_scope": "GPT_APPROVED_PHASE8_REPLICATION_AND_REPAIR_RECOVERY",
   "run_matrix": {
     "path": "configs/phase8/phase8_run_matrix.csv",
     "sha256": "cc82b4283dfb28f5180891f1d0716d868bc10ddad53e64dbf174b9a36a04ac1a",
@@ -125,7 +126,13 @@
     "full_attribution_evaluation_seconds_max": 1800,
     "peak_reserved_fraction_max": 0.80,
     "projected_total_gpu_hours_max": 48,
-    "required_finite_nonzero_gradient_groups": ["predictor", "preprocessor"]
+    "nominal_contribution_nonzero_every_reporting_point": true,
+    "nominal_gradient_groups_nonzero_every_reporting_point": ["predictor", "preprocessor"],
+    "cumulative_historical_contribution_nonzero": true,
+    "cumulative_historical_gradient_groups_nonzero": ["predictor", "preprocessor"],
+    "historical_strata_requiring_nonzero_float32_draw": ["B1", "B2"],
+    "all_historical_strata_must_be_sampled": true,
+    "individual_historical_zero_draw_allowed": true
   },
   "gpu_preflight_reporting_completed_iterations": [0, 20, 40, 60, 80, 100],
   "data_generators": {
@@ -138,13 +145,22 @@
     "repair_scale_benchmark": "legacy_full_aux_penalty_var1_numpy_seed_equals_data_seed_plus_1"
   },
   "estimator": {
-    "name": "lag_balanced_full_prefix_raw_chain",
+    "name": "stratified_nominal_plus_history_full_prefix_raw_chain",
+    "nominal_lag": 1,
+    "historical_strata": {
+      "B1": [2, 32],
+      "B2": [33, 128],
+      "B3": [129, 499]
+    },
+    "historical_stratum_cycle": ["B1", "B2", "B3"],
     "lags_per_step": 2,
+    "nominal_lags_per_step": 1,
+    "historical_lags_per_step": 1,
     "eligible_windows_per_lag": 1,
     "output_targets_per_step": 2,
     "source_variables": "all",
     "create_graph": true,
-    "normalization": "H_max/(lags*windows_per_lag*outputs*d_source*K)",
+    "normalization": "Fhat_1 + 3*|B_s|*Fhat_h; Fhat_h=sum_abs/(outputs*d_source*K)",
     "lambda": 0.01,
     "formal_pilot_schedule_seed": 32001,
     "sealed_confirmation_schedule_seed": 33001

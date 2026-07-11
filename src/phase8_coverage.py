@@ -381,10 +381,14 @@ class CoverageAlignedRawChainJRNGC(nn.Module):
         if not raw_bdt.requires_grad:
             raw_bdt = raw_bdt.detach().clone().requires_grad_(True)
         mse = self.pure_mse(raw_bdt)
-        penalty_unweighted = sampled_lag_balanced_penalty(self, raw_bdt, schedule_entry, create_graph=True)
-        penalty = self.jacobian_lam * penalty_unweighted
+        estimator = stratified_penalty_components(self, raw_bdt, schedule_entry, create_graph=True)
+        nominal_penalty = self.jacobian_lam * estimator["nominal"]
+        historical_penalty = self.jacobian_lam * estimator["historical_importance_weighted"]
+        penalty = nominal_penalty + historical_penalty
         return {
             "fixed_target_prediction_mse": mse,
+            "nominal_jacobian_penalty": nominal_penalty,
+            "historical_jacobian_penalty": historical_penalty,
             "jacobian_penalty": penalty,
             "total_regularized_objective": mse + penalty,
         }
@@ -505,7 +509,31 @@ def canonical_json_sha256(payload: object) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def build_balanced_lag_schedule(
+FORMAL_HISTORICAL_STRATA = {
+    "B1": (2, 32),
+    "B2": (33, 128),
+    "B3": (129, 499),
+}
+STRATUM_CYCLE = ("B1", "B2", "B3")
+
+
+def historical_strata_for_hmax(h_max: int) -> Dict[str, Tuple[int, int]]:
+    """Return formal strata or a three-way reduced-fixture partition."""
+    if h_max < 4:
+        raise ValueError("At least three historical lags are required")
+    if h_max == 499:
+        return dict(FORMAL_HISTORICAL_STRATA)
+    values = np.arange(2, h_max + 1, dtype=np.int64)
+    pieces = np.array_split(values, 3)
+    if any(len(piece) == 0 for piece in pieces):
+        raise ValueError("Reduced fixture requires three nonempty historical strata")
+    return {
+        name: (int(piece[0]), int(piece[-1]))
+        for name, piece in zip(STRATUM_CYCLE, pieces)
+    }
+
+
+def build_stratified_lag_schedule(
     *,
     T: int,
     lag: int,
@@ -513,19 +541,25 @@ def build_balanced_lag_schedule(
     max_iter: int,
     seed: int,
 ) -> List[Dict[str, object]]:
-    """Build the frozen lag-first schedule.
-
-    Lag and output streams are cyclic permutations. Conditional target-window
-    streams are independently permuted for each lag and consumed cyclically.
-    """
+    """Build the frozen nominal-plus-history stratified schedule."""
     if d_out < 2 or T <= lag + 1:
         raise ValueError("Schedule requires at least two outputs and a nontrivial prefix")
+    if lag != 1:
+        raise ValueError("The recovery estimator is preregistered for K=1")
     h_max = T - 1
+    strata = historical_strata_for_hmax(h_max)
     rng = np.random.default_rng(seed)
-    lag_order = np.arange(1, h_max + 1, dtype=np.int64)
     output_order = np.arange(d_out, dtype=np.int64)
-    rng.shuffle(lag_order)
     rng.shuffle(output_order)
+    historical_orders: Dict[str, np.ndarray] = {}
+    historical_cursor = {name: 0 for name in STRATUM_CYCLE}
+    for offset, name in enumerate(STRATUM_CYCLE, start=1):
+        lo, hi = strata[name]
+        values = np.arange(lo, hi + 1, dtype=np.int64)
+        local_rng = np.random.default_rng(seed + 65537 * offset)
+        local_rng.shuffle(values)
+        historical_orders[name] = values
+
     window_orders: Dict[int, np.ndarray] = {}
     window_cursor: Dict[int, int] = {}
     for h in range(1, h_max + 1):
@@ -536,29 +570,38 @@ def build_balanced_lag_schedule(
         window_cursor[h] = 0
 
     schedule: List[Dict[str, object]] = []
-    lag_stream_pos = 0
     output_stream_pos = 0
     for iteration in range(max_iter):
-        lags = [
-            int(lag_order[(lag_stream_pos + offset) % h_max])
-            for offset in range(2)
-        ]
-        lag_stream_pos += 2
+        stratum_name = STRATUM_CYCLE[iteration % len(STRATUM_CYCLE)]
+        historical_order = historical_orders[stratum_name]
+        historical_pos = historical_cursor[stratum_name]
+        historical_lag = int(historical_order[historical_pos % len(historical_order)])
+        historical_cursor[stratum_name] = historical_pos + 1
+        lags = [1, historical_lag]
         outputs = [
             int(output_order[(output_stream_pos + offset) % d_out])
             for offset in range(2)
         ]
         output_stream_pos += 2
-        if len(set(lags)) != 2 or len(set(outputs)) != 2:
-            raise AssertionError("Frozen schedule produced a duplicate lag or output within one step")
+        if len(set(outputs)) != 2:
+            raise AssertionError("Frozen schedule produced duplicate outputs within one step")
         windows = []
         for h in lags:
             order = window_orders[h]
             cursor = window_cursor[h]
             windows.append(int(order[cursor % len(order)]))
             window_cursor[h] = cursor + 1
+        lo, hi = strata[stratum_name]
+        stratum_size = hi - lo + 1
         schedule.append({
             "iteration": iteration,
+            "estimator": "stratified_nominal_plus_history",
+            "nominal_lag": 1,
+            "historical_stratum": stratum_name,
+            "historical_stratum_bounds": [lo, hi],
+            "historical_stratum_size": stratum_size,
+            "historical_importance_weight": 3 * stratum_size,
+            "historical_lag": historical_lag,
             "lags": lags,
             "eligible_windows": windows,
             "output_targets": outputs,
@@ -566,8 +609,86 @@ def build_balanced_lag_schedule(
     return schedule
 
 
+build_balanced_lag_schedule = build_stratified_lag_schedule
+
+
 def schedule_sha256(schedule: Sequence[Mapping[str, object]]) -> str:
     return canonical_json_sha256(list(schedule))
+
+
+def _sampled_lag_mean(
+    model: CoverageAlignedRawChainJRNGC,
+    raw_bdt: torch.Tensor,
+    *,
+    raw_lag: int,
+    target_u: int,
+    outputs: Sequence[int],
+    create_graph: bool,
+) -> torch.Tensor:
+    if target_u not in eligible_targets_for_lag(int(raw_bdt.shape[2]), model.lag, raw_lag):
+        raise ValueError(f"Window {target_u} is not eligible for lag {raw_lag}")
+    prediction = model.predict_from_raw(raw_bdt, [target_u])[0]
+    sampled_sum = torch.zeros((), device=raw_bdt.device, dtype=raw_bdt.dtype)
+    for output in outputs:
+        gradient = torch.autograd.grad(
+            prediction[int(output)],
+            raw_bdt,
+            create_graph=create_graph,
+            retain_graph=True,
+            allow_unused=False,
+        )[0]
+        sampled_sum = sampled_sum + torch.sum(torch.abs(gradient[0, :, target_u - raw_lag]))
+    return sampled_sum / (len(outputs) * model.d * model.lag)
+
+
+def stratified_penalty_components(
+    model: CoverageAlignedRawChainJRNGC,
+    raw_bdt: torch.Tensor,
+    schedule_entry: Mapping[str, object],
+    *,
+    create_graph: bool,
+) -> Dict[str, torch.Tensor]:
+    lags = [int(v) for v in schedule_entry["lags"]]  # type: ignore[index]
+    windows = [int(v) for v in schedule_entry["eligible_windows"]]  # type: ignore[index]
+    outputs = [int(v) for v in schedule_entry["output_targets"]]  # type: ignore[index]
+    if len(lags) != 2 or len(windows) != 2 or len(outputs) != 2:
+        raise ValueError("Estimator requires 2 lags, 1 window per lag, and 2 outputs")
+    if lags[0] != 1 or lags[1] <= 1 or len(set(outputs)) != 2:
+        raise ValueError("Estimator requires nominal h=1, one historical lag, and distinct outputs")
+    stratum_name = str(schedule_entry["historical_stratum"])
+    strata = historical_strata_for_hmax(int(raw_bdt.shape[2]) - 1)
+    if stratum_name not in strata:
+        raise ValueError(f"Unknown historical stratum: {stratum_name}")
+    lo, hi = strata[stratum_name]
+    if not lo <= lags[1] <= hi:
+        raise ValueError(f"Historical lag {lags[1]} is outside {stratum_name}={lo}:{hi}")
+    stratum_size = hi - lo + 1
+    importance_weight = 3 * stratum_size
+    if int(schedule_entry["historical_importance_weight"]) != importance_weight:
+        raise ValueError("Historical importance weight does not equal 3*|B_s|")
+    nominal = _sampled_lag_mean(
+        model,
+        raw_bdt,
+        raw_lag=1,
+        target_u=windows[0],
+        outputs=outputs,
+        create_graph=create_graph,
+    )
+    historical_raw = _sampled_lag_mean(
+        model,
+        raw_bdt,
+        raw_lag=lags[1],
+        target_u=windows[1],
+        outputs=outputs,
+        create_graph=create_graph,
+    )
+    historical_weighted = importance_weight * historical_raw
+    return {
+        "nominal": nominal,
+        "historical_raw": historical_raw,
+        "historical_importance_weighted": historical_weighted,
+        "total": nominal + historical_weighted,
+    }
 
 
 def sampled_lag_balanced_penalty(
@@ -577,31 +698,8 @@ def sampled_lag_balanced_penalty(
     *,
     create_graph: bool,
 ) -> torch.Tensor:
-    lags = [int(v) for v in schedule_entry["lags"]]  # type: ignore[index]
-    windows = [int(v) for v in schedule_entry["eligible_windows"]]  # type: ignore[index]
-    outputs = [int(v) for v in schedule_entry["output_targets"]]  # type: ignore[index]
-    if len(lags) != 2 or len(windows) != 2 or len(outputs) != 2:
-        raise ValueError("Estimator requires 2 lags, 1 window per lag, and 2 outputs")
-    if len(set(lags)) != 2 or len(set(outputs)) != 2:
-        raise ValueError("Estimator lags and outputs must be distinct within a step")
-    T = int(raw_bdt.shape[2])
-    h_max = T - 1
-    sampled_sum = torch.zeros((), device=raw_bdt.device, dtype=raw_bdt.dtype)
-    for h, u in zip(lags, windows):
-        if u not in eligible_targets_for_lag(T, model.lag, h):
-            raise ValueError(f"Window {u} is not eligible for lag {h}")
-        pred = model.predict_from_raw(raw_bdt, [u])[0]
-        for output in outputs:
-            grad = torch.autograd.grad(
-                pred[output],
-                raw_bdt,
-                create_graph=create_graph,
-                retain_graph=True,
-                allow_unused=False,
-            )[0]
-            sampled_sum = sampled_sum + torch.sum(torch.abs(grad[0, :, u - h]))
-    denominator = len(lags) * 1 * len(outputs) * model.d * model.lag
-    return (h_max / denominator) * sampled_sum
+    """Compatibility name for the Track B stratified estimator."""
+    return stratified_penalty_components(model, raw_bdt, schedule_entry, create_graph=create_graph)["total"]
 
 
 def exact_lag_balanced_objective(
@@ -1174,7 +1272,9 @@ def _flatten_parameter_gradients(
     return torch.cat(pieces), {key: math.sqrt(value) for key, value in group_sq.items()}
 
 
-def estimator_exact_reference_audit(draw_count: int = 512) -> Dict[str, object]:
+def estimator_exact_reference_audit(draw_count: int = 1536) -> Dict[str, object]:
+    if draw_count % 3 != 0:
+        raise ValueError("Exact-reference draw count must contain complete three-stratum cycles")
     torch.manual_seed(8121)
     rng = np.random.default_rng(8122)
     cfg = Phase8ModelConfig(
@@ -1196,7 +1296,7 @@ def estimator_exact_reference_audit(draw_count: int = 512) -> Dict[str, object]:
     exact_gradients = torch.autograd.grad(exact, parameters, allow_unused=True)
     exact_vector, exact_groups = _flatten_parameter_gradients(model, exact_gradients)
 
-    schedule = build_balanced_lag_schedule(T=12, lag=1, d_out=3, max_iter=draw_count, seed=8123)
+    schedule = build_stratified_lag_schedule(T=12, lag=1, d_out=3, max_iter=draw_count, seed=8123)
     estimated_values: List[float] = []
     estimated_vector = torch.zeros_like(exact_vector)
     estimated_groups_accum = {"predictor": 0.0, "preprocessor": 0.0}
@@ -1227,9 +1327,38 @@ def estimator_exact_reference_audit(draw_count: int = 512) -> Dict[str, object]:
         exact_groups["predictor"] > 0
         and exact_groups["preprocessor"] > 0
         and torch.linalg.norm(estimated_vector) > 0
+        and estimated_groups_accum["predictor"] > 0
+        and estimated_groups_accum["preprocessor"] > 0
+    )
+    stratum_counts = {name: 0 for name in STRATUM_CYCLE}
+    lag_counts = {name: {} for name in STRATUM_CYCLE}
+    importance_weights_valid = True
+    nominal_always_sampled = True
+    for entry in schedule:
+        name = str(entry["historical_stratum"])
+        stratum_counts[name] += 1
+        historical_lag = int(entry["historical_lag"])
+        lag_counts[name][historical_lag] = lag_counts[name].get(historical_lag, 0) + 1
+        expected_weight = 3 * int(entry["historical_stratum_size"])
+        importance_weights_valid = importance_weights_valid and int(entry["historical_importance_weight"]) == expected_weight
+        nominal_always_sampled = nominal_always_sampled and entry["lags"][0] == 1
+    exact_stratum_frequency = len(set(stratum_counts.values())) == 1
+    lag_frequency_balanced = all(
+        max(counts.values()) - min(counts.values()) <= 1
+        for counts in lag_counts.values()
+    )
+    passed = bool(
+        finite
+        and nonzero
+        and relative_error <= 0.05
+        and cosine >= 0.95
+        and exact_stratum_frequency
+        and lag_frequency_balanced
+        and importance_weights_valid
+        and nominal_always_sampled
     )
     return {
-        "passed": bool(finite and nonzero and relative_error <= 0.05 and cosine >= 0.95),
+        "passed": passed,
         "fixture": {
             "d": 3,
             "T": 12,
@@ -1255,50 +1384,78 @@ def estimator_exact_reference_audit(draw_count: int = 512) -> Dict[str, object]:
         },
         "finite": finite,
         "nonzero_predictor_and_preprocessor": nonzero,
+        "stratum_counts": stratum_counts,
+        "exact_stratum_frequency": exact_stratum_frequency,
+        "historical_lag_frequency_balanced_within_stratum": lag_frequency_balanced,
+        "importance_weights_valid": importance_weights_valid,
+        "nominal_lag_always_sampled": nominal_always_sampled,
+        "fixture_historical_strata": historical_strata_for_hmax(11),
         "schedule_sha256": schedule_sha256(schedule),
     }
 
 
 def deterministic_schedule_audit() -> Dict[str, object]:
-    a = build_balanced_lag_schedule(T=500, lag=1, d_out=8, max_iter=2000, seed=32001)
-    b = build_balanced_lag_schedule(T=500, lag=1, d_out=8, max_iter=2000, seed=32001)
-    c = build_balanced_lag_schedule(T=500, lag=1, d_out=8, max_iter=2000, seed=32002)
-    lag_counts = {h: 0 for h in range(1, 500)}
+    a = build_stratified_lag_schedule(T=500, lag=1, d_out=8, max_iter=2000, seed=32001)
+    b = build_stratified_lag_schedule(T=500, lag=1, d_out=8, max_iter=2000, seed=32001)
+    c = build_stratified_lag_schedule(T=500, lag=1, d_out=8, max_iter=2000, seed=32002)
+    historical_lag_counts = {name: {h: 0 for h in range(lo, hi + 1)} for name, (lo, hi) in FORMAL_HISTORICAL_STRATA.items()}
+    stratum_counts = {name: 0 for name in STRATUM_CYCLE}
     output_counts = {j: 0 for j in range(8)}
     eligible = True
     distinct = True
+    nominal_always_sampled = True
+    weights_valid = True
     for entry in a:
         lags = entry["lags"]
         windows = entry["eligible_windows"]
         outputs = entry["output_targets"]
         distinct = distinct and len(set(lags)) == 2 and len(set(outputs)) == 2
+        nominal_always_sampled = nominal_always_sampled and int(lags[0]) == 1
+        name = str(entry["historical_stratum"])
+        stratum_counts[name] += 1
+        historical_lag_counts[name][int(lags[1])] += 1
+        lo, hi = FORMAL_HISTORICAL_STRATA[name]
+        weights_valid = weights_valid and int(entry["historical_importance_weight"]) == 3 * (hi - lo + 1)
         for h, u in zip(lags, windows):
-            lag_counts[int(h)] += 1
             eligible = eligible and int(u) >= int(h) and int(u) >= 1 and int(u) < 500
         for output in outputs:
             output_counts[int(output)] += 1
-    factor = 499 / (2 * 1 * 2 * 8 * 1)
+    lag_count_ranges = {
+        name: [min(counts.values()), max(counts.values())]
+        for name, counts in historical_lag_counts.items()
+    }
+    lag_frequency_balanced = all(hi - lo <= 1 for lo, hi in lag_count_ranges.values())
+    expected_stratum_counts = {"B1": 667, "B2": 667, "B3": 666}
     passed = (
         a == b
         and schedule_sha256(a) != schedule_sha256(c)
-        and set(lag_counts.values()).issubset({8, 9})
+        and stratum_counts == expected_stratum_counts
+        and lag_frequency_balanced
         and set(output_counts.values()) == {500}
         and eligible
         and distinct
-        and abs(factor - 499 / 32) < 1e-15
+        and nominal_always_sampled
+        and weights_valid
     )
     return {
         "passed": bool(passed),
         "schedule_sha256": schedule_sha256(a),
         "same_seed_reproduced": a == b,
         "different_seed_changes_hash": schedule_sha256(a) != schedule_sha256(c),
-        "lag_count_min": min(lag_counts.values()),
-        "lag_count_max": max(lag_counts.values()),
+        "stratum_counts": stratum_counts,
+        "expected_stratum_counts": expected_stratum_counts,
+        "historical_lag_count_ranges": lag_count_ranges,
+        "historical_lag_frequency_balanced": lag_frequency_balanced,
         "output_counts": output_counts,
         "within_step_distinct": distinct,
         "all_windows_eligible": eligible,
-        "sampled_sum_factor": factor,
-        "expected_sampled_sum_factor": 499 / 32,
+        "nominal_lag_always_sampled": nominal_always_sampled,
+        "importance_weights_valid": weights_valid,
+        "formal_strata": FORMAL_HISTORICAL_STRATA,
+        "formal_importance_weights": {
+            name: 3 * (hi - lo + 1)
+            for name, (lo, hi) in FORMAL_HISTORICAL_STRATA.items()
+        },
     }
 
 

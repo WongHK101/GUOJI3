@@ -35,7 +35,7 @@ from phase8_coverage import (  # noqa: E402
     Phase8ModelConfig,
     Phase8NoAuxInputSpaceControl,
     as_raw_bdt,
-    build_balanced_lag_schedule,
+    build_stratified_lag_schedule,
     build_no_aux_control_schedule,
     coefficient_r_total_lag1,
     extract_attribution_objects,
@@ -129,7 +129,7 @@ def validate_authorization(
 ) -> Dict[str, object]:
     payload = load_json(path)
     expected = {
-        "authorization": "GPT_APPROVED_PHASE8_GPU_PREFLIGHT_REPLICATION_PILOT",
+        "authorization": "GPT_APPROVED_PHASE8_REPLICATION_AND_REPAIR_RECOVERY",
         "release_commit": release_commit,
         "config_sha256": config_sha256,
         "run_matrix_sha256": matrix_sha256,
@@ -334,14 +334,30 @@ def repair_scale_snapshot(handle, x_full, schedule_entry: Mapping[str, object]) 
     penalty_preprocessor_norm, penalty_preprocessor_finite = gradient_norms(
         components["jacobian_penalty"], preprocessor_parameters
     )
+    nominal_predictor_norm, nominal_predictor_finite = gradient_norms(
+        components["nominal_jacobian_penalty"], predictor_parameters
+    )
+    nominal_preprocessor_norm, nominal_preprocessor_finite = gradient_norms(
+        components["nominal_jacobian_penalty"], preprocessor_parameters
+    )
+    historical_predictor_norm, historical_predictor_finite = gradient_norms(
+        components["historical_jacobian_penalty"], predictor_parameters
+    )
+    historical_preprocessor_norm, historical_preprocessor_finite = gradient_norms(
+        components["historical_jacobian_penalty"], preprocessor_parameters
+    )
     mse = float(components["fixed_target_prediction_mse"].detach())
     penalty = float(components["jacobian_penalty"].detach())
+    nominal_penalty = float(components["nominal_jacobian_penalty"].detach())
+    historical_penalty = float(components["historical_jacobian_penalty"].detach())
     pred, target = prediction_and_target(handle, x_full)
     output_variance = float(np.var(pred))
     target_variance = float(np.var(target))
     return {
         "fixed_target_prediction_mse": mse,
         "jacobian_penalty": penalty,
+        "nominal_jacobian_penalty": nominal_penalty,
+        "historical_jacobian_penalty": historical_penalty,
         "total_regularized_objective": float(components["total_regularized_objective"].detach()),
         "lambda_R_lag_over_mse": penalty / max(mse, 1e-12),
         "regularizer_gradient_norm": penalty_norm,
@@ -358,11 +374,23 @@ def repair_scale_snapshot(handle, x_full, schedule_entry: Mapping[str, object]) 
             and mse_preprocessor_finite
             and penalty_predictor_finite
             and penalty_preprocessor_finite
+            and nominal_predictor_finite
+            and nominal_preprocessor_finite
+            and historical_predictor_finite
+            and historical_preprocessor_finite
         ),
         "prediction_gradient_nonzero": bool(mse_norm > 0),
         "regularizer_gradient_nonzero": bool(penalty_norm > 0),
         "predictor_gradient_reachable": bool(mse_predictor_norm > 0 and penalty_predictor_norm > 0),
         "preprocessor_gradient_reachable": bool(mse_preprocessor_norm > 0 and penalty_preprocessor_norm > 0),
+        "nominal_regularizer_predictor_gradient_norm": nominal_predictor_norm,
+        "nominal_regularizer_preprocessor_gradient_norm": nominal_preprocessor_norm,
+        "nominal_predictor_gradient_reachable": bool(nominal_predictor_finite and nominal_predictor_norm > 0),
+        "nominal_preprocessor_gradient_reachable": bool(nominal_preprocessor_finite and nominal_preprocessor_norm > 0),
+        "historical_regularizer_predictor_gradient_norm": historical_predictor_norm,
+        "historical_regularizer_preprocessor_gradient_norm": historical_preprocessor_norm,
+        "historical_predictor_gradient_reachable": bool(historical_predictor_finite and historical_predictor_norm > 0),
+        "historical_preprocessor_gradient_reachable": bool(historical_preprocessor_finite and historical_preprocessor_norm > 0),
         "output_variance": output_variance,
         "target_variance": target_variance,
         "output_target_variance_ratio": output_variance / max(target_variance, 1e-12),
@@ -381,6 +409,77 @@ def true_edge_count(gc_true: np.ndarray) -> int:
 def final_loss_components(handle, x_full, schedule_entry: Optional[Mapping[str, object]]) -> Dict[str, float]:
     components = separated_loss_components(handle, x_full, schedule_entry=schedule_entry)
     return {key: float(value.detach().cpu()) for key, value in components.items()}
+
+
+def stratified_trace_summary(
+    schedule: Sequence[Mapping[str, object]],
+    component_trace: Mapping[str, Sequence[float]],
+    gradient_trace: Mapping[str, Sequence[object]],
+) -> Dict[str, object]:
+    count = len(schedule)
+    component_fields = ["nominal_jacobian_penalty", "historical_jacobian_penalty"]
+    gradient_fields = [
+        "historical_jacobian_penalty_predictor_gradient_norm",
+        "historical_jacobian_penalty_preprocessor_gradient_norm",
+        "nominal_jacobian_penalty_predictor_gradient_norm",
+        "nominal_jacobian_penalty_preprocessor_gradient_norm",
+    ]
+    if any(len(component_trace.get(name, [])) != count for name in component_fields):
+        raise RuntimeError("Stratified component trace length does not match schedule")
+    if any(len(gradient_trace.get(name, [])) != count for name in gradient_fields):
+        raise RuntimeError("Stratified gradient trace length does not match schedule")
+    rows = []
+    strata = {
+        name: {"sample_count": 0, "nonzero_float32_contribution_count": 0, "exact_zero_count": 0, "positive_values": []}
+        for name in ["B1", "B2", "B3"]
+    }
+    for index, entry in enumerate(schedule):
+        name = str(entry["historical_stratum"])
+        historical_value = float(component_trace["historical_jacobian_penalty"][index])
+        nominal_value = float(component_trace["nominal_jacobian_penalty"][index])
+        rows.append({
+            "completed_iteration": index + 1,
+            "historical_stratum": name,
+            "historical_lag": int(entry["historical_lag"]),
+            "nominal_lag": 1,
+            "nominal_jacobian_penalty": nominal_value,
+            "historical_jacobian_penalty": historical_value,
+            "nominal_predictor_gradient_norm": float(
+                gradient_trace["nominal_jacobian_penalty_predictor_gradient_norm"][index]
+            ),
+            "nominal_preprocessor_gradient_norm": float(
+                gradient_trace["nominal_jacobian_penalty_preprocessor_gradient_norm"][index]
+            ),
+            "historical_predictor_gradient_norm": float(
+                gradient_trace["historical_jacobian_penalty_predictor_gradient_norm"][index]
+            ),
+            "historical_preprocessor_gradient_norm": float(
+                gradient_trace["historical_jacobian_penalty_preprocessor_gradient_norm"][index]
+            ),
+        })
+        strata[name]["sample_count"] += 1
+        if historical_value > 0:
+            strata[name]["nonzero_float32_contribution_count"] += 1
+            strata[name]["positive_values"].append(historical_value)
+        else:
+            strata[name]["exact_zero_count"] += 1
+    for values in strata.values():
+        positive = values.pop("positive_values")
+        values["minimum_positive_contribution"] = None if not positive else min(positive)
+        values["maximum_positive_contribution"] = None if not positive else max(positive)
+    return {
+        "iterations": rows,
+        "strata": strata,
+        "cumulative_nominal_contribution": float(sum(component_trace["nominal_jacobian_penalty"])),
+        "cumulative_historical_contribution": float(sum(component_trace["historical_jacobian_penalty"])),
+        "cumulative_historical_predictor_gradient_norm": float(sum(
+            float(value) for value in gradient_trace["historical_jacobian_penalty_predictor_gradient_norm"]
+        )),
+        "cumulative_historical_preprocessor_gradient_norm": float(sum(
+            float(value) for value in gradient_trace["historical_jacobian_penalty_preprocessor_gradient_norm"]
+        )),
+        "all_strata_sampled": all(values["sample_count"] > 0 for values in strata.values()),
+    }
 
 
 def run_record(args: argparse.Namespace) -> int:
@@ -428,7 +527,7 @@ def run_record(args: argparse.Namespace) -> int:
         method = str(resolved["method"])
         if isinstance(handle, CoverageAlignedRawChainJRNGC):
             schedule_seed = int(resolved["jacobian_seed"])
-            schedule = build_balanced_lag_schedule(
+            schedule = build_stratified_lag_schedule(
                 T=int(resolved["T"]),
                 lag=int(resolved["K"]),
                 d_out=int(resolved["d"]),
@@ -449,6 +548,7 @@ def run_record(args: argparse.Namespace) -> int:
             initial_scale = repair_scale_snapshot(handle, x, schedule[0])
         objective_trace = []
         component_trace: Dict[str, list] = {}
+        gradient_component_trace: Dict[str, list] = {}
         captured_states: Dict[int, Dict[str, torch.Tensor]] = {}
         capture_points = [20] if int(resolved["max_iter"]) >= 20 else []
         if resolved["block"] == "repair_scale_benchmark":
@@ -472,6 +572,9 @@ def run_record(args: argparse.Namespace) -> int:
             capture_completed_iterations=capture_points,
             captured_states=captured_states,
             component_trace=component_trace if resolved["block"] == "repair_scale_benchmark" else None,
+            gradient_component_trace=(
+                gradient_component_trace if resolved["block"] == "repair_scale_benchmark" else None
+            ),
         )
         torch.cuda.synchronize(device)
         training_seconds = time.time() - training_started
@@ -580,6 +683,11 @@ def run_record(args: argparse.Namespace) -> int:
                     final_scale["fixed_target_prediction_mse"] - initial_scale["fixed_target_prediction_mse"]
                 ) / max(initial_scale["fixed_target_prediction_mse"], 1e-12),
             }
+            metrics_payload["stratified_benchmark_trace"] = stratified_trace_summary(
+                schedule,
+                component_trace,
+                gradient_component_trace,
+            )
 
         checkpoint = {
             "record_id": args.record_id,
@@ -602,6 +710,7 @@ def run_record(args: argparse.Namespace) -> int:
         atomic_json(run_dir / "training_trace.json", {
             "total_regularized_objective": objective_trace,
             "separated_components": component_trace,
+            "separated_component_gradients": gradient_component_trace,
             "checkpoint_policy": metadata.as_dict(),
         })
         if schedule is not None:
