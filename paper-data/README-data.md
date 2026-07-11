@@ -658,3 +658,31 @@ lambda-ratio 10 variants with frozen five-seed means and population SDs.
 Root-cause synthetic evidence remains `UNASSESSED`; CausalTime performance,
 legacy Mamba performance, Stage 1b and seeds 4--8 model-performance arrays
 remain outside the active evidence set.
+
+# PHASE 8 REPLICATION AND REPAIR RECOVERY (2026-07-12)
+
+The complete review artifact is
+`E:\GUOJI\kbs_review_packages\phase8_replication_and_repair_recovery_v1.zip`
+(SHA256
+`32f0272f7d101fa59063ebaebebe93204f3ef5afc5e952fae3813d105a0d3399`).
+It contains all 50 Track A replication records, the Track A aggregate, the
+stratified Track B source/CPU reports, fixed-lag forensics, five preflight
+records, all 30 pilot records, both completion audits, and package-level SHA
+verification.
+
+Evidence status:
+
+- Capacity and coefficient replications are valid core controlled evidence:
+  both classified `REPLICATED` at 5/5 paired seeds.
+- Fixed-target intervention ordering is `NON_REPLICATION` at 0/5 and cannot
+  support the old auxiliary-route dominance claim.
+- The revised estimator preflight is feasibility evidence only.
+- The 30-run repair pilot is valid boundary evidence: graph/coefficient effect
+  and semantic gates passed, but the joint pilot failed because pure MSE was
+  about 105.4% worse than concat on average.
+- `pilot_go_passed=false`; confirmation was ineligible and unexecuted.
+
+These assets are not yet part of the active V2.4 manuscript evidence set. They
+may be migrated only after GPT reviews the claim changes. The original stopped
+preflight remains a frozen estimator-feasibility artifact, not a method-result
+failure. Phase 7 seeds 4--8 and Stage 1b remain outside this Phase 8 asset set.

@@ -550,3 +550,31 @@ found no clipping, overlap or float-order error after the Appendix B/C barrier
 fix. The next permitted action is GPT submission-readiness review of the v2.4
 ZIP. No new experiment, GPU, Stage 1b, canonical replacement, or seeds 4--8
 model-performance inspection is permitted.
+
+# CURRENT ROUTE-B STATUS AFTER PHASE 8 RECOVERY (2026-07-12)
+
+The V2.4 manuscript and canonical `istf_kbs.tex` remain unchanged. Phase 8
+completed a source-locked replication and bounded repair pilot whose evidence
+must be reviewed before any new manuscript version is drafted.
+
+Required future narrative corrections:
+
+- The capacity and coefficient decoupling diagnostics replicated at 5/5 paired
+  seeds and may strengthen the controlled prediction--knowledge decoupling
+  evidence after traceability migration.
+- The fixed-target intervention route ordering did not replicate at any of the
+  five seeds. Do not retain a claim that the auxiliary route dominated raw X
+  under those interventions.
+- Stratified coverage-aligned raw-chain regularization passed semantic and
+  graph-effect gates, but failed the preregistered pure-MSE gate by a large
+  margin (`+105.4%` mean degradation versus concat). Present it only as a
+  semantic repair/prediction-trade-off boundary, not as a positive method.
+- `pilot_go_passed=false`, Track A `all_three_replicated=false`, and
+  `confirmation_eligible=false`. No confirmation was run.
+
+The review package is
+`E:\GUOJI\kbs_review_packages\phase8_replication_and_repair_recovery_v1.zip`
+(SHA256
+`32f0272f7d101fa59063ebaebebe93204f3ef5afc5e952fae3813d105a0d3399`).
+Next action is GPT scientific-route review. GPU remains off; no confirmation,
+new training, Stage 1b, or manuscript edit is permitted before that review.
