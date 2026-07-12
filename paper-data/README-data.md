@@ -727,3 +727,26 @@ PDF/SVG time metadata; two independent executions produced byte-identical PDF,
 SVG, and PNG outputs for all four figures. The authoritative input-artifact
 SHA256 values and scientific-boundary fields remain unchanged in
 `figures/coverage_audit_phase8_final/phase8_final_figure_manifest.json`.
+
+# KBS VISUAL REWORK V2 ASSETS (2026-07-13)
+
+Visual rework v2 introduces no experiment, model output, seed, checkpoint, or
+derived scientific metric. It expands the manuscript from four to six figures:
+
+- Figures 1--3 are conceptual/source-verified schematics for the coverage
+  declaration, the controlled concat implementation, and the reusable audit
+  workflow. Figures 2--3 are derived only from frozen source definitions and
+  the accepted audit protocol; they contain no synthetic or measured values.
+- Figures 4--6 redraw the existing frozen quantitative evidence without
+  changing any value. Their source-data files are now named
+  `figure4_capacity.csv`, `figure4_coefficient.csv`,
+  `figure4_interventions.csv`, `figure5_semantic_audit.csv`,
+  `figure6_gate_matrix.csv`, and `figure6_repair_tradeoff.csv`.
+
+The six renamed quantitative CSVs are byte-identical to their v1 counterparts.
+All figures use a low-saturation grayscale/blue-gray palette with one muted
+brick risk accent; large colored gate cells were replaced by outline symbols.
+The generator exports 18 deterministic PDF/SVG/PNG files and six source-data
+CSVs. A second clean execution matched every export and CSV byte-for-byte.
+The authoritative frozen input hashes and scientific-boundary statements remain
+recorded in `figures/coverage_audit_phase8_final/phase8_final_figure_manifest.json`.

@@ -663,3 +663,29 @@ All 15 pages were rendered and visually inspected at publication scale.
 No experiment, metric, seed, claim strength, author placeholder, or canonical
 manuscript was changed. The next review step is visual approval of the 15-page
 PDF and four standalone figures before any author metadata is filled.
+
+# CURRENT KBS STATUS: VISUAL AND LAYOUT REWORK V2 (2026-07-13)
+
+The active review branches are `phase8/kbs-visual-rework-v2` in the method and
+independent manuscript repositories. The review source is
+`istf_kbs_jacobian_coverage_submission_candidate_v2.tex`; v1 and the canonical
+manuscript remain unchanged.
+
+The revision addresses three presentation findings without changing scientific
+content. First, a source-verified controlled-concat architecture figure now
+anchors page 4 and separates causal prefix processing, the raw-target prediction
+path, and three derivative objects. Second, a reusable audit-workflow figure
+anchors page 8, with the replicated quantitative evidence following on page 9.
+Pages 4--9 therefore alternate figures, tables, and prose instead of presenting
+five consecutive text-only pages. Third, the Appendix B/C wide tables use
+position-controlled two-column strips, while the longer Appendix D template is
+flushed as a complete top-of-page float. The previous page-12/page-13 blank
+regions and delayed isolated-table page are absent.
+
+All six figures use a restrained grayscale, blue-gray, and muted-brick palette.
+Large saturated status blocks were replaced by white cells, outlines, marker
+shapes, and direct labels. The final direct three-pass build is 16 pages with
+0 LaTeX errors, 0 undefined references/citations, 0 missing figures, and 0
+overfull hboxes/vboxes. Every page and all six standalone PNGs were visually
+inspected at publication scale. No experiment, metric, claim boundary, seed,
+author placeholder, or frozen artifact changed.
