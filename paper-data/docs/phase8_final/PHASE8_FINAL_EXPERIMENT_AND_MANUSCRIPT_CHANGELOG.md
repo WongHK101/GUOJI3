@@ -18,8 +18,8 @@
 - Reported that raw history was more prediction-critical under fixed-target
   interventions.
 - Reported total-score-only evaluation as a failed correction.
-- Reported full-prefix regularization as a graph--prediction frontier, not a
-  successful method.
+- Reported full-prefix regularization as a bounded graph--prediction trade-off,
+  not a successful method.
 
 ## Manuscript
 
@@ -34,4 +34,3 @@
   in the package traceability document.
 - Final LaTeX build: 16 pages, three passes, zero errors, undefined references,
   missing figures, and overfull boxes.
-

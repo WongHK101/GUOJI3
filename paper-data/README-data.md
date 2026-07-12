@@ -677,3 +677,22 @@ lambda aggregate artifacts and writes four manuscript figures plus six
 source-data CSV files. The review package retains the full 18-run output root,
 the 30-run frozen comparator root, the Track A root, source code, manifests, and
 reproduction commands.
+
+# KBS SUBMISSION CANDIDATE V1 ASSETS (2026-07-12)
+
+The submission candidate introduces no new scientific data, run, seed,
+checkpoint, or derived metric. It reuses the four Phase 8 figures, six source-data
+CSVs, frozen full-penalty table, and inline 46-entry bibliography from the
+terminal artifact.
+
+Submission-only assets are stored in the independent manuscript worktree under:
+
+- `submission_assets/`: highlights, cover letter, metadata checklist, AI-use
+  declaration, code/data availability draft, and graphical-abstract guidance;
+- `docs/PHASE8_KBS_SUBMISSION_*`: final traceability, terminology, compile,
+  bibliography, and visual-inspection reports;
+- `bibliography/`: Elsevier bibliography style and asset note.
+
+These files change presentation and submission metadata only. The authoritative
+experimental provenance and hashes remain those listed in
+`paper-data/docs/phase8_final/PHASE8_FINAL_EVIDENCE_TRACEABILITY.md`.

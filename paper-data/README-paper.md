@@ -568,8 +568,9 @@ Causality*. Its locked evidence line is:
    history more prediction-critical;
 4. post-hoc total raw-chain scoring did not restore graph or coefficient
    fidelity;
-5. coverage-aligned full-prefix regularization produced a graph--prediction
-   frontier, but no lambda passed the complete pilot-go rule;
+5. coverage-aligned full-prefix regularization produced a bounded
+   graph--prediction trade-off across the tested strengths, but no lambda passed
+   the complete pilot-go rule;
 6. held-out confirmation was not executed and repair development is closed.
 
 The final independent PDF has 16 pages. Three-pass compilation reports zero
@@ -582,3 +583,33 @@ uninterpretable because `gradient_replay_alignment_valid=false`.
 The final review documents, claim matrix, terminology ledger, limitations,
 journal strategy, traceability, and reproduction commands are under
 `paper-data/docs/phase8_final/`. No further repair tuning is authorized.
+
+# CURRENT KBS STATUS: SUBMISSION CANDIDATE V1 (2026-07-12)
+
+The terminal Phase 8 artifact passed GPT scientific review. The active review
+manuscript is now the independent file
+`E:\GUOJI\elsarticle_phase8_final\istf_kbs_jacobian_coverage_submission_candidate_v1.tex`.
+Canonical `istf_kbs.tex`, the Phase 8 terminal TeX, and the frozen v2.4 archive
+remain unchanged.
+
+The final title is *Auditing Jacobian Coverage in Neural Granger Causality*.
+The submission revision makes the following corrections:
+
+1. Figure 2d is referenced only as the corrected fixed-target intervention;
+   full auxiliary-penalty variants are cited through the appendix table.
+2. Penalty-route coverage mitigation is explicitly separated from the still
+   partial score-route coverage.
+3. Post-hoc total raw-chain scoring is bounded to the controlled coefficient
+   study and is not generalized universally.
+4. The final repair evidence is described as a bounded graph--prediction
+   trade-off across tested strengths; no efficient-set analysis is claimed.
+5. Phase 8 is the central empirical boundary evidence. The full Stage 1a table
+   and detailed P1 discussion are in the appendix, while the main text retains
+   only the historical gate summary.
+
+The 16-page three-pass build has 0 errors, 0 undefined references/citations, 0
+missing figures, and 0 overfull boxes. All pages passed visual inspection after
+an appendix float-order correction. The log retains 65 underfull hbox and 8
+underfull vbox warnings, all visually audited and reported. Author identity,
+affiliation, funding, CRediT roles, conflicts, and public archive URLs remain
+explicit author-controlled placeholders.

@@ -13,5 +13,4 @@
 | fixed-target pure prediction MSE | MSE against the original unperturbed raw target, excluding Jacobian penalties | training objective or legacy `pred_loss` |
 | best total objective | Minimum checked prediction MSE plus applicable Jacobian penalty | pure prediction loss |
 | data-seed analysis unit | Mean of two model seeds within one data seed | six independent model-seed observations |
-| graph--prediction frontier | Observed trade-off across frozen repair strengths | competitive or confirmed repair |
-
+| graph--prediction trade-off | Bounded trade-off across the tested regularization strengths | efficient-set or method-effectiveness claim |

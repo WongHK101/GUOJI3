@@ -5,7 +5,7 @@
 | Evidence | Package-relative location | SHA256 / lock | Permitted claim |
 |---|---|---|---|
 | Track A five-pair aggregate | `artifacts/phase8_trackA_replication_dee0d30/replication_aggregate_and_gates.json` | `2a474e434937e567b49d16d37a7446789f4b4f94365923a6ce9afb5d27e82a9a` | Capacity and coefficient degradation replicated 5/5; fixed-target auxiliary dominance did not replicate 0/5 |
-| Final bounded-lambda aggregate | `artifacts/phase8_final_lambda_tradeoff_78a85ac/lambda_tradeoff_aggregate_and_decision.json` | `505a7ab8462661695e6dcdf5d520cd536d3183455d1ae6908ca1ffa95608335a` | Graph--prediction frontier; no eligible lambda; no confirmation |
+| Final bounded-lambda aggregate | `artifacts/phase8_final_lambda_tradeoff_78a85ac/lambda_tradeoff_aggregate_and_decision.json` | `505a7ab8462661695e6dcdf5d520cd536d3183455d1ae6908ca1ffa95608335a` | Bounded graph--prediction trade-off across tested strengths; no eligible lambda; no confirmation |
 | Final 901 artifact manifest | `artifacts/phase8_final_lambda_tradeoff_78a85ac/phase8_final_server_sha256.txt` | 247 entries, all locally verified | Server-to-local artifact integrity |
 | Frozen comparator pilot | `artifacts/phase8_recovery_execution_6f489b1/` | release-locked source/config/matrix/authorization inside directory | Baseline, concat, equal-lambda, lc10, and lambda=0.01 frozen comparisons |
 | Frozen full auxiliary-penalty summary | `frozen_evidence/full_aux_jacobian_penalty.json` | `a3697feff2f4d6c309fc34b1aadd4cde04508ab317fc0aa532ce603b1f42b3af` | Controlled graph/coefficient mitigation; legacy `pred_loss` is total objective, not pure MSE |
@@ -42,4 +42,3 @@ field, and method decision is identical.
 - seed 2: `aa7fd84a16989bb9e5a22d4a30e84159cf97a84eb2bae5949cf138723e9a4cdf`
 - seed 3: `d12bc3a15f224f9a4b2efc4f3a4fd14e27428ce2e637f98611ad8f111dda2e8e`
 - seed 4: `d2d86fb0d56d2f5712a46e7562bfd95a446c89550a01f20370ae8330d1522ce9`
-

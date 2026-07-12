@@ -25,9 +25,8 @@ three data seeds. The data seed is the statistical unit.
 - No lambda was selected.
 - Held-out confirmation was not eligible and was not executed.
 - No further repair tuning is authorized for this paper.
-- The repair can be reported only as a graph--prediction frontier and a boundary
-  result, not as a competitive method.
+- The repair can be reported only as a bounded graph--prediction trade-off across
+  the tested strengths and as boundary evidence, not as a method-effectiveness result.
 - The manuscript must center on the Jacobian coverage audit, replicated
   prediction--knowledge decoupling, corrected intervention evidence, and the
   failure of total-score-only correction.
-
