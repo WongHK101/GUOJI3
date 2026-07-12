@@ -635,3 +635,31 @@ references/citations, missing figures, or overfull boxes. It reports 64 underful
 hbox and 8 underfull vbox warnings. Rendered-text grep and whole-document visual
 inspection both pass. No scientific content, experiment, method, threshold, or
 conclusion changed.
+
+# CURRENT KBS STATUS: VISUAL AND LAYOUT REWORK V1 (2026-07-13)
+
+The active visual-review branch is `phase8/kbs-visual-rework-v1` in both the
+method and independent manuscript repositories. It preserves the author-ready
+scientific content and all frozen numerical evidence.
+
+The four main figures were redrawn from the same frozen artifacts after a
+page-by-page comparison with four local published KBS papers. The adopted
+patterns are a dominant horizontal predictive flow for the framework figure,
+short panel titles, restrained method-consistent colors, thin paired-seed
+traces, compact local/shared legends, and a heatmap-like gate summary. Figure 1
+now separates predictive routes, the coverage declaration, and the
+claim-specific workflow; Figure 3 replaces the previous derivative cards with
+an explicit coordinate and horizon schematic. Figure captions were shortened
+without changing their evidentiary boundaries.
+
+The appendix float layout was also audited. Removing the unnecessary barrier
+after the Stage 1a wide table reduced the manuscript from 16 to 15 pages and
+eliminated one large sparse appendix page while preserving table order. A
+bottom-wide-float experiment increased the page count and whitespace and was
+rejected. The retained build has 0 errors, undefined references/citations,
+missing figures, overfull hboxes, overfull vboxes, or float-too-large warnings.
+All 15 pages were rendered and visually inspected at publication scale.
+
+No experiment, metric, seed, claim strength, author placeholder, or canonical
+manuscript was changed. The next review step is visual approval of the 15-page
+PDF and four standalone figures before any author metadata is filled.
