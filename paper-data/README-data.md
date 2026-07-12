@@ -658,3 +658,22 @@ lambda-ratio 10 variants with frozen five-seed means and population SDs.
 Root-cause synthetic evidence remains `UNASSESSED`; CausalTime performance,
 legacy Mamba performance, Stage 1b and seeds 4--8 model-performance arrays
 remain outside the active evidence set.
+
+# PHASE 8 FINAL BOUNDED TRADE-OFF ASSETS (2026-07-12)
+
+The final authorized repair cycle is complete. Release commit
+`78a85acd513fddde1744283c68f17e731692ba2e` generated 18 new final-checkpoint
+runs for lambda `0.0003`, `0.001`, and `0.003`. The server aggregate SHA256 is
+`505a7ab8462661695e6dcdf5d520cd536d3183455d1ae6908ca1ffa95608335a`.
+All 247 pre-manifest output files passed server-to-local SHA256 verification.
+
+No lambda passed the complete pilot-go criteria. Confirmation was not eligible
+and was not executed. The frozen decision is
+`STOP_METHOD_DEVELOPMENT_AUDIT_BOUNDARY_MANUSCRIPT`.
+
+Final documentation is under `paper-data/docs/phase8_final/`. The figure source
+is `tools/generate_phase8_final_figures.py`; it reads frozen Track A, P0, and
+lambda aggregate artifacts and writes four manuscript figures plus six
+source-data CSV files. The review package retains the full 18-run output root,
+the 30-run frozen comparator root, the Track A root, source code, manifests, and
+reproduction commands.

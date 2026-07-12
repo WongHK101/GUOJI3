@@ -550,3 +550,35 @@ found no clipping, overlap or float-order error after the Appendix B/C barrier
 fix. The next permitted action is GPT submission-readiness review of the v2.4
 ZIP. No new experiment, GPU, Stage 1b, canonical replacement, or seeds 4--8
 model-performance inspection is permitted.
+
+# CURRENT ROUTE-B KBS STATUS: PHASE 8 FINAL INDEPENDENT REVISION (2026-07-12)
+
+The active review manuscript is the independent file
+`E:\GUOJI\elsarticle_phase8_final\istf_kbs_jacobian_coverage_phase8_final.tex`.
+Canonical `istf_kbs.tex` and the frozen v2.4 archive remain unchanged.
+
+The manuscript title is *Jacobian Coverage Audits for Reliable Neural Granger
+Causality*. Its locked evidence line is:
+
+1. capacity-based prediction--knowledge decoupling replicated in 5/5 paired
+   runs;
+2. partial graph and lag-1 coefficient degradation replicated in 5/5 paired
+   runs;
+3. corrected fixed-target auxiliary dominance did not replicate (0/5), with raw
+   history more prediction-critical;
+4. post-hoc total raw-chain scoring did not restore graph or coefficient
+   fidelity;
+5. coverage-aligned full-prefix regularization produced a graph--prediction
+   frontier, but no lambda passed the complete pilot-go rule;
+6. held-out confirmation was not executed and repair development is closed.
+
+The final independent PDF has 16 pages. Three-pass compilation reports zero
+errors, undefined references/citations, missing figures, and overfull boxes.
+All pages were rendered and visually inspected. Four new figures replace the
+single-run panels and show seed-level data plus population SD. Stage 1a remains
+a supporting historical boundary table, and P1 A3 is described only as
+uninterpretable because `gradient_replay_alignment_valid=false`.
+
+The final review documents, claim matrix, terminology ledger, limitations,
+journal strategy, traceability, and reproduction commands are under
+`paper-data/docs/phase8_final/`. No further repair tuning is authorized.
