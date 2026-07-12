@@ -613,3 +613,25 @@ an appendix float-order correction. The log retains 65 underfull hbox and 8
 underfull vbox warnings, all visually audited and reported. Author identity,
 affiliation, funding, CRediT roles, conflicts, and public archive URLs remain
 explicit author-controlled placeholders.
+
+# CURRENT KBS STATUS: AUTHOR METADATA READY V1 (2026-07-12)
+
+GPT accepted the submission candidate scientifically and authorized only a final
+author-metadata readiness correction. The manuscript source remains
+`istf_kbs_jacobian_coverage_submission_candidate_v1.tex`; its author-ready commit
+is `1b50e8a577995b02485764fead959bfa10ae159d`, with package-guide branch head
+`ffe74087d17c6925aaf099eedb268efb3091c09b`.
+
+The rendered `Appendix Appendix C` duplication is fixed, all five declaration
+paragraph headings render with one period, and the AI-use statement now includes
+software implementation and test development. Instructional square brackets in
+the reusable audit template were replaced by italic `Entry:` prompts. The only
+remaining PDF placeholders are author-controlled identity, affiliation, funding,
+conflict, CRediT, repository, and archive fields; one additional bracketed object
+is mathematical concatenation rather than a placeholder.
+
+The final author-ready build remains 16 pages with 0 errors, undefined
+references/citations, missing figures, or overfull boxes. It reports 64 underfull
+hbox and 8 underfull vbox warnings. Rendered-text grep and whole-document visual
+inspection both pass. No scientific content, experiment, method, threshold, or
+conclusion changed.

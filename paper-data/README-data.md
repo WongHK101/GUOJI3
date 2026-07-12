@@ -696,3 +696,13 @@ Submission-only assets are stored in the independent manuscript worktree under:
 These files change presentation and submission metadata only. The authoritative
 experimental provenance and hashes remain those listed in
 `paper-data/docs/phase8_final/PHASE8_FINAL_EVIDENCE_TRACEABILITY.md`.
+
+# KBS AUTHOR METADATA READY V1 PACKAGE (2026-07-12)
+
+The author-ready package is
+`E:\GUOJI\kbs_review_packages\phase8_kbs_author_metadata_ready_v1.zip`.
+It contains no new scientific output. Its additional assets are the expanded
+AI-use declaration, author-completion form, exact substitution checklist,
+rendered-text grep report, author-ready compile report, and final 16-page visual
+inspection report. The package retains the same four figures, six source-data
+CSVs, table source, and plotting script as the accepted submission candidate.
