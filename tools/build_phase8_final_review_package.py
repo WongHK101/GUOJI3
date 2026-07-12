@@ -99,6 +99,7 @@ eligible and was not executed. No further repair development is authorized.
 - `artifacts/phase8_final_lambda_tradeoff_78a85ac/`: all 18 new runs and aggregate.
 - `artifacts/phase8_recovery_execution_6f489b1/`: 30 frozen pilot/comparator runs.
 - `artifacts/phase8_trackA_replication_dee0d30/`: five-pair replication evidence.
+- `artifacts/phase8_final_cpu_preflight_78a85ac/`: accepted CPU semantic and estimator preflight.
 - `frozen_evidence/`: P0, full-penalty, Stage 1a, and P1 boundary evidence.
 - `source/code_repository/`: clean tracked code snapshot.
 - `source/release_lock/`: exact GPU release lock and source manifest.
@@ -139,6 +140,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--final-results-root", type=Path, required=True)
     parser.add_argument("--frozen-comparator-root", type=Path, required=True)
     parser.add_argument("--track-a-root", type=Path, required=True)
+    parser.add_argument("--cpu-preflight-root", type=Path, required=True)
     parser.add_argument("--p0-audit-dir", type=Path, required=True)
     parser.add_argument("--full-aux-json", type=Path, required=True)
     parser.add_argument("--stage1a-json", type=Path, required=True)
@@ -160,6 +162,7 @@ def main() -> int:
     copy_tree(args.final_results_root, args.staging_dir / "artifacts/phase8_final_lambda_tradeoff_78a85ac")
     copy_tree(args.frozen_comparator_root, args.staging_dir / "artifacts/phase8_recovery_execution_6f489b1")
     copy_tree(args.track_a_root, args.staging_dir / "artifacts/phase8_trackA_replication_dee0d30")
+    copy_tree(args.cpu_preflight_root, args.staging_dir / "artifacts/phase8_final_cpu_preflight_78a85ac")
     copy_tree(args.local_reaggregate_root, args.staging_dir / "local_reaggregate")
 
     p0_destination = args.staging_dir / "frozen_evidence/p0"
