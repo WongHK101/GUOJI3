@@ -102,6 +102,7 @@ eligible and was not executed. No further repair development is authorized.
 - `artifacts/phase8_final_cpu_preflight_78a85ac/`: accepted CPU semantic and estimator preflight.
 - `frozen_evidence/`: P0, full-penalty, Stage 1a, and P1 boundary evidence.
 - `source/code_repository/`: clean tracked code snapshot.
+- `source/code_repository/tgc/`: frozen JRNGC dependency required by the adapters.
 - `source/release_lock/`: exact GPU release lock and source manifest.
 - `manuscript/`: clean-compiled TeX/PDF/log, figures, source data, and tables.
 - `docs/`: decision, claim matrix, traceability, limitations, and reproduction guide.
@@ -135,6 +136,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-zip", type=Path, required=True)
     parser.add_argument("--staging-dir", type=Path, required=True)
     parser.add_argument("--code-root", type=Path, required=True)
+    parser.add_argument("--jrngc-root", type=Path, required=True)
     parser.add_argument("--manuscript-clean-root", type=Path, required=True)
     parser.add_argument("--manuscript-commit", required=True)
     parser.add_argument("--final-results-root", type=Path, required=True)
@@ -157,6 +159,7 @@ def main() -> int:
     args.staging_dir.mkdir(parents=True)
 
     code_commit = copy_tracked_repository(args.code_root, args.staging_dir / "source/code_repository")
+    copy_tree(args.jrngc_root / "tgc", args.staging_dir / "source/code_repository/tgc")
     copy_tree(args.release_lock_dir, args.staging_dir / "source/release_lock")
     copy_final_manuscript(args.manuscript_clean_root, args.staging_dir / "manuscript")
     copy_tree(args.final_results_root, args.staging_dir / "artifacts/phase8_final_lambda_tradeoff_78a85ac")
