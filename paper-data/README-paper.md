@@ -749,3 +749,25 @@ No author metadata, GPU work, experiment, new seed, metric recalculation, or
 canonical manuscript edit occurred. The next step is clean-package verification
 and external review before deciding whether v4 replaces v3 as the author-ready
 baseline.
+
+# CURRENT KBS STATUS: SYNCHRONIZED CHINESE REVIEW MIRROR (2026-07-14)
+
+A complete Chinese proofreading mirror of the v4 manuscript is now maintained
+in the independent manuscript repository:
+
+- source: `istf_kbs_jacobian_coverage_submission_candidate_v4_zh.tex`;
+- PDF: `istf_kbs_jacobian_coverage_submission_candidate_v4_zh.pdf`;
+- QA and maintenance tools: `qa/chinese_review_v4/`.
+
+The Chinese mirror uses a simple 16-page A4 one-column layout. It translates
+all manuscript and appendix prose, captions, tables, and author-facing
+placeholders, while preserving the English-master formulas, labels, citation
+keys, numerical values, figures, audit labels, and evidence boundaries. Figure
+interiors and bibliography entries remain English to avoid divergence from the
+submission assets.
+
+The build and synchronization checks pass with zero LaTeX errors, undefined
+references/citations, warnings, or overfull hboxes. The English v4 source is the
+sole submission master. Future scientific edits must be applied to the English
+version first and synchronized to the Chinese mirror in the same writing
+session; the Chinese file must not become an independent source of claims.

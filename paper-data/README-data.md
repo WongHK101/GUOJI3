@@ -793,3 +793,18 @@ The visual-reference map and narrative audit are stored in
 `paper-data/docs/phase8_kbs_top_journal_v4_figure_reference_map.md` and
 `paper-data/docs/phase8_kbs_top_journal_v4_narrative_audit.md`. No seeds 4--8
 model-performance outputs were inspected.
+
+# KBS V4 CHINESE REVIEW MIRROR (2026-07-14)
+
+The synchronized Chinese review source and PDF are stored in the independent
+manuscript repository as
+`istf_kbs_jacobian_coverage_submission_candidate_v4_zh.tex` and
+`istf_kbs_jacobian_coverage_submission_candidate_v4_zh.pdf`. They introduce no
+new data, derived metric, model output, checkpoint, or scientific claim. The
+Chinese document reuses the exact v4 figures and preserves all reported values.
+
+Synchronization evidence is under `qa/chinese_review_v4/` in the manuscript
+repository. `sync_report.json` verifies the label, citation, bibliography,
+figure-reference, and reported-decimal invariants against the English v4
+master. The English source remains authoritative for all provenance and
+submission decisions.
