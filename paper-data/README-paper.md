@@ -715,3 +715,37 @@ overfull boxes, float-too-large warnings, or unprocessed floats.
 No GPU, experiment, new seed, metric recalculation, claim-threshold change, or
 legacy performance revival occurred. The next step is clean-directory package
 verification and external visual review before author metadata is completed.
+
+# CURRENT KBS STATUS: TOP-JOURNAL NARRATIVE REWORK V4 (2026-07-14)
+
+The active review branches are `phase8/kbs-top-journal-narrative-v4` in the
+method and independent manuscript repositories. The review source is
+`istf_kbs_jacobian_coverage_submission_candidate_v4.tex`; v3, canonical
+`istf_kbs.tex`, and every frozen artifact remain unchanged.
+
+V4 replaces the three sequential conceptual diagrams with one integrated
+route-resolved figure, advances the first quantitative evidence to Figure 2,
+and retains four main figures total. The figure design was audited against
+Tao et al. KBS 2025 Fig. 1, Chen et al. KBS 2024 Fig. 1, JRNGC ICML 2024
+Fig. 1, and CUTS ICLR 2023 Fig. 1. The exact design map and no-copy boundary
+are documented under `paper-data/docs/`.
+
+The manuscript argument is now mechanism -> coverage declaration -> controlled
+evidence -> training-time frontier. Internal development language, P1 gradient
+replay details, repeated no-go disclaimers, and speculative optimization
+accounts were removed. Material evidence boundaries remain explicit, including
+the legacy total-objective meaning of `pred_loss`, the post-hoc score result,
+the graph--prediction frontier, and the distinction between score semantics and
+empirical advantage.
+
+The retained 12-page three-pass build has 0 LaTeX errors, 0 undefined
+references/citations, 0 missing figures, and 0 overfull hboxes. Figure 1 anchors
+page 2; pages 4--8 alternate full-width tables, quantitative figures, and prose.
+Standard `table*` floats replace unstable `strip` blocks, eliminating the page-9
+duplicate-text defect. Page 13 is eliminated; page 12 contains the balanced tail
+of the 46-item bibliography.
+
+No author metadata, GPU work, experiment, new seed, metric recalculation, or
+canonical manuscript edit occurred. The next step is clean-package verification
+and external review before deciding whether v4 replaces v3 as the author-ready
+baseline.

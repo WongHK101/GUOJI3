@@ -769,3 +769,27 @@ The quantitative generator `tools/generate_phase8_final_figures.py` now supports
 the obsolete conceptual layouts. A clean rerun matched all nine result-figure
 exports and all six source-data CSVs byte-for-byte. No frozen input was written
 or modified.
+
+# KBS TOP-JOURNAL NARRATIVE V4 ASSETS (2026-07-14)
+
+Submission v4 adds no experiment, seed, checkpoint, model output, or derived
+scientific metric. It consolidates the three v3 conceptual figures into one
+deterministic route-resolved schematic:
+
+- source: `tools/generate_phase8_submission_v4_overview.py`;
+- exports: `fig1_route_resolved_jacobian_audit_v4.{pdf,svg,png}`;
+- scientific content: predictor routes, fixed raw target, partial/full-coordinate/
+  raw-chain derivatives, source-coordinate mapping, and horizon support;
+- numerical content: none.
+
+The three frozen quantitative figures were regenerated with submission-v4
+main-text names under `figures/coverage_audit_submission_v4/`. All nine
+PDF/SVG/PNG exports are byte-identical to their v3 counterparts, and all six
+CSV files under `source_data/coverage_audit_submission_v4/` are byte-identical
+to the frozen v3 source data. The verification is recorded in
+`qa/coverage_audit_submission_v4/FROZEN_DATA_EQUIVALENCE.json`.
+
+The visual-reference map and narrative audit are stored in
+`paper-data/docs/phase8_kbs_top_journal_v4_figure_reference_map.md` and
+`paper-data/docs/phase8_kbs_top_journal_v4_narrative_audit.md`. No seeds 4--8
+model-performance outputs were inspected.

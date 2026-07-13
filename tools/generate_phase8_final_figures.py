@@ -508,7 +508,13 @@ def seed_lines(ax, x, values, *, color, mean_color, ylabel, title):
     ax.grid(axis="y", color=COLORS["grid"], linewidth=0.5, alpha=0.72)
 
 
-def draw_figure4(track_root: Path, output_dir: Path, source_dir: Path) -> list[Path]:
+def draw_figure4(
+    track_root: Path,
+    output_dir: Path,
+    source_dir: Path,
+    *,
+    stem: str = "fig4_replicated_decoupling_phase8_final",
+) -> list[Path]:
     track = load_json(track_root / "replication_aggregate_and_gates.json")
     dconds, mse, auroc = _capacity_arrays(track)
     coeff = _coefficient_rows(track_root)
@@ -616,10 +622,17 @@ def draw_figure4(track_root: Path, output_dir: Path, source_dir: Path) -> list[P
         for idx, pair in enumerate(interventions):
             writer.writerow([pair["data_seed"], "mask", raw_values[0][idx], aux_values[0][idx]])
             writer.writerow([pair["data_seed"], "shuffle", raw_values[1][idx], aux_values[1][idx]])
-    return save_figure(fig, output_dir, "fig4_replicated_decoupling_phase8_final")
+    return save_figure(fig, output_dir, stem)
 
 
-def draw_figure5(track_root: Path, p0_paths: Sequence[Path], output_dir: Path, source_dir: Path) -> list[Path]:
+def draw_figure5(
+    track_root: Path,
+    p0_paths: Sequence[Path],
+    output_dir: Path,
+    source_dir: Path,
+    *,
+    stem: str = "fig5_score_semantics_phase8_final",
+) -> list[Path]:
     audits = [load_json(path) for path in p0_paths]
     coeff = _coefficient_rows(track_root)
 
@@ -732,7 +745,7 @@ def draw_figure5(track_root: Path, p0_paths: Sequence[Path], output_dir: Path, s
                     audit["istf_mamba_filtered_vs_raw_chain"]["topk_jaccard"],
                 ]
             )
-    return save_figure(fig, output_dir, "fig5_score_semantics_phase8_final")
+    return save_figure(fig, output_dir, stem)
 
 
 def _tradeoff_rows(final: Mapping[str, object]) -> list[dict]:
@@ -764,7 +777,13 @@ def _tradeoff_rows(final: Mapping[str, object]) -> list[dict]:
     return output
 
 
-def draw_figure6(final_path: Path, output_dir: Path, source_dir: Path) -> list[Path]:
+def draw_figure6(
+    final_path: Path,
+    output_dir: Path,
+    source_dir: Path,
+    *,
+    stem: str = "fig6_coverage_repair_tradeoff_phase8_final",
+) -> list[Path]:
     final = load_json(final_path)
     rows = _tradeoff_rows(final)
     labels = ["Concat x-only", "Baseline JRNGC", "Full auxiliary lc10", r"$\lambda=3\times10^{-4}$", r"$\lambda=10^{-3}$", r"$\lambda=3\times10^{-3}$", r"$\lambda=10^{-2}$"]
@@ -894,7 +913,7 @@ def draw_figure6(final_path: Path, output_dir: Path, source_dir: Path) -> list[P
         writer.writerow(["lambda", *columns])
         for label, row in zip(rows_labels, matrix):
             writer.writerow([label, *row])
-    return save_figure(fig, output_dir, "fig6_coverage_repair_tradeoff_phase8_final")
+    return save_figure(fig, output_dir, stem)
 
 
 def parse_args() -> argparse.Namespace:
@@ -909,6 +928,11 @@ def parse_args() -> argparse.Namespace:
         choices=("all", "results"),
         default="all",
         help="Generate all legacy-layout figures or result figures 4--6 only.",
+    )
+    parser.add_argument(
+        "--submission-v4-names",
+        action="store_true",
+        help="Name result figures by their submission-v4 main-text numbers (2--4).",
     )
     return parser.parse_args()
 
@@ -931,9 +955,42 @@ def main() -> int:
         generated += draw_figure1(args.output_dir)
         generated += draw_figure2_architecture(args.output_dir)
         generated += draw_figure3_workflow(args.output_dir)
-    generated += draw_figure4(args.track_a_root, args.output_dir, args.source_data_dir)
-    generated += draw_figure5(args.track_a_root, p0_paths, args.output_dir, args.source_data_dir)
-    generated += draw_figure6(args.final_aggregate, args.output_dir, args.source_data_dir)
+    stems = {
+        "figure4": (
+            "fig2_prediction_knowledge_decoupling_v4"
+            if args.submission_v4_names
+            else "fig4_replicated_decoupling_phase8_final"
+        ),
+        "figure5": (
+            "fig3_derivative_semantics_v4"
+            if args.submission_v4_names
+            else "fig5_score_semantics_phase8_final"
+        ),
+        "figure6": (
+            "fig4_graph_prediction_frontier_v4"
+            if args.submission_v4_names
+            else "fig6_coverage_repair_tradeoff_phase8_final"
+        ),
+    }
+    generated += draw_figure4(
+        args.track_a_root,
+        args.output_dir,
+        args.source_data_dir,
+        stem=stems["figure4"],
+    )
+    generated += draw_figure5(
+        args.track_a_root,
+        p0_paths,
+        args.output_dir,
+        args.source_data_dir,
+        stem=stems["figure5"],
+    )
+    generated += draw_figure6(
+        args.final_aggregate,
+        args.output_dir,
+        args.source_data_dir,
+        stem=stems["figure6"],
+    )
     manifest = {
         "purpose": "Final Phase 8 manuscript figures generated exclusively from frozen artifacts.",
         "inputs": [{"path": str(path), "sha256": sha256(path)} for path in inputs],
