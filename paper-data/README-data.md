@@ -750,3 +750,22 @@ The generator exports 18 deterministic PDF/SVG/PNG files and six source-data
 CSVs. A second clean execution matched every export and CSV byte-for-byte.
 The authoritative frozen input hashes and scientific-boundary statements remain
 recorded in `figures/coverage_audit_phase8_final/phase8_final_figure_manifest.json`.
+
+# KBS VISUAL NARRATIVE REWORK V3 ASSETS (2026-07-14)
+
+Visual narrative rework v3 adds no experiment, seed, checkpoint, metric, or
+derived scientific result. It retains the same six frozen quantitative CSVs and
+regenerates Figures 4--6 byte-for-byte from the accepted artifacts.
+
+The new source `tools/generate_phase8_submission_v3_concept_figures.py` creates
+Figures 1--3 as deterministic PDF/SVG/600-dpi PNG exports. These figures encode
+only already declared architecture and score semantics: predictive route
+classes, fixed raw targets, partial/full/raw-chain derivative objects, route
+ledgers, source-coordinate checks, and horizon checks. Two independent runs
+matched all nine export hashes.
+
+The quantitative generator `tools/generate_phase8_final_figures.py` now supports
+`--figures results`; the v3 invocation uses it to render Figures 4--6 without
+the obsolete conceptual layouts. A clean rerun matched all nine result-figure
+exports and all six source-data CSVs byte-for-byte. No frozen input was written
+or modified.

@@ -768,8 +768,18 @@ def draw_figure6(final_path: Path, output_dir: Path, source_dir: Path) -> list[P
     final = load_json(final_path)
     rows = _tradeoff_rows(final)
     labels = ["Concat x-only", "Baseline JRNGC", "Full auxiliary lc10", r"$\lambda=3\times10^{-4}$", r"$\lambda=10^{-3}$", r"$\lambda=3\times10^{-3}$", r"$\lambda=10^{-2}$"]
-    colors = [COLORS["aux"], COLORS["gray"], COLORS["raw_mid"], "#B8C2CB", "#94A6B5", "#70899D", "#4F6D84"]
-    markers = ["X", "s", "D", "o", "o", "o", "o"]
+    # Keep method families distinct without assigning a new hue to every
+    # regularization strength. Lambda values use one muted blue and shape.
+    colors = [
+        COLORS["aux"],
+        COLORS["gray"],
+        COLORS["raw_mid"],
+        COLORS["raw"],
+        COLORS["raw"],
+        COLORS["raw"],
+        COLORS["raw"],
+    ]
+    markers = ["X", "s", "D", "o", "^", "v", "P"]
 
     fig = plt.figure(figsize=(7.25, 4.17))
     grid = fig.add_gridspec(2, 3, height_ratios=[1.0, 0.70], wspace=0.42, hspace=0.54)
@@ -834,7 +844,7 @@ def draw_figure6(final_path: Path, output_dir: Path, source_dir: Path) -> list[P
                 report["eligible"],
             ]
         )
-    ax.set_xlim(-0.20, 8.05)
+    ax.set_xlim(-0.10, 5.10)
     ax.set_ylim(-0.12, len(rows_labels) + 0.10)
     for line_x in range(len(columns) + 1):
         ax.plot([line_x, line_x], [0.12, 3.88], color=COLORS["grid"], linewidth=0.55, zorder=0)
@@ -857,19 +867,7 @@ def draw_figure6(final_path: Path, output_dir: Path, source_dir: Path) -> list[P
     ax.tick_params(length=0)
     for spine in ax.spines.values():
         spine.set_visible(False)
-    ax.set_title("Frozen pilot-go gates", loc="left", fontsize=7.5, fontweight="bold", pad=5)
-    box(
-        ax,
-        (5.55, 1.12),
-        2.20,
-        1.82,
-        "NO ELIGIBLE $\\lambda$\n\nconfirmation\nnot executed",
-        face="#FFFFFF",
-        edge=COLORS["fail"],
-        fontsize=5.6,
-        weight="bold",
-    )
-    arrow(ax, (5.03, 2.03), (5.48, 2.03), color=COLORS["fail"], width=0.9)
+    ax.set_title("Pre-specified effect, fit, safety, and semantic gates", loc="left", fontsize=7.5, fontweight="bold", pad=5)
     panel_label(ax, "d")
 
     legend_handles = [
@@ -906,6 +904,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--final-aggregate", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--source-data-dir", type=Path, required=True)
+    parser.add_argument(
+        "--figures",
+        choices=("all", "results"),
+        default="all",
+        help="Generate all legacy-layout figures or result figures 4--6 only.",
+    )
     return parser.parse_args()
 
 
@@ -923,9 +927,10 @@ def main() -> int:
         if not path.is_file():
             raise FileNotFoundError(path)
     generated: list[Path] = []
-    generated += draw_figure1(args.output_dir)
-    generated += draw_figure2_architecture(args.output_dir)
-    generated += draw_figure3_workflow(args.output_dir)
+    if args.figures == "all":
+        generated += draw_figure1(args.output_dir)
+        generated += draw_figure2_architecture(args.output_dir)
+        generated += draw_figure3_workflow(args.output_dir)
     generated += draw_figure4(args.track_a_root, args.output_dir, args.source_data_dir)
     generated += draw_figure5(args.track_a_root, p0_paths, args.output_dir, args.source_data_dir)
     generated += draw_figure6(args.final_aggregate, args.output_dir, args.source_data_dir)

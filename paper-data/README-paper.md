@@ -689,3 +689,29 @@ shapes, and direct labels. The final direct three-pass build is 16 pages with
 overfull hboxes/vboxes. Every page and all six standalone PNGs were visually
 inspected at publication scale. No experiment, metric, claim boundary, seed,
 author placeholder, or frozen artifact changed.
+
+# CURRENT KBS STATUS: VISUAL NARRATIVE REWORK V3 (2026-07-14)
+
+The active review branches are `phase8/kbs-visual-narrative-rework-v3` in the
+method and independent manuscript repositories. The review source is
+`istf_kbs_jacobian_coverage_submission_candidate_v3.tex`; v2, the canonical
+`istf_kbs.tex`, and every frozen artifact remain unchanged.
+
+Figures 1--3 were rebuilt after a documented comparison with four local KBS
+papers, JRNGC, and CUTS. They now use scientific glyphs, time-series windows,
+Jacobian tensors, graph objects, and audit signatures rather than text-only
+cards. All panels are white with thin gray boundaries. Figures 4--6 use the same
+frozen values with a restrained blue/brick/gray palette and shape-based method
+encoding. High-saturation pixels occupy at most 0.004 percent of any standalone
+PNG.
+
+The page sequence is now Figure 2 on page 4, Figure 3 on page 5, a wide audit
+profile table on page 6, and Figures 4--6 on pages 7--9. Appendix D contains a
+reusable audit record and exact score-aggregation definition. Pages 12--13 are
+dense, balanced, and free of blank/float-only pages. The retained three-pass
+build is 13 pages with 0 errors, undefined references/citations, missing files,
+overfull boxes, float-too-large warnings, or unprocessed floats.
+
+No GPU, experiment, new seed, metric recalculation, claim-threshold change, or
+legacy performance revival occurred. The next step is clean-directory package
+verification and external visual review before author metadata is completed.
