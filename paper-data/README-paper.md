@@ -771,3 +771,25 @@ references/citations, warnings, or overfull hboxes. The English v4 source is the
 sole submission master. Future scientific edits must be applied to the English
 version first and synchronized to the Chinese mirror in the same writing
 session; the Chinese file must not become an independent source of claims.
+
+# CURRENT KBS STATUS: PHASE 9 ACCEPTANCE-READINESS PLANNING (2026-07-22)
+
+The user approved a prospective strengthening program after a targeted review
+of recent KBS causal-discovery papers and top-venue reliability-audit work. The
+planning branch is `phase9/kbs-acceptance-readiness-v1`; v4 English/Chinese
+manuscripts and all Phase 8 frozen artifacts remain unchanged.
+
+The proposed plan defines two internal states. `KBS_SUBMISSION_READY` requires
+theory, an executable audit, prospective cross-architecture controls, external
+known-graph and real-case validation, and reproducibility gates.
+`KBS_STRONG_READY` additionally requires the claim-specific diagnostics to show
+prospective validity and the fixed full-auxiliary-penalty mitigation to
+generalize without unacceptable pure-MSE cost. Neither state guarantees an
+editorial outcome.
+
+The exact documentation is under
+`paper-data/docs/phase9_kbs_readiness/`. The plan uses fresh Phase 9 seed
+namespaces, keeps Phase 7 seeds 4--8 closed, does not revive CP-depthwise or the
+failed Phase 8 repair, and treats DREAM3 as a known-graph in-silico benchmark and
+MoCap as a real no-ground-truth audit case. Implementation, run-matrix release,
+GPU work, and manuscript revision require a separate advisor approval.
