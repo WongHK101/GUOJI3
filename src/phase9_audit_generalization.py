@@ -13,6 +13,7 @@ from typing import Dict, List, Mapping, Optional, Sequence, Tuple
 
 import numpy as np
 import torch
+import torch.nn as nn
 
 from phase8_coverage import (
     EPS,
@@ -24,6 +25,8 @@ from phase8_coverage import (
     partial_raw_chain_at_target,
     pearson_with_reason,
 )
+from mamba_jrngc_pilot import MambaJRNGC
+from minimal_mamba import TCNBlock
 from repaired_istf import canonical_metric_adapter
 
 
@@ -34,6 +37,93 @@ AUDIT_LABELS = {
     "horizon_truncated": "HORIZON-TRUNCATED",
     "unassessed": "UNASSESSED",
 }
+
+
+class AuxiliaryTCNPreprocessor(nn.Module):
+    """Causal TCN auxiliary route with the legacy preprocessor interface."""
+
+    def __init__(
+        self,
+        d: int,
+        *,
+        d_cond: int,
+        kernel_size: int = 3,
+        dilation: int = 2,
+    ):
+        super().__init__()
+        self.d = int(d)
+        self.d_cond = int(d_cond)
+        self.tcn = TCNBlock(
+            d_model=d,
+            kernel_size=kernel_size,
+            dilation=dilation,
+            residual_scale=0.1,
+        )
+        self.cond_proj = nn.Linear(d, d_cond)
+        self.weight_head = nn.Sequential(
+            nn.Linear(d, max(1, d // 2)),
+            nn.ReLU(),
+            nn.Linear(max(1, d // 2), 1),
+        )
+
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        if x.dim() == 2:
+            x = x.unsqueeze(0)
+        features = self.tcn(x.transpose(1, 2))
+        condition = self.cond_proj(features)
+        weights = torch.sigmoid(self.weight_head(features).squeeze(-1))
+        return condition, weights
+
+
+class TCNConcatJRNGC(MambaJRNGC):
+    """Legacy concat/x-only objective with a causal TCN auxiliary route."""
+
+    method_status = "phase9_development_architecture_control"
+
+    def __init__(
+        self,
+        *,
+        d: int,
+        lag: int,
+        layers: int,
+        hidden: int,
+        dropout: float,
+        jacobian_lam: float,
+        d_cond: int,
+    ):
+        super().__init__(
+            d=d,
+            lag=lag,
+            layers=layers,
+            hidden=hidden,
+            dropout=dropout,
+            jacobian_lam=jacobian_lam,
+            d_state=4,
+            use_time_weight_loss=False,
+            d_cond=d_cond,
+        )
+        self.preprocessor = AuxiliaryTCNPreprocessor(d, d_cond=d_cond)
+
+
+def make_tcn_concat_adapter(
+    *,
+    d: int,
+    lag: int,
+    layers: int = 2,
+    hidden: int = 32,
+    dropout: float = 0.0,
+    jacobian_lam: float = 0.01,
+    d_cond: int = 4,
+) -> LegacyConcatXOnlyAdapter:
+    return LegacyConcatXOnlyAdapter(TCNConcatJRNGC(
+        d=d,
+        lag=lag,
+        layers=layers,
+        hidden=hidden,
+        dropout=dropout,
+        jacobian_lam=jacobian_lam,
+        d_cond=d_cond,
+    ))
 
 
 @dataclass(frozen=True)

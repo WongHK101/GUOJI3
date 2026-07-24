@@ -35,6 +35,7 @@ from phase9_audit_generalization import (  # noqa: E402
     condition_coordinate_mixing_audit,
     deterministic_audit_targets,
     fixed_target_baseline_interventions,
+    make_tcn_concat_adapter,
     sampled_raw_chain_audit,
 )
 
@@ -241,6 +242,16 @@ def run_record(
         adapter = make_legacy_baseline(cfg)
     elif method == "concat":
         adapter = make_legacy_concat(cfg)
+    elif method == "tcn_concat":
+        adapter = make_tcn_concat_adapter(
+            d=cfg.d,
+            lag=cfg.lag,
+            layers=cfg.layers,
+            hidden=cfg.hidden,
+            dropout=cfg.dropout,
+            jacobian_lam=cfg.jacobian_lam,
+            d_cond=cfg.d_cond,
+        )
     else:
         raise ValueError(f"Unknown method: {method}")
     adapter.model.to(device)
@@ -292,7 +303,15 @@ def run_record(
         )
     evaluation_seconds = time.perf_counter() - eval_started
     profile = build_audit_profile(
-        architecture="baseline_jrngc" if method == "baseline" else "legacy_concat_jrngc",
+        architecture=(
+            "baseline_jrngc"
+            if method == "baseline"
+            else (
+                "legacy_mamba_concat_jrngc"
+                if method == "concat"
+                else "development_tcn_concat_jrngc"
+            )
+        ),
         sampled_audit=sampled,
         has_auxiliary_route=method == "concat",
     )
@@ -361,8 +380,9 @@ def main() -> int:
     train_seeds = [int(value) for value in parse_list(args.train_seeds)]
     if set(datasets) - set(DATASET_SPECS):
         raise ValueError(f"Unknown datasets: {sorted(set(datasets) - set(DATASET_SPECS))}")
-    if set(methods) - {"baseline", "concat"}:
-        raise ValueError(f"Unknown methods: {sorted(set(methods) - {'baseline', 'concat'})}")
+    known_methods = {"baseline", "concat", "tcn_concat"}
+    if set(methods) - known_methods:
+        raise ValueError(f"Unknown methods: {sorted(set(methods) - known_methods)}")
     args.output_root.mkdir(parents=True, exist_ok=True)
     atomic_json(args.output_root / "protocol.json", {
         "development_only": True,

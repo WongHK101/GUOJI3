@@ -18,6 +18,7 @@ from phase9_audit_generalization import (  # noqa: E402
     build_audit_profile,
     condition_coordinate_mixing_audit,
     deterministic_audit_targets,
+    make_tcn_concat_adapter,
     sampled_raw_chain_audit,
 )
 
@@ -117,3 +118,30 @@ def test_concat_reports_missing_route_and_coordinate_ambiguity():
     assert profile["audit_dimensions"]["bounded_total_raw_chain_horizon"] == (
         AUDIT_LABELS["horizon_truncated"]
     )
+
+
+def test_tcn_auxiliary_route_is_causal_and_auditable():
+    torch.manual_seed(96)
+    adapter = make_tcn_concat_adapter(
+        d=3,
+        lag=2,
+        layers=1,
+        hidden=6,
+        d_cond=2,
+    )
+    x = np.random.default_rng(97).normal(size=(3, 14)).astype(np.float32)
+    raw = torch.as_tensor(x).unsqueeze(0).requires_grad_(True)
+    condition = adapter.condition_sequence(raw)
+    before = condition[:, :8].detach().clone()
+    changed = raw.detach().clone()
+    changed[:, :, 8:] += 10.0
+    after = adapter.condition_sequence(changed)[:, :8].detach()
+    torch.testing.assert_close(before, after)
+    audit = sampled_raw_chain_audit(
+        adapter,
+        x,
+        target_indices=[8, 10, 12],
+        attribution_horizon=6,
+    )
+    assert audit.missing_route_relative_magnitude is not None
+    assert audit.missing_route_relative_magnitude > 0
