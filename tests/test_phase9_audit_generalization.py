@@ -137,6 +137,13 @@ def test_tcn_auxiliary_route_is_causal_and_auditable():
     changed[:, :, 8:] += 10.0
     after = adapter.condition_sequence(changed)[:, :8].detach()
     torch.testing.assert_close(before, after)
+    loss = condition.square().mean()
+    output_projection_gradient = torch.autograd.grad(
+        loss,
+        adapter.model.preprocessor.tcn.out_proj.weight,
+        retain_graph=True,
+    )[0]
+    assert torch.linalg.norm(output_projection_gradient).item() > 0
     audit = sampled_raw_chain_audit(
         adapter,
         x,

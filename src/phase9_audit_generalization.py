@@ -59,6 +59,11 @@ class AuxiliaryTCNPreprocessor(nn.Module):
             dilation=dilation,
             residual_scale=0.1,
         )
+        # TCNBlock zero-initializes both conv2 and out_proj. That double-zero
+        # point disconnects the temporal branch. Keep out_proj at zero for an
+        # identity start, but make conv2 nonzero so out_proj receives a gradient
+        # on the first optimization step.
+        nn.init.kaiming_uniform_(self.tcn.conv2.weight, a=math.sqrt(5))
         self.cond_proj = nn.Linear(d, d_cond)
         self.weight_head = nn.Sequential(
             nn.Linear(d, max(1, d // 2)),
