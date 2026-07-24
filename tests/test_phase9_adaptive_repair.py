@@ -14,6 +14,12 @@ from phase9_adaptive_repair import (  # noqa: E402
     ConstrainedAdaptiveFIRFilter,
     ConstrainedAdaptiveFIRJRNGC,
     project_coverage_gradient,
+    train_history_guarded_coverage,
+)
+from phase8_coverage import (  # noqa: E402
+    CoverageAlignedRawChainJRNGC,
+    Phase8ModelConfig,
+    build_stratified_lag_schedule,
 )
 from repaired_istf import RepairedISTFConfig, raw_chain_jacobian_penalty  # noqa: E402
 
@@ -113,3 +119,46 @@ def test_projection_keeps_constructive_coverage_direction():
     assert not diag.conflict_projected
     assert torch.allclose(combined[0], g_pred[0] + g_cov[0])
 
+
+def test_history_guarded_training_preserves_component_semantics():
+    torch.manual_seed(19)
+    cfg = Phase8ModelConfig(
+        d=2,
+        lag=1,
+        layers=1,
+        hidden=4,
+        d_cond=2,
+        d_state=2,
+        d_conv=2,
+        expand=1,
+        jacobian_lam=0.01,
+        dtype="float32",
+    )
+    model = CoverageAlignedRawChainJRNGC(cfg)
+    x = np.random.default_rng(20).normal(size=(2, 8)).astype(np.float32)
+    schedule = build_stratified_lag_schedule(
+        T=8,
+        lag=1,
+        d_out=2,
+        max_iter=2,
+        seed=21,
+    )
+    result = train_history_guarded_coverage(
+        model,
+        x,
+        schedule=schedule,
+        max_iter=2,
+    )
+    trace = result["trace"]
+    assert result["training_policy"] == "phase9_history_guarded_coverage_development_only"
+    assert len(trace["projection"]) == 2
+    for index in range(2):
+        expected = (
+            trace["fixed_target_prediction_mse"][index]
+            + trace["nominal_jacobian_penalty"][index]
+            + trace["historical_jacobian_penalty"][index]
+        )
+        assert abs(expected - trace["total_regularized_objective"][index]) < 1e-6
+        assert trace["projection"][index]["protected_gradient"] == (
+            "prediction_plus_nominal_penalty"
+        )

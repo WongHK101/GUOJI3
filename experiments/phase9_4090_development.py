@@ -45,6 +45,7 @@ from phase8_coverage import (  # noqa: E402
 )
 from phase9_adaptive_repair import (  # noqa: E402
     ConstrainedAdaptiveFIRJRNGC,
+    train_history_guarded_coverage,
     train_prediction_guarded_coverage,
 )
 from repaired_istf import (  # noqa: E402
@@ -65,7 +66,11 @@ CELL_FLAGS = {
     "NS+Nonlinear": (False, False),
 }
 D2_METHODS = ("baseline", "cp_depthwise", "fixed_fir3", "adaptive_fir")
-PHASE8_METHODS = ("coverage_standard", "coverage_prediction_guarded")
+PHASE8_METHODS = (
+    "coverage_standard",
+    "coverage_prediction_guarded",
+    "coverage_history_guarded",
+)
 
 
 def parse_csv_ints(value: str) -> List[int]:
@@ -728,6 +733,17 @@ def run_phase8_record(
             gradient_clip_norm=1.0,
             max_coverage_to_prediction_ratio=gradient_ratio,
         )
+    elif method == "coverage_history_guarded":
+        training = train_history_guarded_coverage(
+            model,
+            x,
+            schedule=schedule,
+            max_iter=max_iter,
+            learning_rate=1e-3,
+            weight_decay=0.0,
+            gradient_clip_norm=1.0,
+            max_history_to_core_gradient_ratio=gradient_ratio,
+        )
     else:
         raise ValueError(f"Unknown Phase 8 development method: {method}")
     training_seconds = time.perf_counter() - train_started
@@ -758,7 +774,11 @@ def run_phase8_record(
         "train_seed": train_seed,
         "max_iter": max_iter,
         "model": asdict(cfg),
-        "gradient_ratio": gradient_ratio if method == "coverage_prediction_guarded" else None,
+        "gradient_ratio": (
+            gradient_ratio
+            if method in {"coverage_prediction_guarded", "coverage_history_guarded"}
+            else None
+        ),
         "schedule_sha256": phase8_schedule_sha256(schedule),
         "initial_state_sha256": tensor_state_sha256(initial_state),
         "score_object": "total_raw_chain_nominal_lag",

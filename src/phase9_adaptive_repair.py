@@ -352,3 +352,94 @@ def train_prediction_guarded_coverage(
         "trace": trace,
     }
 
+
+def train_history_guarded_coverage(
+    model: CoverageAlignedRawChainJRNGC,
+    x_full,
+    *,
+    schedule: Sequence[Mapping[str, object]],
+    max_iter: int,
+    learning_rate: float = 1e-3,
+    weight_decay: float = 0.0,
+    gradient_clip_norm: float = 1.0,
+    max_history_to_core_gradient_ratio: float = 1.0,
+) -> Dict[str, object]:
+    """Protect the nominal graph objective while controlling historical support.
+
+    The core gradient is computed from pure prediction MSE plus the nominal-lag
+    Jacobian penalty. Only the broader historical route-coverage component is
+    projected when it conflicts with that core objective, then globally capped.
+    This preserves the direct-graph regularizer instead of weakening it together
+    with the historical penalty.
+    """
+
+    if len(schedule) != max_iter:
+        raise ValueError("schedule length must equal max_iter")
+    parameters = [parameter for parameter in model.parameters() if parameter.requires_grad]
+    optimizer = torch.optim.Adam(parameters, lr=learning_rate, weight_decay=weight_decay)
+    trace: Dict[str, List[object]] = {
+        "fixed_target_prediction_mse": [],
+        "nominal_jacobian_penalty": [],
+        "historical_jacobian_penalty": [],
+        "jacobian_penalty": [],
+        "total_regularized_objective": [],
+        "projection": [],
+    }
+    for iteration, entry in enumerate(schedule):
+        model.train()
+        optimizer.zero_grad(set_to_none=True)
+        raw = as_raw_bdt(
+            x_full,
+            device=model.device,
+            dtype=model.dtype,
+            require_grad=True,
+        )
+        components = model.loss_components(raw, entry)
+        prediction_loss = components["fixed_target_prediction_mse"]
+        nominal_loss = components["nominal_jacobian_penalty"]
+        historical_loss = components["historical_jacobian_penalty"]
+        core_loss = prediction_loss + nominal_loss
+        core_gradients = torch.autograd.grad(
+            core_loss,
+            parameters,
+            retain_graph=True,
+            allow_unused=True,
+        )
+        historical_gradients = torch.autograd.grad(
+            historical_loss,
+            parameters,
+            retain_graph=False,
+            allow_unused=True,
+        )
+        combined, diagnostics = project_coverage_gradient(
+            core_gradients,
+            historical_gradients,
+            parameters,
+            max_coverage_to_prediction_ratio=max_history_to_core_gradient_ratio,
+        )
+        for parameter, gradient in zip(parameters, combined):
+            if not torch.isfinite(gradient).all():
+                raise FloatingPointError(f"Nonfinite projected gradient at iteration {iteration}")
+            parameter.grad = gradient.detach()
+        torch.nn.utils.clip_grad_norm_(parameters, gradient_clip_norm)
+        optimizer.step()
+        total = prediction_loss + nominal_loss + historical_loss
+        trace["fixed_target_prediction_mse"].append(float(prediction_loss.detach()))
+        trace["nominal_jacobian_penalty"].append(float(nominal_loss.detach()))
+        trace["historical_jacobian_penalty"].append(float(historical_loss.detach()))
+        trace["jacobian_penalty"].append(float((nominal_loss + historical_loss).detach()))
+        trace["total_regularized_objective"].append(float(total.detach()))
+        projection_row = diagnostics.as_dict()
+        projection_row["protected_gradient"] = "prediction_plus_nominal_penalty"
+        projection_row["projected_gradient"] = "historical_full_prefix_penalty"
+        trace["projection"].append(projection_row)
+    return {
+        "training_policy": "phase9_history_guarded_coverage_development_only",
+        "optimizer": "Adam",
+        "iterations_completed": int(max_iter),
+        "learning_rate": float(learning_rate),
+        "weight_decay": float(weight_decay),
+        "gradient_clip_norm": float(gradient_clip_norm),
+        "max_history_to_core_gradient_ratio": float(max_history_to_core_gradient_ratio),
+        "trace": trace,
+    }
