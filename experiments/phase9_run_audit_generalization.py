@@ -86,6 +86,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lag", type=int, default=3)
     parser.add_argument("--audit-horizon", type=int, default=64)
     parser.add_argument("--audit-window-count", type=int, default=32)
+    parser.add_argument("--train-seeds", default="0")
     parser.add_argument("--resume", action="store_true")
     return parser.parse_args()
 
@@ -203,13 +204,17 @@ def run_record(
     output_root: Path,
     device: torch.device,
     max_iter: int,
+    train_seed: int,
     lag: int,
     audit_horizon: int,
     audit_window_count: int,
     resume: bool,
 ) -> Dict[str, object]:
     spec = DATASET_SPECS[name]
-    run_id = f"{name}__{method}__it{max_iter}__H{audit_horizon}"
+    run_id = (
+        f"{name}__{method}__ts{train_seed}"
+        f"__it{max_iter}__H{audit_horizon}"
+    )
     run_dir = output_root / run_id
     status_path = run_dir / "status.json"
     if resume and status_path.exists():
@@ -225,7 +230,7 @@ def run_record(
         "formal_result": False,
     })
     x, graph, data_metadata = load_dataset(name, data_root=data_root)
-    model_seed = int(spec["model_seed"])
+    model_seed = int(spec["model_seed"]) + 100 * int(train_seed)
     torch.manual_seed(model_seed)
     np.random.seed(model_seed)
     if device.type == "cuda":
@@ -302,6 +307,7 @@ def run_record(
         "audit_window_count": audit_window_count,
         "target_indices": target_idx.tolist(),
         "model_seed": model_seed,
+        "train_seed": int(train_seed),
         "perturbation_seed": int(spec["perturbation_seed"]),
         "development_only": True,
         "formal_result": False,
@@ -323,6 +329,7 @@ def run_record(
         "run_id": run_id,
         "dataset": name,
         "method": method,
+        "train_seed": int(train_seed),
         "max_iter": max_iter,
         "best_total_regularized_objective": float(best_total_objective),
         "fixed_target_prediction_mse": float(pure_mse.detach().cpu()),
@@ -351,6 +358,7 @@ def main() -> int:
     torch.backends.cudnn.benchmark = False
     datasets = parse_list(args.datasets)
     methods = parse_list(args.methods)
+    train_seeds = [int(value) for value in parse_list(args.train_seeds)]
     if set(datasets) - set(DATASET_SPECS):
         raise ValueError(f"Unknown datasets: {sorted(set(datasets) - set(DATASET_SPECS))}")
     if set(methods) - {"baseline", "concat"}:
@@ -365,6 +373,7 @@ def main() -> int:
         "lag": args.lag,
         "audit_horizon": args.audit_horizon,
         "audit_window_count": args.audit_window_count,
+        "train_seeds": train_seeds,
         "full_prefix_claim_allowed": False,
         "ground_truth_claim_scope": "NetSim diagnostic only; MoCap has no graph truth",
         "phase7_seeds_4_to_8_accessed": False,
@@ -375,19 +384,21 @@ def main() -> int:
     })
     statuses = []
     for dataset in datasets:
-        for method in methods:
-            statuses.append(run_record(
-                name=dataset,
-                method=method,
-                data_root=args.data_root,
-                output_root=args.output_root,
-                device=device,
-                max_iter=args.max_iter,
-                lag=args.lag,
-                audit_horizon=args.audit_horizon,
-                audit_window_count=args.audit_window_count,
-                resume=args.resume,
-            ))
+        for train_seed in train_seeds:
+            for method in methods:
+                statuses.append(run_record(
+                    name=dataset,
+                    method=method,
+                    data_root=args.data_root,
+                    output_root=args.output_root,
+                    device=device,
+                    max_iter=args.max_iter,
+                    train_seed=train_seed,
+                    lag=args.lag,
+                    audit_horizon=args.audit_horizon,
+                    audit_window_count=args.audit_window_count,
+                    resume=args.resume,
+                ))
     atomic_json(args.output_root / "run_summary.json", {
         "development_only": True,
         "formal_result": False,
