@@ -45,6 +45,7 @@ from phase8_coverage import (  # noqa: E402
 )
 from phase9_adaptive_repair import (  # noqa: E402
     ConstrainedAdaptiveFIRJRNGC,
+    ContextualConstrainedAdaptiveFIRJRNGC,
     train_history_guarded_coverage,
     train_prediction_guarded_coverage,
 )
@@ -65,7 +66,13 @@ CELL_FLAGS = {
     "NS+Linear": (False, True),
     "NS+Nonlinear": (False, False),
 }
-D2_METHODS = ("baseline", "cp_depthwise", "fixed_fir3", "adaptive_fir")
+D2_METHODS = (
+    "baseline",
+    "cp_depthwise",
+    "fixed_fir3",
+    "adaptive_fir",
+    "contextual_fir",
+)
 PHASE8_METHODS = (
     "coverage_standard",
     "coverage_prediction_guarded",
@@ -306,6 +313,13 @@ def make_d2_model(
     torch.manual_seed(seed)
     if method == "adaptive_fir":
         model = ConstrainedAdaptiveFIRJRNGC(
+            cfg,
+            kernel_size=3,
+            gate_max=0.25,
+            init_gate=0.1,
+        )
+    elif method == "contextual_fir":
+        model = ContextualConstrainedAdaptiveFIRJRNGC(
             cfg,
             kernel_size=3,
             gate_max=0.25,

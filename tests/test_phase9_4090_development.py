@@ -23,7 +23,13 @@ from phase9_4090_development import (  # noqa: E402
 
 def test_all_d2_methods_share_predictor_initialization():
     hashes = []
-    for method in ("baseline", "cp_depthwise", "fixed_fir3", "adaptive_fir"):
+    for method in (
+        "baseline",
+        "cp_depthwise",
+        "fixed_fir3",
+        "adaptive_fir",
+        "contextual_fir",
+    ):
         _, _, digest = make_d2_model(method, data_seed=0, train_seed=0)
         hashes.append(digest)
     assert len(set(hashes)) == 1

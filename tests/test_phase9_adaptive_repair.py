@@ -13,6 +13,8 @@ if str(SRC) not in sys.path:
 from phase9_adaptive_repair import (  # noqa: E402
     ConstrainedAdaptiveFIRFilter,
     ConstrainedAdaptiveFIRJRNGC,
+    ContextualConstrainedAdaptiveFIRFilter,
+    ContextualConstrainedAdaptiveFIRJRNGC,
     project_coverage_gradient,
     train_history_guarded_coverage,
 )
@@ -162,3 +164,58 @@ def test_history_guarded_training_preserves_component_semantics():
         assert trace["projection"][index]["protected_gradient"] == (
             "prediction_plus_nominal_penalty"
         )
+
+
+def test_contextual_fir_starts_at_static_fir_and_remains_coordinate_preserving():
+    torch.manual_seed(31)
+    static = ConstrainedAdaptiveFIRFilter(3, dtype=torch.float64)
+    contextual = ContextualConstrainedAdaptiveFIRFilter(3, dtype=torch.float64)
+    raw = torch.randn(1, 10, 3, dtype=torch.float64, requires_grad=True)
+    torch.testing.assert_close(contextual(raw), static(raw), atol=1e-12, rtol=0)
+    with torch.no_grad():
+        contextual.gate_context.weight.fill_(0.2)
+    gates = contextual.contextual_gates(raw)
+    assert float(torch.std(gates)) > 0
+    output = contextual(raw)
+    for target in range(3):
+        gradient = torch.autograd.grad(
+            output[0, -1, target],
+            raw,
+            retain_graph=True,
+        )[0]
+        other_sources = [source for source in range(3) if source != target]
+        assert float(torch.max(torch.abs(gradient[0, :, other_sources]))) < 1e-12
+
+
+def test_contextual_fir_model_has_second_order_filter_gradients():
+    cfg = RepairedISTFConfig(
+        d=3,
+        lag=2,
+        attribution_horizon=4,
+        layers=1,
+        hidden=8,
+        jacobian_lam=0.01,
+        identity_lam=0.0,
+        dtype="float64",
+    )
+    torch.manual_seed(32)
+    model = ContextualConstrainedAdaptiveFIRJRNGC(cfg)
+    x = np.random.default_rng(33).normal(size=(3, 10))
+    penalty = raw_chain_jacobian_penalty(
+        model,
+        x,
+        target_indices=[5, 6],
+        output_targets=[0, 1],
+        create_graph=True,
+    )
+    gradients = torch.autograd.grad(
+        penalty,
+        [
+            model.filter.kernel_logits,
+            model.filter.gate_logits,
+            model.filter.gate_context.weight,
+        ],
+        allow_unused=False,
+    )
+    for gradient in gradients:
+        assert torch.isfinite(gradient).all()

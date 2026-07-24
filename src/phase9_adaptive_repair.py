@@ -121,6 +121,86 @@ class ConstrainedAdaptiveFIRFilter(nn.Module):
         return (1.0 - gates) * raw_t + gates * smoothed
 
 
+class ContextualConstrainedAdaptiveFIRFilter(ConstrainedAdaptiveFIRFilter):
+    """Coordinate-wise FIR with a bounded gate driven by same-source history.
+
+    A grouped causal convolution modulates each source's gate without allowing
+    cross-variable mixing. The context kernel is zero initialized, so the
+    candidate starts exactly at the static constrained FIR initialization.
+    """
+
+    def __init__(
+        self,
+        d: int,
+        *,
+        kernel_size: int = 3,
+        gate_max: float = 0.25,
+        init_gate: float = 0.1,
+        dtype: torch.dtype = torch.float32,
+    ):
+        super().__init__(
+            d,
+            kernel_size=kernel_size,
+            gate_max=gate_max,
+            init_gate=init_gate,
+            dtype=dtype,
+        )
+        self.gate_context = nn.Conv1d(
+            d,
+            d,
+            kernel_size=kernel_size,
+            groups=d,
+            bias=False,
+            dtype=dtype,
+        )
+        nn.init.zeros_(self.gate_context.weight)
+
+    def contextual_gates(self, raw_t: torch.Tensor) -> torch.Tensor:
+        raw_channels = raw_t.transpose(1, 2)
+        padded = torch.nn.functional.pad(
+            raw_channels,
+            (self.kernel_size - 1, 0),
+        )
+        context = self.gate_context(padded).transpose(1, 2)
+        base = self.gate_logits.view(1, 1, self.d)
+        return self.gate_max * torch.sigmoid(base + context)
+
+    def forward(self, raw_t: torch.Tensor) -> torch.Tensor:
+        if raw_t.ndim != 3 or raw_t.shape[2] != self.d:
+            raise ValueError(f"Expected (batch,time,{self.d}), got {tuple(raw_t.shape)}")
+        batch, time, _ = raw_t.shape
+        shifted = []
+        valid = []
+        for raw_lag in range(self.kernel_size):
+            if raw_lag == 0:
+                shifted.append(raw_t)
+                valid.append(torch.ones(time, device=raw_t.device, dtype=raw_t.dtype))
+            else:
+                pad = torch.zeros(
+                    batch,
+                    raw_lag,
+                    self.d,
+                    device=raw_t.device,
+                    dtype=raw_t.dtype,
+                )
+                shifted.append(torch.cat([pad, raw_t[:, :-raw_lag, :]], dim=1))
+                valid.append(torch.cat([
+                    torch.zeros(raw_lag, device=raw_t.device, dtype=raw_t.dtype),
+                    torch.ones(time - raw_lag, device=raw_t.device, dtype=raw_t.dtype),
+                ]))
+        lagged = torch.stack(shifted, dim=3)
+        valid_mask = torch.stack(valid, dim=1).view(1, time, 1, self.kernel_size)
+        weights = self.simplex_weights().view(1, 1, self.d, self.kernel_size)
+        effective_weights = weights * valid_mask
+        effective_weights = effective_weights / effective_weights.sum(
+            dim=3,
+            keepdim=True,
+        ).clamp_min(EPS)
+        smoothed = torch.sum(lagged * effective_weights, dim=3)
+        gates = self.contextual_gates(raw_t)
+        return (1.0 - gates) * raw_t + gates * smoothed
+
+
 class ConstrainedAdaptiveFIRJRNGC(RepairedBaseJRNGC):
     """Raw-target, raw-chain JRNGC with a coordinate-preserving adaptive FIR."""
 
@@ -173,6 +253,58 @@ class ConstrainedAdaptiveFIRJRNGC(RepairedBaseJRNGC):
             "effective_impulse_response": impulse.tolist(),
             "residual_kernel_frobenius_norm": float(np.linalg.norm(residual)),
             "kernel_frobenius_norm": float(np.linalg.norm(weights)),
+        })
+        return out
+
+
+class ContextualConstrainedAdaptiveFIRJRNGC(ConstrainedAdaptiveFIRJRNGC):
+    """Development candidate with same-source, time-varying bounded gates."""
+
+    method_name = "contextual_constrained_adaptive_fir"
+
+    def __init__(
+        self,
+        cfg: RepairedISTFConfig,
+        *,
+        kernel_size: int = 3,
+        gate_max: float = 0.25,
+        init_gate: float = 0.1,
+    ):
+        RepairedBaseJRNGC.__init__(self, cfg)
+        dtype = next(self.parameters()).dtype
+        self.filter = ContextualConstrainedAdaptiveFIRFilter(
+            cfg.d,
+            kernel_size=kernel_size,
+            gate_max=gate_max,
+            init_gate=init_gate,
+            dtype=dtype,
+        )
+        self.filter_receptive_field = int(kernel_size)
+        self.residual_gain = float(init_gate)
+
+    def filter_diagnostics(
+        self,
+        x_full,
+        target_indices: Optional[Sequence[int]] = None,
+    ) -> Dict[str, object]:
+        out = super().filter_diagnostics(x_full, target_indices=target_indices)
+        batch = self.make_histories(
+            x_full,
+            target_indices=target_indices,
+            require_grad=False,
+        )
+        with torch.no_grad():
+            contextual = self.filter.contextual_gates(batch["raw_t"])
+            context_kernel = self.filter.gate_context.weight.detach()
+        out.update({
+            "contextual_gate_mean": float(torch.mean(contextual).cpu()),
+            "contextual_gate_std": float(torch.std(contextual).cpu()),
+            "contextual_gate_min": float(torch.min(contextual).cpu()),
+            "contextual_gate_max": float(torch.max(contextual).cpu()),
+            "context_kernel_frobenius_norm": float(
+                torch.linalg.norm(context_kernel).cpu()
+            ),
+            "gate_policy": "same_source_depthwise_causal_context",
         })
         return out
 
