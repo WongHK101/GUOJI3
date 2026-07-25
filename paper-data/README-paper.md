@@ -793,3 +793,52 @@ namespaces, keeps Phase 7 seeds 4--8 closed, does not revive CP-depthwise or the
 failed Phase 8 repair, and treats DREAM3 as a known-graph in-silico benchmark and
 MoCap as a real no-ground-truth audit case. Implementation, run-matrix release,
 GPU work, and manuscript revision require a separate advisor approval.
+
+# CURRENT KBS STATUS: PHASE 9 RTX 4090 BOUNDED ROUND 1 (2026-07-25)
+
+The first bounded development round is complete on branch
+`phase9/4090-bounded-enhancement-v1`. The English v4 manuscript, synchronized
+Chinese review mirror, canonical `istf_kbs.tex`, and all frozen artifacts remain
+unchanged.
+
+Two method lines are closed:
+
+1. A constrained adaptive FIR produced a development-only AUROC gain in the
+   stationary nonlinear D2 cell at 2,000 iterations, but neither the static nor
+   contextual version produced stable non-stationary gains. The contextual
+   candidate was below baseline in both bounded 2,000-iteration
+   non-stationary cells. This does not support reviving filtering as the paper's
+   positive method contribution.
+2. Prediction-guarded full-prefix regularization lowered pure prediction MSE
+   but materially reduced graph recovery. Protecting only the historical term
+   remained close to the standard repair and did not establish a better
+   frontier. This does not close the Phase 8 repair trade-off.
+
+The audit-generalization line remains scientifically promising but is not yet
+paper evidence. Across development-only NetSim and MoCap slices, both Mamba and
+an active causal TCN auxiliary route showed nontrivial missing-route mass,
+partial-versus-total score disagreement, positive fixed-target `mask_c`
+effects, and high cross-source coordinate entropy. The same-window
+H=32/64/128 audit left nominal-lag scores unchanged and found that H=64 captured
+nearly all measured H=128 attribution mass, while attribution beyond H=128
+remains unassessed.
+
+Manuscript constraints:
+
+- Do not add the adaptive/contextual FIR or gradient-projection results as
+  positive method evidence.
+- Do not describe NetSim as a successful graph-recovery benchmark; its
+  development baseline was only random-to-moderate.
+- MoCap supports only route-use and score-semantics diagnostics because no
+  accepted direct graph ground truth is available.
+- Do not claim architecture universality from this round. The defensible
+  prospective target is a bounded cross-architecture result after an
+  advisor-approved protocol and fresh formal runs.
+- Preserve the current `HORIZON-TRUNCATED` label because no derivative mass
+  beyond H=128 was computed.
+
+The authoritative development summary is
+`docs/phase9_4090_round1/PHASE9_4090_ROUND1_REPORT.md`. Before any manuscript
+revision, freeze a small prospective audit-only protocol with held-out
+subjects/segments and method initializations; retain the current rows as
+development data only.

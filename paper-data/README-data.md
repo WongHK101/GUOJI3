@@ -808,3 +808,79 @@ repository. `sync_report.json` verifies the label, citation, bibliography,
 figure-reference, and reported-decimal invariants against the English v4
 master. The English source remains authoritative for all provenance and
 submission decisions.
+
+# PHASE 9 RTX 4090 BOUNDED DEVELOPMENT ROUND 1 (2026-07-25)
+
+These assets are development-only and are not approved manuscript evidence.
+They were generated on the dedicated Windows RTX 4090 host under
+`G:\GUOJI\results_phase9_dev\`. No Phase 7 seeds 4--8, Stage 1b outputs,
+AutoDL GPU, KBS manuscript source, or frozen Phase 7/8 artifact was used or
+modified.
+
+The local immutable summary snapshot is:
+
+- `docs/phase9_4090_round1/PHASE9_4090_ROUND1_REPORT.md`;
+- `docs/phase9_4090_round1/phase9_4090_round1_summary.json`;
+- `docs/phase9_4090_round1/d2_rows.csv`;
+- `docs/phase9_4090_round1/phase8_rows.csv`;
+- `docs/phase9_4090_round1/audit_rows.csv`.
+
+Snapshot SHA256:
+
+- `PHASE9_4090_ROUND1_REPORT.md`:
+  `a786da60512d62e414b4f1a03a4f1ee2dbb74d3dd3d8778de54ee00c74c31d3f`;
+- `phase9_4090_round1_summary.json`:
+  `69b868ddca41a48ca186f04cb0a3f5b0ae764b6da0b3b74ff42b9cddf2fcffbe`;
+- `d2_rows.csv`:
+  `b37ad529195f83037a960429cbf07ddfac0261e2e0170cbc1afd237cca6385bd`;
+- `phase8_rows.csv`:
+  `dc0cab044567fa35943f8bcbb0a2d1c8dce1d3282f3f45d34af840e4c599f7c7`;
+- `audit_rows.csv`:
+  `73434c8cad2ddfcee12d9a472e7d9c1f9ffe82bfd290424e7773a06e869f279a`.
+
+Method-development roots:
+
+- `gpu_d2_it500_round1`;
+- `gpu_d2_it2000_bounded`;
+- `gpu_d2_contextual_it500`;
+- `gpu_d2_contextual_it2000_bounded`;
+- `gpu_benchmark_phase8_it100`;
+- `gpu_phase8_it500_round1`;
+- `gpu_phase8_history_guard_it500`.
+
+Audit-development roots retained in the canonical summary:
+
+- `audit_current_commit_seed0_baseline`;
+- `audit_current_commit_seed0_concat`;
+- `audit_cross_domain_it1000_stability`;
+- `audit_active_tcn_architecture_seed0`;
+- `audit_active_tcn_architecture_stability`;
+- `audit_horizon_sensitivity_seed0`;
+- `audit_determinism_repeat`;
+- `audit_determinism_repeat_b`.
+
+The earlier `audit_cross_domain_it1000` root is not canonical because its
+seed-0 result did not match the later same-current-commit rerun. The two
+current-commit determinism repeats matched exactly and are the retained
+determinism evidence.
+
+External development inputs copied to the 4090 host:
+
+- NetSim subject 48, SHA256
+  `2f2d923a96f04c4d8f976efc97dd1b7a2bfc56d3c66b5f40b9783874fbce434f`;
+- NetSim subject 49, SHA256
+  `e394b2c0646a71693389e1c4307da1c15bf5299367ec4faaca8c2e847c71f73c`;
+- MoCap run, SHA256
+  `cc180d486832fbeb08a7be8de69494dccdc31615e0155022c96aef674fe17569`;
+- MoCap salsa, SHA256
+  `9f368e638d2c22327d8b67901c6eaab1a46ee44b249dc88faa49f220ab28dd39`.
+
+Current scientific disposition:
+
+- Static and contextual coordinate-wise FIR candidates are stopped after
+  failing to establish non-stationary improvement.
+- Prediction-guarded and history-guarded full-prefix gradient strategies are
+  stopped after failing to remove the graph--prediction trade-off.
+- The cross-domain audit signal is eligible for a separately preregistered
+  formal plan, but these development rows must not be cited as submission
+  evidence.
