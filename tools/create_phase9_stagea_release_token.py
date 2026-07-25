@@ -39,6 +39,11 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def canonical_text_sha256(path: Path) -> str:
+    content = path.read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(content).hexdigest()
+
+
 def git(*args: str) -> str:
     result = subprocess.run(
         ["git", *args],
@@ -56,14 +61,17 @@ def main() -> int:
         raise RuntimeError("Release token requires a clean worktree")
     config = args.config.resolve()
     matrix = args.matrix.resolve()
-    files = {path: sha256(ROOT / path) for path in CRITICAL_FILES}
+    files = {
+        path: canonical_text_sha256(ROOT / path)
+        for path in CRITICAL_FILES
+    }
     payload = {
         "protocol_name": "phase9_audit_generality_stagea_v1",
         "authorized_stage": "A_4090_VALIDATION",
         "execution_authorized": True,
         "approved_commit": git("rev-parse", "HEAD"),
-        "config_sha256": sha256(config),
-        "matrix_sha256": sha256(matrix),
+        "config_sha256": canonical_text_sha256(config),
+        "matrix_sha256": canonical_text_sha256(matrix),
         "critical_files": files,
         "authorization_basis": (
             "user-authorized local self-review and prospective RTX4090 validation"

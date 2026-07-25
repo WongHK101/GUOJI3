@@ -73,6 +73,11 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def canonical_text_sha256(path: Path) -> str:
+    content = path.read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(content).hexdigest()
+
+
 def json_default(value):
     if isinstance(value, Path):
         return str(value)
@@ -148,8 +153,8 @@ def validate_release_lock(
     worktree_status = git_output("status", "--porcelain")
     if worktree_status:
         raise RuntimeError("Stage A requires a clean Git worktree")
-    config_sha = file_sha256(config_path)
-    matrix_sha = file_sha256(matrix_path)
+    config_sha = canonical_text_sha256(config_path)
+    matrix_sha = canonical_text_sha256(matrix_path)
     if config_sha != token.get("config_sha256"):
         raise RuntimeError("Stage A config SHA256 mismatch")
     if matrix_sha != token.get("matrix_sha256"):
@@ -162,7 +167,7 @@ def validate_release_lock(
         path = PROJECT_ROOT / str(relative)
         if not path.is_file():
             raise RuntimeError(f"Missing critical source: {relative}")
-        actual = file_sha256(path)
+        actual = canonical_text_sha256(path)
         actual_files[str(relative)] = actual
         if actual != expected:
             raise RuntimeError(f"Critical source SHA mismatch: {relative}")

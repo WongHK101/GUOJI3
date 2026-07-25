@@ -26,6 +26,7 @@ from phase9_audit_generalization import (  # noqa: E402
     sampled_raw_chain_audit,
 )
 from phase9_audit_stagea import (  # noqa: E402
+    canonical_text_sha256,
     horizon_summary,
     make_adapter,
     state_subset_sha256,
@@ -66,6 +67,14 @@ def test_stagea_matrix_cardinality_and_boundaries():
     assert all(row["execution_authorized"] == "false" for row in matrix)
     assert config["boundaries"]["stage_b_authorized"] is False
     assert config["boundaries"]["autodl_authorized"] is False
+
+
+def test_canonical_text_hash_ignores_crlf(tmp_path):
+    left = tmp_path / "left.csv"
+    right = tmp_path / "right.csv"
+    left.write_bytes(b"a,b\n1,2\n")
+    right.write_bytes(b"a,b\r\n1,2\r\n")
+    assert canonical_text_sha256(left) == canonical_text_sha256(right)
 
 
 def test_mamba_and_tcn_predictor_initialization_is_paired():
