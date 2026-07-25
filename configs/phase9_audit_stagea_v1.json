@@ -1,0 +1,137 @@
+{
+  "protocol_name": "phase9_audit_generality_stagea_v1",
+  "protocol_status": "user_authorized_internal_validation",
+  "evidence_role": "internal_prospective_go_no_go_not_manuscript_confirmation",
+  "stage": "A_4090_VALIDATION",
+  "matrix_path": "paper-data/docs/phase9_audit_validation_v1/PHASE9_AUDIT_RUN_MATRIX.csv",
+  "methods": [
+    "baseline",
+    "mamba_concat",
+    "tcn_concat"
+  ],
+  "model": {
+    "lag": 3,
+    "layers": 2,
+    "hidden": 32,
+    "dropout": 0.0,
+    "d_cond": 4,
+    "d_state": 4,
+    "d_conv": 4,
+    "expand": 2,
+    "jacobian_lam": 0.01
+  },
+  "training": {
+    "max_iter": 1000,
+    "optimizer": "Adam",
+    "learning_rate": 0.001,
+    "weight_decay": 0.0,
+    "gradient_clip_norm": 1.0,
+    "check_every": 50,
+    "lookback": 10,
+    "checkpoint_policy": "restore_minimum_checked_total_objective"
+  },
+  "evaluation": {
+    "primary_horizon": 64,
+    "horizon_sensitivity": [
+      32,
+      64,
+      128
+    ],
+    "common_target_minimum_horizon": 128,
+    "audit_window_count": 32,
+    "absolute_before_window_mean": true,
+    "nominal_score_aggregation": "max_over_lags_1_to_K",
+    "diagonal_policy": "retain_in_tensors_exclude_in_metrics",
+    "target_policy": "clean_raw_target_fixed",
+    "mask_value": 0.0,
+    "shuffle_axis": "time_within_each_source_coordinate"
+  },
+  "datasets": {
+    "netsim19": {
+      "kind": "netsim",
+      "relative_path": "netsim/sim3_subject_19.npz",
+      "sha256": "c6b00399c649d93419d07c7c285359d4ab23d68e983f7f831073ae3e1245618b",
+      "segment": [
+        0,
+        200
+      ]
+    },
+    "netsim08": {
+      "kind": "netsim",
+      "relative_path": "netsim/sim3_subject_8.npz",
+      "sha256": "83d2c22a19379ce680c37125eace30f1920556249a60aa23a275a2a7b7f8ef75",
+      "segment": [
+        0,
+        200
+      ]
+    },
+    "netsim44": {
+      "kind": "netsim",
+      "relative_path": "netsim/sim3_subject_44.npz",
+      "sha256": "3b0b7eecf62a0aeb6fd8ae35b29e9c1f758a7bcd0fcfabbd907be7e7422c21e5",
+      "segment": [
+        0,
+        200
+      ]
+    },
+    "netsim03": {
+      "kind": "netsim",
+      "relative_path": "netsim/sim3_subject_3.npz",
+      "sha256": "e6b8510c548f6bb2fe5c93dbe40d2c6073dd964ffb282a911adf4ad88c71341a",
+      "segment": [
+        0,
+        200
+      ]
+    },
+    "mocap_run_holdout": {
+      "kind": "mocap",
+      "relative_path": "mocap/mocap_time_series_run_angles.npz",
+      "sha256": "cc180d486832fbeb08a7be8de69494dccdc31615e0155022c96aef674fe17569",
+      "segment": [
+        728,
+        1228
+      ]
+    },
+    "mocap_salsa_holdout": {
+      "kind": "mocap",
+      "relative_path": "mocap/mocap_time_series_salsa_angles.npz",
+      "sha256": "9f368e638d2c22327d8b67901c6eaab1a46ee44b249dc88faa49f220ab28dd39",
+      "segment": [
+        3000,
+        3500
+      ]
+    }
+  },
+  "gates": {
+    "finite_required": true,
+    "baseline_partial_total_max_abs": 1e-07,
+    "baseline_missing_route_max": 1e-07,
+    "determinism_max_abs": 1e-06,
+    "determinism_metric_abs": 1e-06,
+    "qualifying_unit_count": 5,
+    "unit_count": 6,
+    "qualifying_seed_count": 2,
+    "seed_count": 3,
+    "missing_route_min": 0.2,
+    "mask_c_delta_median_min": 0.05,
+    "partial_total_pearson_max": 0.9,
+    "netsim_discrepancy_subject_count": 3,
+    "netsim_subject_count": 4,
+    "topk_jaccard_max": 0.8,
+    "coordinate_entropy_median_min": 0.75,
+    "temporal_tail_median_min": 0.05,
+    "nominal_horizon_max_abs": 1e-07,
+    "h64_h128_ratio_qualifying_min": 0.99,
+    "h64_h128_ratio_absolute_min": 0.95,
+    "baseline_netsim_auroc_context_min": 0.6,
+    "rtx4090_gpu_hour_hard_cap": 5.0
+  },
+  "boundaries": {
+    "stage_b_authorized": false,
+    "autodl_authorized": false,
+    "manuscript_modification_authorized": false,
+    "phase7_seeds_4_to_8_accessed": false,
+    "stage1b_accessed": false,
+    "full_prefix_claim_allowed": false
+  }
+}
