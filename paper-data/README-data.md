@@ -939,5 +939,58 @@ The Stage B release assets are stored alongside the preregistration:
 - `PHASE9_STAGEB_RELEASE_PROTOCOL.md`: smoke, release-lock, and confirmation
   execution order.
 
-No Stage B output exists yet. AutoDL was unreachable when the release was
-prepared.
+At release-preparation time, no Stage B output existed and AutoDL was
+unreachable. The subsequent confirmation is recorded below.
+
+# PHASE 9 STAGE B CONFIRMATION (2026-07-26)
+
+Stage B was executed on the 901 AutoDL GPU host from the exact detached release
+commit `0397e8af27c4f396d7713b129e0d7307da732681`. The two required 20-iteration
+infrastructure-smoke roots passed before the frozen 36-record formal matrix was
+started. Formal execution completed 36/36 records with no failed run, NaN/Inf,
+or release-lock mismatch.
+
+Authoritative local archive:
+
+- archive:
+  `E:\GUOJI\results_kbs\phase9_stageb\phase9_stageb_confirmation_0397e8a.tar.gz`;
+- archive SHA256:
+  `35b0729dfd5d463a74812f686f1f100e70d53f66565964765d23e35781ae0c76`;
+- immutable extraction:
+  `E:\GUOJI\results_kbs\phase9_stageb\archival_extract_0397e8a`;
+- independent aggregation:
+  `E:\GUOJI\results_kbs\phase9_stageb\independent_rerun_0397e8a`;
+- archived server decision:
+  `E:\GUOJI\results_kbs\phase9_stageb\stageb_confirmation_decision_server_original.json`;
+- raw/canonical-LF decision SHA256:
+  `8d473d5aa67b32bc9d1f568b02934a6ea73d6ea9423234ce0d6a15b4ae0a4660`.
+
+The artifact manifest contains 685 files. Server-side post-analysis validation
+and local extraction validation both returned zero missing or mismatched
+files. A fresh local aggregation reproduced the server decision as parsed JSON
+and as canonical LF bytes.
+
+Frozen decision:
+
+- `decision=CONFIRMED_AUDIT_GENERALITY`;
+- `confirmed_audit_generality=true`;
+- `manuscript_evidence_eligible=true`;
+- `semantic_integrity_passed=true`;
+- 36/36 formal records complete;
+- formal GPU use: 0.692 GPU-hours.
+
+Both Mamba concat and causal TCN concat passed all 11 preregistered
+architecture/horizon checks. For each architecture, all 6/6 held-out data
+units passed the missing-route and fixed-target `mask_c` gates, and all 4/4
+NetSim subjects passed the partial-versus-total discrepancy gate. Baseline
+partial/total scores were identical and baseline missing-route magnitude was
+zero.
+
+This confirmation supports a bounded audit-generality claim only. NetSim
+baseline AUROC remained weak (median 0.495), MoCap has no accepted direct graph
+ground truth, and attribution beyond H=128 was not assessed. The result does
+not establish graph-recovery superiority, a successful repair, Mamba/TCN
+effectiveness, architecture universality, or full-prefix completeness.
+
+The 901 instance was no longer reachable after archival and two independent
+connection checks, confirming that it was shut down after use.

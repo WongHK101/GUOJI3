@@ -889,3 +889,36 @@ observed. If Stage B returns `CONFIRMED_AUDIT_GENERALITY`, the strongest
 eligible claim remains the bounded statement in the preregistration; it does
 not establish a successful repair method, full-prefix attribution, or causal
 ground truth for MoCap.
+
+# CURRENT KBS STATUS: STAGE B CONFIRMED (2026-07-26)
+
+Stage B completed 36/36 frozen AutoDL records and returned
+`CONFIRMED_AUDIT_GENERALITY`. The result passed the release lock, smoke gate,
+semantic checks, deterministic metadata checks, artifact-integrity audit, and
+independent local reaggregation. It is the first confirmatory evidence eligible
+for the Route-B manuscript mainline.
+
+Allowed central empirical claim:
+
+> Under a preregistered bounded raw-chain audit, omitted-route attribution,
+> fixed-target auxiliary-route use, and partial-versus-total score disagreement
+> were reproduced across held-out NetSim subjects, nonoverlapping MoCap
+> segments, and two causal auxiliary preprocessors.
+
+Required boundaries:
+
+- Present this as audit-framework generality, not graph-performance
+  superiority or a successful repair.
+- State that the held-out NetSim baseline operating point was weak (median
+  AUROC 0.495); graph-performance success was not a gate and was not obtained.
+- Use MoCap only for route-use and score-semantics evidence because it has no
+  accepted direct graph ground truth.
+- Do not claim attribution completeness beyond H=128.
+- Keep the failed CP-depthwise and Phase 8 repair lines closed.
+- Do not revive legacy ISTF-Mamba benchmark or operating-regime claims.
+- Do not present the two architectures or two domains as universal coverage.
+
+The canonical English manuscript and Chinese review mirror remain unchanged.
+The next writing session should first update the claim-evidence matrix and
+traceability table, then revise the audit-generality Results/Discussion
+sections from the frozen Stage A/Stage B artifacts.
