@@ -922,3 +922,69 @@ The canonical English manuscript and Chinese review mirror remain unchanged.
 The next writing session should first update the claim-evidence matrix and
 traceability table, then revise the audit-generality Results/Discussion
 sections from the frozen Stage A/Stage B artifacts.
+
+# CURRENT KBS STATUS: ROUTE-B SUBMISSION CANDIDATE V5 (2026-07-26)
+
+A new independent manuscript worktree now contains the first complete Route-B
+submission candidate:
+
+- English source:
+  `E:\GUOJI\elsarticle_phase9_stageb\istf_kbs_jacobian_coverage_submission_candidate_v5.tex`;
+- English PDF:
+  `E:\GUOJI\elsarticle_phase9_stageb\istf_kbs_jacobian_coverage_submission_candidate_v5.pdf`;
+- Chinese review source/PDF:
+  `istf_kbs_jacobian_coverage_submission_candidate_v5_zh.tex/.pdf`.
+
+The v5 title is:
+
+> Jacobian Coverage Audits for Reliable Neural Granger Causality
+
+The paper is no longer an ISTF performance paper. Its argument is:
+
+1. a declared graph derivative can omit an architecture-declared predictive
+   route;
+2. score routes, penalty routes, coordinate identity, and attribution horizon
+   must be audited independently;
+3. controlled Phase 8 diagnostics reproduce prediction--knowledge decoupling;
+4. preregistered Stage B confirmation reproduces bounded audit signatures
+   across Mamba/TCN preprocessors and NetSim/MoCap held-out units;
+5. semantic repair remains a boundary because CP-depthwise failed performance
+   and novelty gates, while full-prefix regularization traced a steep
+   graph--prediction frontier.
+
+The English manuscript has eight first-level sections, four main figures, one
+appendix diagnostic figure, and four bounded theoretical propositions. It
+retains the following hard boundaries:
+
+- Stage B confirms audit signatures, not graph-recovery performance;
+- MoCap has no accepted direct graph ground truth;
+- H=64/H=128 stability does not assess mass before H=128;
+- the full-prefix repair is not a successful method contribution;
+- legacy ISTF-Mamba is a score-semantics diagnostic only;
+- the framework does not establish causal identifiability.
+
+All five figures were drawn through the Draw.io Scientific Illustrator live
+graph API. Each is stored in an independent self-contained directory with
+source data, editable `.drawio`, PDF/SVG/PNG exports, scripts, staged
+screenshots, validation JSON, and complete SHA256 manifest. The restrained
+white/charcoal, muted-blue, muted-rust, and muted-teal visual system replaces
+the prior saturated multi-color presentation.
+
+Current English build status:
+
+- 14 pages;
+- 0 LaTeX errors;
+- 0 undefined references/citations;
+- 0 missing figures;
+- 0 overfull hboxes;
+- all five included figure PDFs are single-page vector exports.
+
+The prior large blank areas on pages 12--13 are removed. Quantitative visual
+anchors now appear on pages 6, 8, and 10, with the conceptual framework on page
+3 and the score-semantics appendix figure on page 13. The Chinese mirror is an
+18-page single-column proofreading aid; its formatting is intentionally not a
+submission constraint.
+
+The v4 English/Chinese sources and canonical `istf_kbs.tex` remain frozen.
+V5 must pass final self-review, clean-package verification, commit/push, and
+author metadata replacement before it can become the submission master.

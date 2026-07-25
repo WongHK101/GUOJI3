@@ -994,3 +994,48 @@ effectiveness, architecture universality, or full-prefix completeness.
 
 The 901 instance was no longer reachable after archival and two independent
 connection checks, confirming that it was shut down after use.
+
+# PHASE 9 STAGE B MANUSCRIPT SUPPORT ASSETS (2026-07-26)
+
+The confirmed Stage B evidence has been integrated into a new, independent
+Route-B submission candidate without modifying the frozen v4 manuscript or any
+Stage A/Stage B result artifact.
+
+Evidence and theory support files:
+
+- `paper-data/docs/phase9_stageb_manuscript/CLAIM_EVIDENCE_MATRIX_V3.md`;
+- `paper-data/docs/phase9_stageb_manuscript/EVIDENCE_TRACEABILITY.md`;
+- `paper-data/docs/phase9_stageb_manuscript/THEORY_AND_TOOL_CONTRACT.md`;
+- `paper-data/docs/phase9_stageb_manuscript/FIGURE_SOURCE_STANDARD.md`;
+- `src/jacobian_coverage_audit.py`;
+- `tests/test_jacobian_coverage_audit.py`.
+
+The executable audit report uses schema
+`jacobian-coverage-audit/1.0` and keeps score-route completeness,
+penalty-route completeness, score-penalty alignment, coordinate validity, and
+horizon validity as separate diagnostic dimensions. It does not certify causal
+identifiability.
+
+The manuscript worktree is:
+
+`E:\GUOJI\elsarticle_phase9_stageb`
+
+The five figure directories are under:
+
+`figures/phase9_submission/`
+
+Each figure directory independently retains:
+
+- source/derived data;
+- a panel specification;
+- live draw.io graph-API construction code and a pinned client;
+- editable `.drawio` source;
+- final PDF/SVG/PNG exports;
+- live-canvas screenshots and validation;
+- source and complete artifact SHA256 manifests.
+
+The root figure index is
+`figures/phase9_submission/FIGURE_ASSET_INDEX.json`.
+
+No new scientific experiment, GPU run, Phase 7 seed 4--8 output access, or
+frozen-artifact modification occurred during manuscript integration.
