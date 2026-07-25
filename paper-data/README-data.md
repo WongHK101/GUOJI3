@@ -884,3 +884,27 @@ Current scientific disposition:
 - The cross-domain audit signal is eligible for a separately preregistered
   formal plan, but these development rows must not be cited as submission
   evidence.
+
+# PHASE 9 AUDIT-GENERALITY VALIDATION PREREGISTRATION V1 (2026-07-25)
+
+The planning-only preregistration is stored under
+`paper-data/docs/phase9_audit_validation_v1/`. No matrix row is authorized or
+executed.
+
+The NetSim selection excludes development subjects 48/49 and uses an
+identifier-only SHA256 ordering. Stage A freezes subjects 19, 8, 44, and 3;
+Stage B seals subjects 16, 0, 30, and 10. Only identifier strings and file
+hashes were read during selection; arrays and graph metrics were not inspected.
+MoCap freezes nonoverlapping segments `[728,1228)` for run and `[3000,3500)`
+for salsa.
+
+The matrix contains:
+
+- 54 Stage A primary RTX 4090 records;
+- two non-primary Stage A determinism duplicates;
+- 36 conditional Stage B AutoDL records.
+
+All 92 rows have `execution_authorized=false`. Stage A is internal prospective
+go/no-go evidence. Stage B remains sealed until Stage A passes every
+preregistered semantic, generality, horizon, determinism, artifact, and runtime
+gate and receives explicit advisor approval.

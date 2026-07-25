@@ -842,3 +842,28 @@ The authoritative development summary is
 revision, freeze a small prospective audit-only protocol with held-out
 subjects/segments and method initializations; retain the current rows as
 development data only.
+
+# CURRENT KBS STATUS: AUDIT-GENERALITY PREREGISTRATION V1 (2026-07-25)
+
+A planning-only two-stage validation is frozen under
+`paper-data/docs/phase9_audit_validation_v1/`. The manuscript and Chinese
+review mirror remain unchanged.
+
+Stage A would use four hash-selected held-out NetSim subjects, two
+nonoverlapping MoCap segments, baseline JRNGC, Mamba concat, causal TCN concat,
+and three fresh training replicates. It is an internal RTX 4090 go/no-go stage,
+not manuscript confirmation evidence. Stage B uses four separately sealed
+NetSim subjects, the same MoCap segments, two fresh replicates, and AutoDL only
+after Stage A and advisor approval.
+
+The preregistered claim target is narrow: reproducible omitted-route
+attribution, fixed-target auxiliary-route use, partial-versus-total nominal
+score disagreement, source-coordinate mixing, and bounded temporal support
+across two auxiliary architectures and two data domains. It does not reopen
+the stopped filtering/repair methods and cannot support superiority, universal
+architecture validity, full-prefix completeness, or graph truth on MoCap.
+
+No manuscript change is allowed until both stages pass. If only one
+architecture passes, the result is explicitly `PARTIAL_GENERALITY`; if H=64
+fails the H=128 adequacy gate, execution stops rather than silently changing
+the horizon.
