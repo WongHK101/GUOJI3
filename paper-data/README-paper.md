@@ -867,3 +867,25 @@ No manuscript change is allowed until both stages pass. If only one
 architecture passes, the result is explicitly `PARTIAL_GENERALITY`; if H=64
 fails the H=128 adequacy gate, execution stops rather than silently changing
 the horizon.
+
+# CURRENT KBS STATUS: STAGE A PASSED, STAGE B RELEASE PENDING (2026-07-26)
+
+Stage A returned `UNLOCK_STAGE_B` after 56/56 clean CUDA records and an
+independent byte-identical reaggregation. Both Mamba and causal TCN passed the
+frozen generality and horizon gates across all six data units. This is a clear
+positive go/no-go result for the audit-generality direction, but it remains
+non-confirmatory by design.
+
+The manuscript and Chinese mirror remain frozen. Stage A must not be presented
+as final manuscript evidence. The NetSim baseline known-graph operating point
+was weak (median AUROC 0.514), so the current positive result concerns route
+coverage, fixed-target route use, coordinate mixing, and partial-versus-total
+score disagreement rather than improved graph recovery.
+
+Stage B retains the preselected subjects 16, 0, 30, and 10, the two frozen
+MoCap segments, the same three methods, and two fresh replicates. No method,
+threshold, horizon, intervention, or training field changed after Stage A was
+observed. If Stage B returns `CONFIRMED_AUDIT_GENERALITY`, the strongest
+eligible claim remains the bounded statement in the preregistration; it does
+not establish a successful repair method, full-prefix attribution, or causal
+ground truth for MoCap.

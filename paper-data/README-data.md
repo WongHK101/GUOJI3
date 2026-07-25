@@ -908,3 +908,36 @@ All 92 rows have `execution_authorized=false`. Stage A is internal prospective
 go/no-go evidence. Stage B remains sealed until Stage A passes every
 preregistered semantic, generality, horizon, determinism, artifact, and runtime
 gate and receives explicit advisor approval.
+
+# PHASE 9 STAGE A FORMAL GATE (2026-07-26)
+
+Stage A completed under release commit
+`7d73125ece4e98962a237a8dd1adb1ae119ada50`:
+
+- 56/56 CUDA records complete, including two determinism duplicates;
+- decision: `UNLOCK_STAGE_B`;
+- archived decision raw-byte SHA256 (Windows CRLF):
+  `92786263afd97a299667968f0d73bdad3ee4fa02b503d3441b24e1b0fa63d384`;
+- Stage B release-lock canonical-text SHA256 (LF):
+  `68cff029f6d192260abce0567de5f46bb9de73bf5355b61e64dfa923f8406166`;
+- archived root:
+  `E:\GUOJI\results_kbs\phase9_stagea\phase9_stagea_formal_7d73125_v3.zip`;
+- archive SHA256:
+  `1e77e8f58c4759fa49f5f65016290ae60be18b556e03be8674c49c2ca60d5f99`;
+- 887-file artifact manifest verified with zero mismatch;
+- independent local aggregation reproduced the decision JSON byte-for-byte.
+
+Both Mamba concat and causal TCN concat passed all frozen Stage A
+architecture/horizon gates in 6/6 data units. The Stage A values remain
+internal prospective go/no-go evidence and are not manuscript confirmation.
+
+The Stage B release assets are stored alongside the preregistration:
+
+- `PHASE9_AUDIT_STAGEB_AUTHORIZED_MATRIX.csv`: exactly 36 sealed Stage B rows,
+  with only `execution_authorized` changed to `true`;
+- `STAGEA_GATE_DECISION_LOCK.json`: exact passed Stage A decision;
+- `PHASE9_STAGEB_RELEASE_PROTOCOL.md`: smoke, release-lock, and confirmation
+  execution order.
+
+No Stage B output exists yet. AutoDL was unreachable when the release was
+prepared.
