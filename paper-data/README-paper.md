@@ -988,3 +988,27 @@ submission constraint.
 The v4 English/Chinese sources and canonical `istf_kbs.tex` remain frozen.
 V5 must pass final self-review, clean-package verification, commit/push, and
 author metadata replacement before it can become the submission master.
+
+# MANUSCRIPT REPOSITORY ORGANIZATION (2026-07-26)
+
+The latest Route-B candidate has passed its existing self-review and is now the
+canonical manuscript in the Phase 9 manuscript worktree:
+
+- English source/PDF:
+  `E:\GUOJI\elsarticle_phase9_stageb\istf_kbs.tex/.pdf`;
+- Chinese review source/PDF:
+  `E:\GUOJI\elsarticle_phase9_stageb\review\chinese\istf_kbs_zh.tex/.pdf`;
+- integrated English/Chinese appendix sources:
+  `E:\GUOJI\elsarticle_phase9_stageb\supplement\appendix_en.tex` and
+  `appendix_zh.tex`;
+- supplementary Fig. S1 assets:
+  `E:\GUOJI\elsarticle_phase9_stageb\figures\phase9_submission\figS1_score_semantics\`.
+
+Superseded manuscript, figure, source-data, table, planning, and QA versions
+are grouped under `E:\GUOJI\elsarticle_phase9_stageb\archive\` and are no
+longer active build inputs. The canonical build entry point is
+`scripts/build_manuscripts.ps1`. The organization pass changed paths and build
+structure only; it did not change scientific values, claims, frozen evidence,
+or figure content. The corresponding manuscript commit is
+`676df38a3cff2878f0c0f1988a1236b729a168a1` on
+`phase9/stageb-manuscript-integration-v1`.

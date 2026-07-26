@@ -1020,6 +1020,22 @@ The manuscript worktree is:
 
 `E:\GUOJI\elsarticle_phase9_stageb`
 
+Current manuscript and supplementary-material paths after the 2026-07-26
+repository organization pass:
+
+- canonical English source/PDF: `istf_kbs.tex/.pdf`;
+- Chinese proofreading source/PDF:
+  `review/chinese/istf_kbs_zh.tex/.pdf`;
+- integrated appendix sources:
+  `supplement/appendix_en.tex` and `supplement/appendix_zh.tex`;
+- supplementary table:
+  `supplement/tables/full_aux_penalty_all_variants.tex`;
+- supplementary Fig. S1 source/data/provenance:
+  `figures/phase9_submission/figS1_score_semantics/`.
+
+Historical manuscript and figure versions are grouped under `archive/` and are
+not active evidence or build inputs.
+
 The five figure directories are under:
 
 `figures/phase9_submission/`
