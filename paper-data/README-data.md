@@ -1030,8 +1030,8 @@ repository organization pass:
   `supplement/appendix_en.tex` and `supplement/appendix_zh.tex`;
 - supplementary table:
   `supplement/tables/full_aux_penalty_all_variants.tex`;
-- supplementary Fig. S1 source/data/provenance:
-  `figures/phase9_submission/figS1_score_semantics/`.
+- Appendix Fig. E.1 source/data/provenance:
+  `figures/phase9_submission/figE1_score_semantics/`.
 
 Historical manuscript and figure versions are grouped under `archive/` and are
 not active evidence or build inputs.
@@ -1040,18 +1040,27 @@ The five figure directories are under:
 
 `figures/phase9_submission/`
 
-Each figure directory independently retains:
+Each active figure directory independently retains:
 
 - source/derived data;
-- a panel specification;
-- live draw.io graph-API construction code and a pinned client;
-- editable `.drawio` source;
+- a figure contract and panel specification;
+- a backend-appropriate editable source;
 - final PDF/SVG/PNG exports;
-- live-canvas screenshots and validation;
+- validation output;
 - source and complete artifact SHA256 manifests.
+
+Figure 1 is the editable mechanism schematic and remains a live Draw.io asset.
+Figures 2--4 and Appendix Fig. E.1 are quantitative figures generated directly
+from frozen CSV/JSON inputs by independent Python/matplotlib scripts. The four
+superseded Draw.io numerical figures are retained only under
+`archive/figures/phase9_drawio_numeric/`.
 
 The root figure index is
 `figures/phase9_submission/FIGURE_ASSET_INDEX.json`.
+
+The numbering/backend correction and regenerated manuscript PDFs are frozen in
+KBS manuscript commit `9b90823a715729dd396f1cd40d70148c0c9cc590` on branch
+`phase9/stageb-manuscript-integration-v1`.
 
 No new scientific experiment, GPU run, Phase 7 seed 4--8 output access, or
 frozen-artifact modification occurred during manuscript integration.

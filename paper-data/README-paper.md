@@ -963,12 +963,14 @@ retains the following hard boundaries:
 - legacy ISTF-Mamba is a score-semantics diagnostic only;
 - the framework does not establish causal identifiability.
 
-All five figures were drawn through the Draw.io Scientific Illustrator live
-graph API. Each is stored in an independent self-contained directory with
-source data, editable `.drawio`, PDF/SVG/PNG exports, scripts, staged
-screenshots, validation JSON, and complete SHA256 manifest. The restrained
-white/charcoal, muted-blue, muted-rust, and muted-teal visual system replaces
-the prior saturated multi-color presentation.
+All five figures are stored in independent self-contained directories with
+source data, backend-specific editable source, PDF/SVG/PNG exports, validation
+JSON, and complete SHA256 manifests. Figure 1 remains an editable Draw.io
+mechanism schematic. Figures 2--4 and Appendix Fig. E.1 are generated directly
+from frozen CSV/JSON inputs by Python/matplotlib; their superseded Draw.io
+versions are archival only. The restrained white/charcoal, muted-blue,
+muted-rust, and muted-teal visual system replaces the prior saturated
+multi-color presentation.
 
 Current English build status:
 
@@ -981,8 +983,8 @@ Current English build status:
 
 The prior large blank areas on pages 12--13 are removed. Quantitative visual
 anchors now appear on pages 6, 8, and 10, with the conceptual framework on page
-3 and the score-semantics appendix figure on page 13. The Chinese mirror is an
-18-page single-column proofreading aid; its formatting is intentionally not a
+3 and the score-semantics appendix figure on page 13. The Chinese mirror is a
+19-page single-column proofreading aid; its formatting is intentionally not a
 submission constraint.
 
 The v4 English/Chinese sources and canonical `istf_kbs.tex` remain frozen.
@@ -1001,14 +1003,17 @@ canonical manuscript in the Phase 9 manuscript worktree:
 - integrated English/Chinese appendix sources:
   `E:\GUOJI\elsarticle_phase9_stageb\supplement\appendix_en.tex` and
   `appendix_zh.tex`;
-- supplementary Fig. S1 assets:
-  `E:\GUOJI\elsarticle_phase9_stageb\figures\phase9_submission\figS1_score_semantics\`.
+- Appendix Fig. E.1 assets:
+  `E:\GUOJI\elsarticle_phase9_stageb\figures\phase9_submission\figE1_score_semantics\`.
 
 Superseded manuscript, figure, source-data, table, planning, and QA versions
 are grouped under `E:\GUOJI\elsarticle_phase9_stageb\archive\` and are no
 longer active build inputs. The canonical build entry point is
 `scripts/build_manuscripts.ps1`. The organization pass changed paths and build
-structure only; it did not change scientific values, claims, frozen evidence,
-or figure content. The corresponding manuscript commit is
-`676df38a3cff2878f0c0f1988a1236b729a168a1` on
+structure only; it did not change scientific values, claims, or frozen
+evidence. The subsequent figure-number/backend correction replaced all four
+quantitative Draw.io figures with Python/matplotlib outputs generated from the
+same frozen data, renamed the integrated score-semantics asset to Fig. E.1,
+and synchronized the Chinese appendix order. The corresponding current
+manuscript commit is `9b90823a715729dd396f1cd40d70148c0c9cc590` on
 `phase9/stageb-manuscript-integration-v1`.
