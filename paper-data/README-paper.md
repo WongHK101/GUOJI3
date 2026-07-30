@@ -1017,3 +1017,24 @@ same frozen data, renamed the integrated score-semantics asset to Fig. E.1,
 and synchronized the Chinese appendix order. The corresponding current
 manuscript commit is `9b90823a715729dd396f1cd40d70148c0c9cc590` on
 `phase9/stageb-manuscript-integration-v1`.
+
+# NUMERIC AUDIT STATUS (2026-07-31)
+
+The current English manuscript completed a full frozen-evidence numeric audit.
+The 16-sheet master workbook is:
+
+`E:\GUOJI\outputs\kbs_numeric_audit_20260731\KBS_NUMERIC_MASTER_AUDIT_20260731.xlsx`
+
+All 141 hand-mapped manuscript/configuration claims agree with their
+authoritative sources: 43 exactly and 98 at the manuscript's declared display
+precision. There are zero substantive mismatches and zero workbook formula
+errors. The audit also inventories the complete Stage B formal run ledger,
+Stage 1a data-seed units, repair frontier, and authoritative scalar JSON
+fields.
+
+This audit does not expand the permitted narrative. Full-auxiliary
+`pred_loss`, legacy ISTF-Mamba, Stage 1a, Stage B, P1 A3, and the Phase 8
+repair frontier retain their previously frozen semantic boundaries. Future
+manuscript number changes should be made from the authoritative source first
+and then rechecked with
+`E:\GUOJI\elsarticle_phase9_stageb\qa\current\numeric_audit\`.

@@ -1064,3 +1064,29 @@ KBS manuscript commit `9b90823a715729dd396f1cd40d70148c0c9cc590` on branch
 
 No new scientific experiment, GPU run, Phase 7 seed 4--8 output access, or
 frozen-artifact modification occurred during manuscript integration.
+
+# NUMERIC MASTER AUDIT (2026-07-31)
+
+The current English KBS manuscript has been checked against the locally
+available frozen evidence in a reproducible 16-sheet workbook:
+
+`E:\GUOJI\outputs\kbs_numeric_audit_20260731\KBS_NUMERIC_MASTER_AUDIT_20260731.xlsx`
+
+The repository audit copy and rebuild scripts are under:
+
+`E:\GUOJI\elsarticle_phase9_stageb\qa\current\numeric_audit\`
+
+The two workbook copies share SHA256
+`20DCD1183CF06C7CD9C6DA610E8224E6C004EA9024D553100FFBB0C51DDCF3D1`.
+The audit covers 141 hand-mapped manuscript/configuration claims, 36 Stage B
+formal runs, 48 Stage 1a data-seed analysis units, 21 repair-frontier rows,
+and 1,581 scalar JSON fields. Results are 43 exact matches, 98
+display-rounding matches, and zero substantive mismatches or formula errors.
+
+The audit preserves the existing evidence semantics: full-auxiliary
+`pred_loss` is a total regularized objective rather than pure prediction MSE;
+legacy cross-channel ISTF-Mamba is semantic-only; Stage 1a is a negative
+method boundary; Stage B supports bounded audit generality rather than graph
+performance; and P1 A3 is uninterpretable because replay alignment is invalid.
+No experiment was run, no Phase 7 seed 4--8 output was inspected, and no
+frozen evidence was modified.
