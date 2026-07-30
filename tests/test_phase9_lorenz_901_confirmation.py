@@ -208,3 +208,16 @@ def test_protocol_json_contains_no_manuscript_authorization():
     assert raw["boundaries"]["phase7_stage1b_authorized"] is False
     assert raw["claim_boundary"]["not_permitted"]
 
+
+def test_formal_status_contract_contains_determinism_comparison_fields():
+    source = (
+        ROOT
+        / "experiments"
+        / "phase9_lorenz_901_confirmation.py"
+    ).read_text(encoding="utf-8")
+    for field in (
+        '"config_file_sha256"',
+        '"config_canonical_sha256"',
+        '"git_commit"',
+    ):
+        assert field in source
