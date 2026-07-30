@@ -1118,3 +1118,17 @@ These outputs are explicitly `development_only=true`, `formal_result=false`,
 and `manuscript_evidence=false`. They may be used to justify freezing a fresh
 901 confirmation protocol, but they must not be cited in the manuscript or
 pooled with formal evidence.
+
+# PHASE 9 LORENZ FORMAL 901 PROTOCOL (2026-07-31)
+
+The fresh multi-seed confirmation protocol was frozen before formal data
+generation at:
+
+`paper-data/docs/phase9_lorenz_preflight/FORMAL_901_PROTOCOL.md`
+
+The formal design contains five new data seeds, two train seeds, baseline
+JRNGC and legacy Mamba concat x-only, for 20 total 2,000-iteration runs. The
+statistical unit is the data seed after averaging its two train seeds. Formal
+outputs remain ineligible for manuscript use until the immutable aggregate
+gate report passes. The protocol does not authorize Phase 7 Stage 1b, new
+method training, or manuscript editing.

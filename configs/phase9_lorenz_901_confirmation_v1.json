@@ -1,0 +1,166 @@
+{
+  "protocol_name": "phase9_lorenz_901_confirmation_v1",
+  "protocol_status": "frozen_before_formal_data_generation",
+  "boundaries": {
+    "development_only": false,
+    "formal_result": true,
+    "manuscript_evidence_pending_aggregate": true,
+    "phase7_stage1b_authorized": false,
+    "new_method_training_authorized": false,
+    "manuscript_edit_authorized": false
+  },
+  "dataset": {
+    "family": "Lorenz-96",
+    "d": 10,
+    "T": 500,
+    "t_eval": 0,
+    "lag": 1,
+    "forcing": 40.0,
+    "delta_t": 0.1,
+    "observation_noise_sd": 0.1,
+    "burn_in": 1000,
+    "normalization": "per-variable mean zero and unit population standard deviation after burn-in",
+    "target_graph": "direct nominal-lag Lorenz-96 dependency support with diagonal excluded only during graph metrics"
+  },
+  "formal_design": {
+    "data_seeds": [
+      26073111,
+      26073123,
+      26073137,
+      26073151,
+      26073167
+    ],
+    "train_seeds": [
+      26073201,
+      26073219
+    ],
+    "methods": [
+      "baseline",
+      "mamba_concat"
+    ],
+    "iterations": 2000,
+    "run_count": 20,
+    "statistical_unit": "data_seed_after_averaging_two_train_seeds",
+    "run_matrix_file": "configs/phase9_lorenz_901_confirmation_run_matrix_v1.csv",
+    "run_matrix_sha256": "8357264f5f8bc8d0814a27704ad9f56e4f0758763298cfe54745991f7e380405"
+  },
+  "seed_policy": {
+    "seed_search_statement": "The identifiers had no matches in the searched text-based repository, review-package filenames, and worklog records before protocol freeze; this is a bounded search, not a universal non-use proof.",
+    "score_window_seed_by_data_seed": {
+      "26073111": 27073111,
+      "26073123": 27073123,
+      "26073137": 27073137,
+      "26073151": 27073151,
+      "26073167": 27073167
+    },
+    "perturbation_seed_by_data_seed": {
+      "26073111": 28073111,
+      "26073123": 28073123,
+      "26073137": 28073137,
+      "26073151": 28073151,
+      "26073167": 28073167
+    },
+    "predictor_seed": "train_seed",
+    "preprocessor_seed": "train_seed_plus_1000000",
+    "master_seed": "train_seed"
+  },
+  "development_smoke": {
+    "data_seed": 0,
+    "train_seed": 26073001,
+    "iterations": 20,
+    "formal_result": false,
+    "manuscript_evidence": false,
+    "required_runs": [
+      "baseline_a",
+      "mamba_concat_a",
+      "mamba_concat_b"
+    ],
+    "determinism_max_abs": 1e-06
+  },
+  "model": {
+    "lag": 1,
+    "layers": 5,
+    "hidden": 50,
+    "dropout": 0.0,
+    "d_cond": 4,
+    "d_state": 8,
+    "d_conv": 4,
+    "expand": 2,
+    "jacobian_lam": 0.01
+  },
+  "training": {
+    "optimizer": "Adam",
+    "learning_rate": 0.001,
+    "weight_decay": 0.0,
+    "gradient_clip_norm": 1.0,
+    "check_every": 50,
+    "lookback": 10,
+    "checkpoint_policy": "restore_minimum_checked_total_regularized_objective",
+    "gating_checkpoint": "restored_legacy_best",
+    "early_stop_condition": "only after iteration 1000 and at least 500 iterations since the best checked objective"
+  },
+  "evaluation": {
+    "audit_window_count": 32,
+    "horizon_sensitivity": [
+      32,
+      64,
+      128
+    ],
+    "primary_horizon": 64,
+    "common_target_minimum_horizon": 128,
+    "primary_graph_score": "total raw-chain nominal-lag score at K=1",
+    "legacy_partial_score_role": "diagnostic only",
+    "diagonal_handling": "retained in raw score tensors and excluded only during graph metrics",
+    "window_aggregation": "absolute derivative per window then mean across common deterministic windows",
+    "lag_aggregation": "maximum over declared nominal lag support; K=1 here",
+    "horizon_role": "bounded raw-history diagnostics, not full-prefix completeness"
+  },
+  "per_run_diagnostic_gates": {
+    "baseline_total_nominal_auroc_min": 0.6,
+    "baseline_partial_total_max_abs": 1e-07,
+    "baseline_missing_route_max": 1e-07,
+    "missing_route_min": 0.2,
+    "mask_c_delta_min": 0.05,
+    "partial_total_pearson_max": 0.9,
+    "topk_jaccard_max": 0.8,
+    "coordinate_entropy_median_min": 0.75,
+    "temporal_tail_median_min": 0.05,
+    "h64_h128_ratio_min": 0.95,
+    "nominal_horizon_max_abs": 1e-07,
+    "determinism_max_abs": 1e-06
+  },
+  "aggregate_gates": {
+    "all_20_runs_complete_finite": true,
+    "baseline_mean_total_nominal_auroc_min": 0.85,
+    "baseline_data_seed_auroc_min": 0.8,
+    "baseline_data_seed_pass_count_min": 4,
+    "concat_missing_route_data_seed_mean_min": 0.2,
+    "concat_missing_route_data_seed_threshold": 0.2,
+    "concat_missing_route_data_seed_pass_count_min": 4,
+    "concat_mask_c_delta_data_seed_mean_min": 0.05,
+    "concat_mask_c_delta_data_seed_threshold": 0.05,
+    "concat_mask_c_data_seed_pass_count_min": 4,
+    "concat_discrepancy_data_seed_pass_count_min": 4,
+    "concat_coordinate_entropy_data_seed_threshold": 0.75,
+    "concat_coordinate_entropy_data_seed_pass_count_min": 4,
+    "concat_temporal_tail_data_seed_threshold": 0.05,
+    "concat_temporal_tail_data_seed_pass_count_min": 4,
+    "concat_h64_h128_ratio_data_seed_threshold": 0.95,
+    "concat_h64_h128_ratio_data_seed_pass_count_min": 5,
+    "concat_nominal_horizon_max_abs_data_seed_threshold": 1e-07,
+    "concat_nominal_horizon_data_seed_pass_count_min": 5,
+    "concat_vs_baseline_mean_relative_mse_max": 0.1,
+    "concat_vs_baseline_data_seed_relative_mse_max": 0.15,
+    "concat_vs_baseline_mse_data_seed_pass_count_min": 4
+  },
+  "claim_boundary": {
+    "permitted_if_aggregate_passes": "A strong-operating-point multi-seed case study shows that a legacy auxiliary concat route can carry predictive information while an x-only Jacobian score omits part of the total raw-chain attribution.",
+    "not_permitted": [
+      "ISTF or Mamba improves graph recovery",
+      "the concat architecture is universally invalid",
+      "H=128 establishes full-prefix completeness",
+      "the result is a successful repair method",
+      "the result authorizes Phase 7 Stage 1b"
+    ]
+  }
+}
