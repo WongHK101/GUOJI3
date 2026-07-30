@@ -57,6 +57,38 @@ The baseline has no auxiliary route. Across the formal artifact:
 These checks establish evaluator specificity for the declared missing-route
 object. They do not establish the accuracy of the inferred NetSim graph.
 
+## Lorenz-96 strong-operating-point confirmation
+
+| Item | Immutable value |
+| --- | --- |
+| Release source commit | `2637bb798a2bd09c4f60fe3ead32abbffec3b8ca` |
+| Formal archive root | `E:\GUOJI\results_kbs\phase9_lorenz_901_confirmation\2637bb7\` |
+| Archive SHA256 | `959916f42e58c61d632d5113b977a1907461b5b89991abac51b3f9baf8a53209` |
+| Formal aggregate | `extracted\phase9_lorenz_formal_2637bb7\aggregate\formal_confirmation_summary.json` |
+| Data-seed table | `extracted\phase9_lorenz_formal_2637bb7\aggregate\data_seed_level_metrics.csv` |
+| Internal artifact manifest | 832/832 files verified |
+| Formal design | 2 methods x 5 fresh data seeds x 2 fresh training seeds = 20 runs |
+| Statistical unit | Data seed after averaging two training seeds |
+| Dataset | Lorenz-96, `F=40`, `d=10`, `T=500`, nominal lag `K=1` |
+| Decision | All 14 aggregate checks passed; manuscript evidence eligible |
+
+| Manuscript object | Exact source | Semantics | Boundary |
+| --- | --- | --- | --- |
+| Strong baseline AUROC `0.8628 +/- 0.0177` | `data_seed_level_metrics.csv::baseline_total_nominal_auroc` | Total raw-chain nominal-lag score, sample SD across five data-seed units | One known-graph dynamical family |
+| Concat pure-MSE reduction `41.6%` | `data_seed_level_metrics.csv::concat_vs_baseline_relative_mse` | Fixed raw target; Jacobian penalty excluded | Prediction evidence, not graph superiority |
+| Concat total/partial AUROC `0.8589 / 0.8032` | Same CSV, corresponding nominal columns | Same checkpoint; total raw-chain versus x-only partial score | Total AUROC is not above baseline |
+| Missing-route magnitude `0.5614` | Same CSV, `mamba_concat_missing_route_relative_magnitude` | Off-diagonal L1 omitted-route mass divided by total raw-chain mass | Coordinate-scale dependent |
+| Auxiliary-mask delta `0.5275` | Same CSV, `mamba_concat_mask_c_fixed_target_mse_delta` | Clean raw target and raw-X route held fixed | Route-use sensitivity, not causal contribution |
+| Pearson/Jaccard `0.8401 / 0.6577` | Same CSV, partial-total columns | Nominal direct-graph score discrepancy | Does not imply graph-performance gain |
+| Horizon diagnostics | Same CSV and aggregate JSON | H=64/H=128 measured attribution stability | No completeness claim beyond H=128 |
+
+The formal aggregate was repeated on the server and independently recomputed
+locally. CSV outputs were byte-identical and JSON objects were canonically
+identical. The result may be used only as a strong-operating-point
+score-coverage case study. It cannot support Mamba/ISTF superiority, a
+successful repair, universal invalidity of auxiliary conditioning, or strong
+significance claims from five data-seed units.
+
 ## Integrity rules for derived manuscript assets
 
 1. Derived CSV files must be generated only from the immutable decision JSON.
@@ -68,3 +100,7 @@ object. They do not establish the accuracy of the inferred NetSim graph.
    when an architecture-specific claim is made.
 5. No graph metric is computed for MoCap.
 6. No data beyond H=128 are inferred from the stored horizon ratios.
+7. Lorenz-96 manuscript summaries must be recomputed from the five
+   data-seed-level rows, not from 10 train-level runs treated as independent.
+8. The Lorenz-96 total nominal score is the primary direct-graph object;
+   x-only partial scoring is retained only as the route-coverage diagnostic.

@@ -10,7 +10,9 @@ route-resolved Jacobian coverage audit separates route completeness,
 score-penalty alignment, source-coordinate validity, and temporal-support
 validity. Controlled diagnostics and a preregistered held-out confirmation show
 that the resulting missing-route and score-disagreement signals reproduce
-across two causal auxiliary architectures and two data domains.
+across two causal auxiliary architectures and two data domains. A separately
+frozen five-data-seed Lorenz-96 confirmation shows that the same score-coverage
+diagnosis persists when baseline recovery of the known direct graph is strong.
 
 The paper does not claim that coverage establishes causal identifiability,
 that the tested repair succeeds, or that the held-out NetSim results establish
@@ -43,6 +45,7 @@ strong graph recovery.
 | C9 | Coordinate-wise semantic repair did not establish CP-depthwise as a competitive method. | Official Stage 1a and P1 artifacts. | Negative boundary evidence. | Semantic gates passed; performance and novelty gates failed; the bounded postmortem remained inconclusive. | Failure of all filtering hypotheses. |
 | C10 | Omitted-route attribution, fixed-target auxiliary-route use, and partial-total score disagreement reproduced across held-out units, two causal preprocessors, and two domains. | Formal Stage B decision from 36/36 release-locked runs. | Confirmatory bounded generality evidence. | Use the exact allowed claim below. | Graph-performance confirmation, universal architecture validity, or successful repair. |
 | C11 | Bounded H=64 attribution captured nearly all measured H=128 mass and did not change nominal scores in Stage B, but mass beyond H=128 was not assessed. | Stage B horizon summaries. | Bounded horizon evidence. | The measured audit signals were stable between H=64 and H=128. | Full-prefix completeness or absence of earlier-history dependence. |
+| C12 | The route-coverage discrepancy persists at a strong known-graph operating point. | Fresh Lorenz-96 confirmation: 20/20 release-locked runs, five data-seed units after averaging two train seeds. | Confirmatory strong-operating-point case study. | Baseline mean total nominal AUROC was 0.863; concat lowered pure MSE while its x-only partial score omitted substantial total raw-chain attribution. | Mamba/ISTF superiority, graph-recovery improvement, universal concat invalidity, successful repair, or strong significance from n=5. |
 
 ## Exact Stage B claim
 
@@ -69,6 +72,34 @@ Baseline partial and total nominal scores were identical, and baseline
 missing-route magnitude was zero. The held-out NetSim baseline median AUROC
 was 0.495, so direct graph-performance success is explicitly absent.
 
+## Exact Lorenz-96 claim
+
+> In a fresh five-data-seed Lorenz-96 confirmation with baseline mean AUROC
+> 0.863, the auxiliary concat architecture reduced pure prediction MSE while
+> an x-only Jacobian score omitted substantial total raw-chain attribution:
+> mean missing-route magnitude was 0.561, fixed-target auxiliary masking
+> increased MSE by 0.528, and partial-versus-total nominal scores had mean
+> Pearson correlation 0.840 and top-k Jaccard 0.658.
+
+## Lorenz-96 quantitative support
+
+| Quantity | Mean | Sample SD | Boundary |
+| --- | ---: | ---: | --- |
+| Baseline total nominal AUROC | 0.8628 | 0.0177 | Strong known-graph operating point |
+| Concat total nominal AUROC | 0.8589 | 0.0149 | Not superior to baseline |
+| Concat partial nominal AUROC | 0.8032 | 0.0110 | x-only score diagnostic |
+| Concat total-minus-partial AUROC | +0.0557 | 0.0108 | Positive in 5/5 data seeds |
+| Concat-vs-baseline relative pure MSE | -0.4156 | 0.1545 | Lower in 5/5 data seeds |
+| Missing-route relative magnitude | 0.5614 | 0.0138 | Gate passed in 5/5 data seeds |
+| Fixed-target `mask_c` MSE delta | 0.5275 | 0.0255 | Positive in 5/5 data seeds |
+| Partial-total Pearson | 0.8401 | 0.0385 | Score-coverage diagnostic |
+| Partial-total top-k Jaccard | 0.6577 | 0.0712 | Score-coverage diagnostic |
+
+The statistical unit is the data seed after averaging two training seeds.
+Concat total-score AUROC differed from baseline by only -0.0039 on average;
+this result therefore strengthens the measurement diagnosis without becoming
+method-performance evidence.
+
 ## Evidence tiers
 
 | Tier | Evidence |
@@ -76,6 +107,7 @@ was 0.495, so direct graph-performance success is explicitly absent.
 | Core mechanism | Route decomposition, controlled concat proposition, five-dimensional audit declaration. |
 | Core controlled evidence | Phase 8 capacity, coefficient, intervention, and full-penalty diagnostics. |
 | Core confirmatory evidence | Phase 9 Stage B held-out audit-generality result. |
+| Core confirmatory case study | Phase 9 fresh Lorenz-96 strong-known-graph result. |
 | Boundary evidence | Phase 8 repair trade-off; Stage 1a semantic-pass/performance-fail result. |
 | Appendix diagnostic | Legacy filtered-coordinate/raw-chain disagreement. |
 | Excluded | Historical CausalTime performance narrative and unaudited root-cause synthetic figures. |
@@ -89,5 +121,7 @@ was 0.495, so direct graph-performance success is explicitly absent.
 4. H=64/H=128 agreement does not establish attribution completeness beyond
    H=128.
 5. No failed repair is promoted to a positive method contribution.
-6. Every empirical number must map to the traceability register and a frozen
+6. Lorenz-96 supports a score-coverage diagnosis, not auxiliary-model
+   superiority; five data-seed units do not support strong significance claims.
+7. Every empirical number must map to the traceability register and a frozen
    file hash before submission.

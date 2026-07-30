@@ -1058,9 +1058,11 @@ superseded Draw.io numerical figures are retained only under
 The root figure index is
 `figures/phase9_submission/FIGURE_ASSET_INDEX.json`.
 
-The numbering/backend correction and regenerated manuscript PDFs are frozen in
-KBS manuscript commit `9b90823a715729dd396f1cd40d70148c0c9cc590` on branch
-`phase9/stageb-manuscript-integration-v1`.
+The current Lorenz-integrated manuscript, synchronized Chinese mirror,
+regenerated PDFs, and rebuilt numeric audit are frozen in KBS manuscript
+commit `2191693688fcd7b430a491e5d4c62f25317fab3e` on branch
+`phase9/stageb-manuscript-integration-v1`. The scientific source integration
+itself is commit `2ed835154e9a9c6d5cbac57a4f27324325039eae`.
 
 No new scientific experiment, GPU run, Phase 7 seed 4--8 output access, or
 frozen-artifact modification occurred during manuscript integration.
@@ -1068,7 +1070,7 @@ frozen-artifact modification occurred during manuscript integration.
 # NUMERIC MASTER AUDIT (2026-07-31)
 
 The current English KBS manuscript has been checked against the locally
-available frozen evidence in a reproducible 16-sheet workbook:
+available frozen evidence in a reproducible 17-sheet workbook:
 
 `E:\GUOJI\outputs\kbs_numeric_audit_20260731\KBS_NUMERIC_MASTER_AUDIT_20260731.xlsx`
 
@@ -1077,17 +1079,20 @@ The repository audit copy and rebuild scripts are under:
 `E:\GUOJI\elsarticle_phase9_stageb\qa\current\numeric_audit\`
 
 The two workbook copies share SHA256
-`20DCD1183CF06C7CD9C6DA610E8224E6C004EA9024D553100FFBB0C51DDCF3D1`.
-The audit covers 141 hand-mapped manuscript/configuration claims, 36 Stage B
-formal runs, 48 Stage 1a data-seed analysis units, 21 repair-frontier rows,
-and 1,581 scalar JSON fields. Results are 43 exact matches, 98
+`9D8F48BA392800AF7525B3A168EE1577F035AE285864E4F234102AECC7F9661F`.
+The audit covers 165 hand-mapped manuscript/configuration claims, 36 Stage B
+formal runs, 20 Lorenz-96 formal runs summarized as five data-seed analysis
+units, 48 Stage 1a data-seed analysis units, 21 repair-frontier rows, and
+1,777 scalar JSON fields. Results are 51 exact matches, 114
 display-rounding matches, and zero substantive mismatches or formula errors.
 
 The audit preserves the existing evidence semantics: full-auxiliary
 `pred_loss` is a total regularized objective rather than pure prediction MSE;
 legacy cross-channel ISTF-Mamba is semantic-only; Stage 1a is a negative
 method boundary; Stage B supports bounded audit generality rather than graph
-performance; and P1 A3 is uninterpretable because replay alignment is invalid.
+performance; the fresh Lorenz-96 case supports a strong-operating-point audit
+diagnosis rather than method superiority; and P1 A3 is uninterpretable because
+replay alignment is invalid.
 No experiment was run, no Phase 7 seed 4--8 output was inspected, and no
 frozen evidence was modified.
 
@@ -1147,3 +1152,16 @@ The archive SHA256 is
 its internal 832-file manifest passed local verification. The evidence is
 eligible only for the bounded route-coverage claim stated in the result
 record. It remains invalid as Mamba/ISTF performance evidence.
+
+The formal result is now integrated into the active English and Chinese
+manuscripts as a compact main-text table and bounded prose. Manuscript source
+integration is KBS commit
+`2ed835154e9a9c6d5cbac57a4f27324325039eae`; the final workbook-bearing
+manuscript commit is `2191693688fcd7b430a491e5d4c62f25317fab3e`. The copied
+table sources and immutable formal inputs are under:
+
+`E:\GUOJI\elsarticle_phase9_stageb\source_data\phase9_lorenz_formal_confirmation\`
+
+No current repair method was promoted by this result. CP-depthwise and the
+coverage-aligned full-prefix repair remain frozen negative/boundary evidence;
+no additional repair training is planned for the present KBS route.

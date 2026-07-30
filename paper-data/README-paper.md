@@ -1014,23 +1014,27 @@ structure only; it did not change scientific values, claims, or frozen
 evidence. The subsequent figure-number/backend correction replaced all four
 quantitative Draw.io figures with Python/matplotlib outputs generated from the
 same frozen data, renamed the integrated score-semantics asset to Fig. E.1,
-and synchronized the Chinese appendix order. The corresponding current
-manuscript commit is `9b90823a715729dd396f1cd40d70148c0c9cc590` on
-`phase9/stageb-manuscript-integration-v1`.
+and synchronized the Chinese appendix order. The current Lorenz-integrated
+manuscript and synchronized Chinese mirror are frozen on
+`phase9/stageb-manuscript-integration-v1`; scientific source integration is
+commit `2ed835154e9a9c6d5cbac57a4f27324325039eae`, and the final
+workbook-bearing commit is `2191693688fcd7b430a491e5d4c62f25317fab3e`.
 
 # NUMERIC AUDIT STATUS (2026-07-31)
 
 The current English manuscript completed a full frozen-evidence numeric audit.
-The 16-sheet master workbook is:
+The 17-sheet master workbook is:
 
 `E:\GUOJI\outputs\kbs_numeric_audit_20260731\KBS_NUMERIC_MASTER_AUDIT_20260731.xlsx`
 
-All 141 hand-mapped manuscript/configuration claims agree with their
-authoritative sources: 43 exactly and 98 at the manuscript's declared display
+All 165 hand-mapped manuscript/configuration claims agree with their
+authoritative sources: 51 exactly and 114 at the manuscript's declared display
 precision. There are zero substantive mismatches and zero workbook formula
-errors. The audit also inventories the complete Stage B formal run ledger,
-Stage 1a data-seed units, repair frontier, and authoritative scalar JSON
-fields.
+errors. The audit also inventories 20 Lorenz-96 formal runs summarized as
+five data-seed units, the complete Stage B formal run ledger, Stage 1a
+data-seed units, repair frontier, and 1,777 authoritative scalar JSON fields.
+The workbook SHA256 is
+`9D8F48BA392800AF7525B3A168EE1577F035AE285864E4F234102AECC7F9661F`.
 
 This audit does not expand the permitted narrative. Full-auxiliary
 `pred_loss`, legacy ISTF-Mamba, Stage 1a, Stage B, P1 A3, and the Phase 8
@@ -1070,6 +1074,15 @@ AUROC was 0.8589 versus baseline 0.8628, so the result must not be presented
 as performance superiority. The H=64/H=128 audit remains bounded and does
 not establish full-prefix completeness.
 
-The active manuscript has not yet been modified. Integration should add one
-compact main-text panel or table and update the claim-evidence matrix without
-restoring legacy ISTF benchmark or operating-regime claims.
+The formal Lorenz result has now been integrated into the active English and
+Chinese manuscripts as a compact main-text table and bounded prose. The
+English manuscript is 15 pages and the Chinese proofreading mirror is 20
+pages; both pass three compilation passes with zero errors, undefined
+references, missing figures, or overfull boxes. The integration does not
+restore legacy ISTF benchmark or operating-regime claims.
+
+Current method decision: do not continue tuning CP-depthwise or the existing
+coverage-aligned full-prefix repair for this paper. Their frozen outcomes
+remain negative/boundary evidence. The Lorenz confirmation strengthens the
+audit thesis, not the repair method; the next manuscript work should therefore
+focus on final reference, metadata, and submission-package closure.
