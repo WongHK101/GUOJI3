@@ -1090,3 +1090,31 @@ method boundary; Stage B supports bounded audit generality rather than graph
 performance; and P1 A3 is uninterpretable because replay alignment is invalid.
 No experiment was run, no Phase 7 seed 4--8 output was inspected, and no
 frozen evidence was modified.
+
+# PHASE 9 LORENZ 4090 DEVELOPMENT PREFLIGHT (2026-07-31)
+
+A development-only strong-operating-point audit was run on the previously
+observed Lorenz-96 `F=40`, `d=10`, `T=500`, data seed 0 fixture. The code and
+frozen protocol are on branch
+`phase9/lorenz-strong-operating-preflight-v1`, commit
+`c60dbd4e42b7b70b163c080b13ec13e5de0c8549`.
+
+The result record is:
+
+`paper-data/docs/phase9_lorenz_preflight/DEVELOPMENT_RESULT.md`
+
+Copied raw outputs and their SHA256 manifest are outside the Git worktree:
+
+`E:\GUOJI\results_kbs\phase9_lorenz_4090_preflight\c60dbd4\`
+
+The 2,000-iteration baseline total nominal AUROC was 0.907778. The legacy
+concat x-only model showed missing-route magnitude 0.539642, fixed-target
+`mask_c` MSE delta 0.460383, partial/total nominal Pearson 0.854739,
+exact-top-k Jaccard 0.714286, and temporal-tail median 0.205762. All frozen
+development gates passed, and an independent 100-iteration repeat was
+bitwise deterministic.
+
+These outputs are explicitly `development_only=true`, `formal_result=false`,
+and `manuscript_evidence=false`. They may be used to justify freezing a fresh
+901 confirmation protocol, but they must not be cited in the manuscript or
+pooled with formal evidence.

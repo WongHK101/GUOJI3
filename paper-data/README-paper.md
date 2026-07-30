@@ -1038,3 +1038,18 @@ repair frontier retain their previously frozen semantic boundaries. Future
 manuscript number changes should be made from the authoritative source first
 and then rechecked with
 `E:\GUOJI\elsarticle_phase9_stageb\qa\current\numeric_audit\`.
+
+# LORENZ DEVELOPMENT-PREFLIGHT WRITING BOUNDARY (2026-07-31)
+
+The 4090 Lorenz-96 seed 0 strong-operating-point preflight passed its frozen
+development gates. It is not part of the active manuscript evidence set.
+No manuscript claim, number, table, caption, or figure may use this result
+until a separately frozen multi-seed confirmation is completed on the
+approved 901 environment.
+
+The only currently permitted planning statement is that the development run
+supports the feasibility of such a confirmation: baseline graph recovery was
+strong while the concat architecture showed substantial fixed-target
+auxiliary reliance and partial-versus-total raw-chain score disagreement.
+The result does not revive legacy ISTF-Mamba performance claims and does not
+constitute a successful repair.
