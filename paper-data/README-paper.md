@@ -1053,3 +1053,23 @@ strong while the concat architecture showed substantial fixed-target
 auxiliary reliance and partial-versus-total raw-chain score disagreement.
 The result does not revive legacy ISTF-Mamba performance claims and does not
 constitute a successful repair.
+
+# LORENZ FORMAL CONFIRMATION WRITING STATUS (2026-07-31)
+
+The fresh five-data-seed 901 confirmation passed every frozen aggregate gate
+and is eligible for bounded main-text use. Baseline mean total nominal AUROC
+was 0.8628. The concat architecture had mean missing-route magnitude 0.5614,
+fixed-target `mask_c` MSE delta 0.5275, partial/total nominal Pearson 0.8401,
+top-k Jaccard 0.6577, and temporal-tail median 0.1822. Every seed-coverage
+gate passed in 5/5 data seeds.
+
+The primary writing value is a strong-known-graph operating-point case study:
+the auxiliary route materially improves pure prediction MSE while an x-only
+Jacobian score omits substantial total raw-chain attribution. Concat total
+AUROC was 0.8589 versus baseline 0.8628, so the result must not be presented
+as performance superiority. The H=64/H=128 audit remains bounded and does
+not establish full-prefix completeness.
+
+The active manuscript has not yet been modified. Integration should add one
+compact main-text panel or table and update the claim-evidence matrix without
+restoring legacy ISTF benchmark or operating-regime claims.

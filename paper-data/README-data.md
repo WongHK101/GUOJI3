@@ -1132,3 +1132,18 @@ statistical unit is the data seed after averaging its two train seeds. Formal
 outputs remain ineligible for manuscript use until the immutable aggregate
 gate report passes. The protocol does not authorize Phase 7 Stage 1b, new
 method training, or manuscript editing.
+
+The formal result subsequently passed all frozen aggregate gates. The
+decision record is:
+
+`paper-data/docs/phase9_lorenz_preflight/FORMAL_901_RESULT.md`
+
+The authoritative local artifact root is:
+
+`E:\GUOJI\results_kbs\phase9_lorenz_901_confirmation\2637bb7\`
+
+The archive SHA256 is
+`959916f42e58c61d632d5113b977a1907461b5b89991abac51b3f9baf8a53209`;
+its internal 832-file manifest passed local verification. The evidence is
+eligible only for the bounded route-coverage claim stated in the result
+record. It remains invalid as Mamba/ISTF performance evidence.
