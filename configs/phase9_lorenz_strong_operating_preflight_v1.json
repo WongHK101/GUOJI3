@@ -1,0 +1,100 @@
+{
+  "protocol_name": "phase9_lorenz_strong_operating_preflight_v1",
+  "protocol_status": "development_only_non_evidentiary",
+  "evidence_role": "rtx4090_semantic_runtime_preflight",
+  "dataset": {
+    "name": "Lorenz_F40_seed0_development",
+    "family": "Lorenz-96",
+    "d": 10,
+    "T": 500,
+    "lag": 1,
+    "forcing": 40,
+    "data_seed": 0,
+    "x_relative_path": "lorenz/num_nodes_10/F_40/seed_0/_x.npy",
+    "x_sha256": "03da3eb5f99acd7ffb6c3eab37a2f99a5eaab890d9ce98707e487f16155b08a0",
+    "graph_relative_path": "lorenz/num_nodes_10/F_40/seed_0/_gc.npy",
+    "graph_sha256": "5570facf40b95e7ec955161ce69f0039ccec892a764732717b92c9577da59fcd",
+    "normalization": "use_frozen_standardized_array_without_refitting",
+    "development_seed_previously_observed": true,
+    "formal_evidence": false
+  },
+  "methods": [
+    "baseline",
+    "mamba_concat"
+  ],
+  "model": {
+    "lag": 1,
+    "layers": 5,
+    "hidden": 50,
+    "dropout": 0.0,
+    "d_cond": 4,
+    "d_state": 8,
+    "d_conv": 4,
+    "expand": 2,
+    "jacobian_lam": 0.01
+  },
+  "training": {
+    "optimizer": "Adam",
+    "learning_rate": 0.001,
+    "weight_decay": 0.0,
+    "gradient_clip_norm": 1.0,
+    "check_every": 50,
+    "lookback": 10,
+    "checkpoint_policy": "restore_minimum_checked_total_objective",
+    "smoke_iterations": [
+      20,
+      100
+    ],
+    "development_full_iterations": 2000
+  },
+  "evaluation": {
+    "primary_horizon": 64,
+    "horizon_sensitivity": [
+      32,
+      64,
+      128
+    ],
+    "common_target_minimum_horizon": 128,
+    "audit_window_count": 32,
+    "absolute_before_window_mean": true,
+    "nominal_score_aggregation": "max_over_lags_1_to_K",
+    "diagonal_policy": "retain_in_tensors_exclude_in_metrics",
+    "target_policy": "clean_raw_target_fixed",
+    "mask_value": 0.0,
+    "shuffle_axis": "time_within_each_source_coordinate"
+  },
+  "seeds": {
+    "predictor_seed": 29401001,
+    "preprocessor_seed": 29402001,
+    "master_seed": 29403001,
+    "score_window_seed": 29404001,
+    "perturbation_seed": 29405001
+  },
+  "gates": {
+    "finite_required": true,
+    "baseline_total_nominal_auroc_min": 0.6,
+    "baseline_partial_total_max_abs": 1e-07,
+    "baseline_missing_route_max": 1e-07,
+    "missing_route_min": 0.2,
+    "mask_c_delta_min": 0.05,
+    "partial_total_pearson_max": 0.9,
+    "topk_jaccard_max": 0.8,
+    "coordinate_entropy_median_min": 0.75,
+    "temporal_tail_median_min": 0.05,
+    "nominal_horizon_max_abs": 1e-07,
+    "h64_h128_ratio_min": 0.95,
+    "determinism_max_abs": 1e-06,
+    "determinism_metric_abs": 1e-06,
+    "rtx4090_wall_hour_hard_cap": 5.0
+  },
+  "boundaries": {
+    "development_only": true,
+    "formal_result": false,
+    "manuscript_evidence": false,
+    "phase7_seeds_4_to_8_accessed": false,
+    "stage1b_accessed": false,
+    "manuscript_modification_authorized": false,
+    "formal_seed_generation_authorized": false,
+    "autodl_execution_authorized": false
+  }
+}
