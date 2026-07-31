@@ -585,8 +585,8 @@ The active manuscript is
 `E:\GUOJI\elsarticle_phase9_stageb\istf_kbs.tex`, titled
 *Jacobian Coverage Audits for Reliable Neural Granger Causality*. The current
 branch is `phase9/stageb-manuscript-integration-v1`; manuscript/figure commit
-`a033834613a380ee689f947f550298a1da95d137` and numerical-audit commit
-`eb02a49c9f3982d5637f00eb1ac1ae523036b422` are pushed to the KBS repository.
+`57189db15139f6dbd14f45b78e45d5f2e73b97f0` and numerical-audit commit
+`be9e77a613fa1c7dbae52e43e1b67493c4e26e62` are pushed to the KBS repository.
 
 The Route-B narrative is frozen around four claims:
 
@@ -616,6 +616,12 @@ figures, and overfull boxes. Full-page visual inspection found no overlap,
 clipping, coordinate overflow, or anomalous float ordering. The previous
 sparse reference transition was removed without changing template font or page
 geometry.
+
+Fig. 4f was revised from symbol-based gate markers to a compact table with
+explicit `Pass`/`Fail` labels and restrained redundant color. This improves
+categorical comparison and grayscale readability without changing any gate
+state, numeric result, or scientific conclusion. The synchronized English and
+Chinese captions describe the table explicitly.
 
 Current remaining submission tasks are limited to confirmed author/affiliation
 metadata, contribution/funding/competing-interest declarations, public or

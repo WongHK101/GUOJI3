@@ -691,10 +691,10 @@ failure. Phase 7 seeds 4--8 and Stage 1b remain outside this Phase 8 asset set.
 
 The active manuscript repository is
 `E:\GUOJI\elsarticle_phase9_stageb` on branch
-`phase9/stageb-manuscript-integration-v1`. The peer-aligned manuscript and
+`phase9/stageb-manuscript-integration-v1`. The current manuscript and
 figure source state is commit
-`a033834613a380ee689f947f550298a1da95d137`; the refreshed numerical audit is
-commit `eb02a49c9f3982d5637f00eb1ac1ae523036b422`.
+`57189db15139f6dbd14f45b78e45d5f2e73b97f0`; the refreshed numerical audit is
+commit `be9e77a613fa1c7dbae52e43e1b67493c4e26e62`.
 
 Current primary assets:
 
@@ -715,11 +715,16 @@ Current primary assets:
   `E:\GUOJI\outputs\kbs_numeric_audit_20260731\KBS_NUMERIC_MASTER_AUDIT_20260731.xlsx`.
 
 Both workbook copies have SHA256
-`FD4E0B0C284CFAF80305743D8F4866DA25059CB59A12A7234A3B3281E254F273`.
+`6B305FF758DC4797E99B0528D35EBDB1F3B4356696FAE096ED21A95C3B935CD7`.
 The workbook audits 165 hand-mapped claims (51 exact, 114 display-rounding
 passes, zero substantive mismatches), inventories 36 Stage B runs, 20
 Lorenz-96 formal runs, 48 Stage 1a data-seed units, and 1,777 authoritative
 JSON numeric fields.
+
+Fig. 4f now renders the four frozen repair-frontier gate states as a compact
+explicit `Pass`/`Fail` table. This is a presentation-only change: the source
+CSV, gate values, joint-gate failure, and manuscript interpretation are
+unchanged.
 
 No new experiment was run during this manuscript/figure pass. The fresh
 Lorenz-96 confirmation is positive evidence for the bounded Jacobian-coverage
