@@ -686,3 +686,44 @@ These assets are not yet part of the active V2.4 manuscript evidence set. They
 may be migrated only after GPT reviews the claim changes. The original stopped
 preflight remains a frozen estimator-feasibility artifact, not a method-result
 failure. Phase 7 seeds 4--8 and Stage 1b remain outside this Phase 8 asset set.
+
+# CURRENT PHASE 9 ROUTE-B SUBMISSION ASSETS (2026-07-31)
+
+The active manuscript repository is
+`E:\GUOJI\elsarticle_phase9_stageb` on branch
+`phase9/stageb-manuscript-integration-v1`. The peer-aligned manuscript and
+figure source state is commit
+`a033834613a380ee689f947f550298a1da95d137`; the refreshed numerical audit is
+commit `eb02a49c9f3982d5637f00eb1ac1ae523036b422`.
+
+Current primary assets:
+
+- English source/PDF: `istf_kbs.tex` and `istf_kbs.pdf`;
+- Chinese proofreading source/PDF:
+  `review/chinese/istf_kbs_zh.tex` and `review/chinese/istf_kbs_zh.pdf`;
+- figure root: `figures/phase9_submission/`, with one independent directory
+  per figure;
+- Fig. 1 editable backend: Draw.io;
+- Figs. 2--4 and Fig. E.1 quantitative backend: Python/matplotlib reading
+  frozen CSV/JSON source data;
+- peer benchmark and style audit:
+  `qa/current/KBS_PEER_BENCHMARK_AUDIT.md`;
+- build and visual QA: `qa/current/MANUSCRIPT_QA.md`;
+- numerical master audit:
+  `qa/current/numeric_audit/KBS_NUMERIC_MASTER_AUDIT_20260731.xlsx`;
+- external workbook copy:
+  `E:\GUOJI\outputs\kbs_numeric_audit_20260731\KBS_NUMERIC_MASTER_AUDIT_20260731.xlsx`.
+
+Both workbook copies have SHA256
+`FD4E0B0C284CFAF80305743D8F4866DA25059CB59A12A7234A3B3281E254F273`.
+The workbook audits 165 hand-mapped claims (51 exact, 114 display-rounding
+passes, zero substantive mismatches), inventories 36 Stage B runs, 20
+Lorenz-96 formal runs, 48 Stage 1a data-seed units, and 1,777 authoritative
+JSON numeric fields.
+
+No new experiment was run during this manuscript/figure pass. The fresh
+Lorenz-96 confirmation is positive evidence for the bounded Jacobian-coverage
+audit under a strong known-graph baseline; it is not positive repair-method
+evidence. CP-depthwise and coverage-aligned full-prefix regularization remain
+semantic-validity/performance-boundary evidence and must not be reframed as
+successful methods.

@@ -578,3 +578,47 @@ The review package is
 `32f0272f7d101fa59063ebaebebe93204f3ef5afc5e952fae3813d105a0d3399`).
 Next action is GPT scientific-route review. GPU remains off; no confirmation,
 new training, Stage 1b, or manuscript edit is permitted before that review.
+
+# CURRENT ROUTE-B KBS STATUS: PHASE 9 SUBMISSION QA (2026-07-31)
+
+The active manuscript is
+`E:\GUOJI\elsarticle_phase9_stageb\istf_kbs.tex`, titled
+*Jacobian Coverage Audits for Reliable Neural Granger Causality*. The current
+branch is `phase9/stageb-manuscript-integration-v1`; manuscript/figure commit
+`a033834613a380ee689f947f550298a1da95d137` and numerical-audit commit
+`eb02a49c9f3982d5637f00eb1ac1ae523036b422` are pushed to the KBS repository.
+
+The Route-B narrative is frozen around four claims:
+
+1. an auxiliary predictive route omitted from an x-only score and penalty
+   creates a structural route-coverage vulnerability;
+2. prediction fit and reported graph knowledge can decouple in controlled
+   diagnostics;
+3. a claim-specific Jacobian coverage audit separates route, score--penalty,
+   coordinate, and horizon validity;
+4. held-out and Lorenz-96 confirmation support bounded audit generality,
+   while repaired filters/regularizers remain explicit performance
+   boundaries rather than positive methods.
+
+The abstract, introduction, background/related work, mechanism, audit
+framework, controlled evidence, held-out boundary, discussion, and conclusion
+were checked against four local KBS peers. Main figure style mappings are:
+
+- Fig. 1: Tao et al., KBS 327 (2025) 114145, Fig. 1;
+- Fig. 2: Tao et al., KBS 327 (2025) 114145, Fig. 2;
+- Figs. 3--4: Tao et al., KBS 327 (2025) 114145, Fig. 5.
+
+Only layout grammar was inherited; no peer data, labels, or scientific content
+was copied. Fig. 1 remains Draw.io; every numerical figure is generated from
+frozen data by Python. The final three-pass builds are 14 English pages and 20
+Chinese review pages, each with zero errors, undefined references, missing
+figures, and overfull boxes. Full-page visual inspection found no overlap,
+clipping, coordinate overflow, or anomalous float ordering. The previous
+sparse reference transition was removed without changing template font or page
+geometry.
+
+Current remaining submission tasks are limited to confirmed author/affiliation
+metadata, contribution/funding/competing-interest declarations, public or
+review-access code/data records, final reference-metadata verification, and a
+self-contained clean-extraction submission archive. Do not resume Stage 1b or
+claim that the current repair improves graph recovery.
