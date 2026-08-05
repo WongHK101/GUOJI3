@@ -628,3 +628,39 @@ metadata, contribution/funding/competing-interest declarations, public or
 review-access code/data records, final reference-metadata verification, and a
 self-contained clean-extraction submission archive. Do not resume Stage 1b or
 claim that the current repair improves graph recovery.
+
+# CURRENT ROUTE-B KBS STATUS: EXEMPLAR-GUIDED FRONT-MATTER REWRITE (2026-08-05)
+
+The active manuscript remains
+`E:\GUOJI\elsarticle_phase9_stageb\istf_kbs.tex` on branch
+`phase9/stageb-manuscript-integration-v1`. The latest pushed commits are
+`f0ce08238dffdb5a7aab5ab8ecec6c0986c4a1bd` for the manuscript rewrite and
+`5aeae5d341553cfb2f41e02120f9339bf3486c3b` for the refreshed numerical
+audit.
+
+Among the four local KBS references, the selected structural writing exemplar
+is Chen, Wu, and Jin, *Causal structure learning for high-dimensional
+non-stationary time series*, KBS 295 (2024) 111868. The Abstract and
+Introduction now follow its functional progression while retaining the
+Route-B evidence hierarchy and bounded audit thesis. No wording, peer result,
+or scientific content was copied. The selection rationale and adaptation
+boundary are recorded in `docs/KBS_WRITING_TEMPLATE_SELECTION.md`.
+
+The English Abstract now follows task/value -> concrete coverage failure ->
+audit design -> validation -> decisive quantitative evidence -> bounded
+conclusion. The Introduction follows task -> classical/neural evolution ->
+technical reliability gap -> related-work gap -> three audit challenges ->
+framework -> evidence preview -> contributions -> organization. The Chinese
+review PDF is synchronized for line-by-line content checking.
+
+Current builds are 15 English pages and 21 Chinese review pages with zero
+LaTeX errors, undefined references/citations, missing figures, or overfull
+boxes. The refreshed 17-sheet numerical audit covers 167 mapped claims (51
+exact and 116 display-rounding matches) with zero substantive mismatch or
+formula error. The Route-B scientific boundaries, frozen evidence, and repair
+no-go conclusions are unchanged.
+
+Current next step:
+- Review the Chinese Abstract and Introduction for author-intended emphasis;
+  after approval, extend the same KBS paragraph logic to Results and Discussion
+  without changing numerical evidence or conclusion strength.
