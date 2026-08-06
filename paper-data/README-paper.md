@@ -664,3 +664,29 @@ Current next step:
 - Review the Chinese Abstract and Introduction for author-intended emphasis;
   after approval, extend the same KBS paragraph logic to Results and Discussion
   without changing numerical evidence or conclusion strength.
+
+# CURRENT ROUTE-B KBS STATUS: HIGH-FIDELITY EXEMPLAR ALIGNMENT (2026-08-06)
+
+The initial 2026-08-05 front-matter rewrite was corrected after direct
+comparison with Chen et al., KBS 295 (2024) 111868. The active Abstract now
+contains no enumerated metrics, matching the selected article's method-led
+style. The Introduction now follows the peer article's full rhetorical
+progression: context, method taxonomy, differentiable entry point, detailed
+limitations, three explicit challenges, corresponding framework, three
+contributions, and paper organization.
+
+The final prose remains scientifically original. A normalized first-two-page
+comparison found no shared contiguous English sequence of eight or more words.
+The Route-B evidence hierarchy, failed repair gate, and claim boundaries are
+unchanged. Pushed KBS commits are `35c6e13` for the high-fidelity prose rewrite
+and `d63bc31` for synchronized PDFs and QA.
+
+Current builds are 15 English pages and 21 Chinese pages with zero LaTeX
+errors, undefined references/citations, missing figures, or overfull boxes.
+The current numerical workbook audits 153 quantitative claims (51 exact and
+102 display-rounding matches) with zero substantive mismatch or formula error.
+
+Current next step:
+- Review the metric-free Chinese Abstract and the restructured Chinese
+  Introduction. Only after approval should the selected peer's transition and
+  paragraph grammar be extended to the remaining manuscript sections.
