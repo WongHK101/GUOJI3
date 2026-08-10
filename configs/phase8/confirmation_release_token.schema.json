@@ -1,0 +1,18 @@
+{
+  "schema_name": "phase8_confirmation_release_token",
+  "additionalProperties": false,
+  "required": [
+    "pilot_go_passed",
+    "authorization",
+    "config_sha256",
+    "run_matrix_sha256",
+    "estimator_schedule_sha256"
+  ],
+  "properties": {
+    "pilot_go_passed": {"const": true},
+    "authorization": {"const": "GPT_APPROVED_PHASE8_CONFIRMATION"},
+    "config_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "run_matrix_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "estimator_schedule_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -23,20 +23,20 @@ identifiability, causal sufficiency, or absence of hidden confounding.
 
 Status date: **2026-08-10**.
 
-The latest formal source is available on GitHub, but it is intentionally kept
-on a frozen Phase 9 branch rather than silently replacing historical release
-commits on the default branch.
+The default `main` branch integrates the audited Phase 8/9 source and current
+project documentation. Frozen execution and manuscript-support commits remain
+available as immutable provenance references.
 
-| Role | Repository / branch | Immutable reference |
+| Role | Repository / branch | Reference |
 | --- | --- | --- |
-| Current code and manuscript-support assets | [`GUOJI3`, `phase9/stageb-manuscript-support-v1`](https://github.com/WongHK101/GUOJI3/tree/phase9/stageb-manuscript-support-v1) | `ff2079fa1346c092c0e50990fd846f9291d99af0` |
+| Integrated project source | [`GUOJI3`, `main`](https://github.com/WongHK101/GUOJI3) | Includes the frozen Phase 9 snapshot below |
+| Phase 9 manuscript-support snapshot | [`GUOJI3`, `phase9/stageb-manuscript-support-v1`](https://github.com/WongHK101/GUOJI3/tree/phase9/stageb-manuscript-support-v1) | `ff2079fa1346c092c0e50990fd846f9291d99af0` |
 | Phase 9 Stage A execution release | `GUOJI3` | `7d73125ece4e98962a237a8dd1adb1ae119ada50` |
 | Phase 9 Stage B execution release | `GUOJI3` | `0397e8af27c4f396d7713b129e0d7307da732681` |
 | Current KBS manuscript | [`KBS`, `phase9/stageb-manuscript-integration-v1`](https://github.com/WongHK101/KBS/tree/phase9/stageb-manuscript-integration-v1) | `d63bc31709d0fe16e9ca8860f139639f8353f223` |
 
-The default `main` branch remains the project index and historical integration
-branch. For scientific reproduction, use the exact commit associated with the
-artifact or protocol being inspected.
+Use `main` for the integrated project tree. For scientific reproduction, use
+the exact commit associated with the artifact or protocol being inspected.
 
 ## Scientific Position
 
@@ -69,13 +69,20 @@ artifact or protocol being inspected.
   universal architecture coverage, full-prefix completeness, or improved
   causal-graph recovery.
 
-## Use the Frozen Source
+## Source Checkout
 
-Clone the repository and check out the current manuscript-support snapshot:
+Clone `main` for the integrated code and documentation:
 
 ```bash
 git clone https://github.com/WongHK101/GUOJI3.git
 cd GUOJI3
+git checkout main
+```
+
+For the frozen Phase 9 manuscript-support snapshot, check out its exact
+commit:
+
+```bash
 git checkout ff2079fa1346c092c0e50990fd846f9291d99af0
 git status --porcelain
 ```

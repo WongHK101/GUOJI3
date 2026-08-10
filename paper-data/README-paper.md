@@ -553,31 +553,518 @@ model-performance inspection is permitted.
 
 # CURRENT ROUTE-B STATUS AFTER PHASE 8 RECOVERY (2026-07-12)
 
-The V2.4 manuscript and canonical `istf_kbs.tex` remain unchanged. Phase 8
-completed a source-locked replication and bounded repair pilot whose evidence
-must be reviewed before any new manuscript version is drafted.
+The V2.4 manuscript and canonical `istf_kbs.tex` remained unchanged during
+the source-locked replication and bounded repair pilot.
 
-Required future narrative corrections:
+The resulting narrative corrections were:
 
 - The capacity and coefficient decoupling diagnostics replicated at 5/5 paired
-  seeds and may strengthen the controlled prediction--knowledge decoupling
+  seeds and became eligible controlled prediction--knowledge decoupling
   evidence after traceability migration.
 - The fixed-target intervention route ordering did not replicate at any of the
-  five seeds. Do not retain a claim that the auxiliary route dominated raw X
-  under those interventions.
+  five seeds. The later manuscript therefore does not claim that the auxiliary
+  route dominated raw X under those interventions.
 - Stratified coverage-aligned raw-chain regularization passed semantic and
   graph-effect gates, but failed the preregistered pure-MSE gate by a large
-  margin (`+105.4%` mean degradation versus concat). Present it only as a
-  semantic repair/prediction-trade-off boundary, not as a positive method.
+  margin (`+105.4%` mean degradation versus concat). It is a semantic
+  repair/prediction-trade-off boundary, not a positive method.
 - `pilot_go_passed=false`, Track A `all_three_replicated=false`, and
-  `confirmation_eligible=false`. No confirmation was run.
+  `confirmation_eligible=false`. No confirmation was run in this recovery
+  cycle.
 
 The review package is
 `E:\GUOJI\kbs_review_packages\phase8_replication_and_repair_recovery_v1.zip`
 (SHA256
 `32f0272f7d101fa59063ebaebebe93204f3ef5afc5e952fae3813d105a0d3399`).
-Next action is GPT scientific-route review. GPU remains off; no confirmation,
-new training, Stage 1b, or manuscript edit is permitted before that review.
+The subsequent Phase 8 final cycle retained these evidence boundaries.
+
+# CURRENT ROUTE-B KBS STATUS: PHASE 8 FINAL INDEPENDENT REVISION (2026-07-12)
+
+The active review manuscript is the independent file
+`E:\GUOJI\elsarticle_phase8_final\istf_kbs_jacobian_coverage_phase8_final.tex`.
+Canonical `istf_kbs.tex` and the frozen v2.4 archive remain unchanged.
+
+The manuscript title is *Jacobian Coverage Audits for Reliable Neural Granger
+Causality*. Its locked evidence line is:
+
+1. capacity-based prediction--knowledge decoupling replicated in 5/5 paired
+   runs;
+2. partial graph and lag-1 coefficient degradation replicated in 5/5 paired
+   runs;
+3. corrected fixed-target auxiliary dominance did not replicate (0/5), with raw
+   history more prediction-critical;
+4. post-hoc total raw-chain scoring did not restore graph or coefficient
+   fidelity;
+5. coverage-aligned full-prefix regularization produced a bounded
+   graph--prediction trade-off across the tested strengths, but no lambda passed
+   the complete pilot-go rule;
+6. held-out confirmation was not executed and repair development is closed.
+
+The final independent PDF has 16 pages. Three-pass compilation reports zero
+errors, undefined references/citations, missing figures, and overfull boxes.
+All pages were rendered and visually inspected. Four new figures replace the
+single-run panels and show seed-level data plus population SD. Stage 1a remains
+a supporting historical boundary table, and P1 A3 is described only as
+uninterpretable because `gradient_replay_alignment_valid=false`.
+
+The final review documents, claim matrix, terminology ledger, limitations,
+journal strategy, traceability, and reproduction commands are under
+`paper-data/docs/phase8_final/`. No further repair tuning is authorized.
+
+# CURRENT KBS STATUS: SUBMISSION CANDIDATE V1 (2026-07-12)
+
+The terminal Phase 8 artifact passed GPT scientific review. The active review
+manuscript is now the independent file
+`E:\GUOJI\elsarticle_phase8_final\istf_kbs_jacobian_coverage_submission_candidate_v1.tex`.
+Canonical `istf_kbs.tex`, the Phase 8 terminal TeX, and the frozen v2.4 archive
+remain unchanged.
+
+The final title is *Auditing Jacobian Coverage in Neural Granger Causality*.
+The submission revision makes the following corrections:
+
+1. Figure 2d is referenced only as the corrected fixed-target intervention;
+   full auxiliary-penalty variants are cited through the appendix table.
+2. Penalty-route coverage mitigation is explicitly separated from the still
+   partial score-route coverage.
+3. Post-hoc total raw-chain scoring is bounded to the controlled coefficient
+   study and is not generalized universally.
+4. The final repair evidence is described as a bounded graph--prediction
+   trade-off across tested strengths; no efficient-set analysis is claimed.
+5. Phase 8 is the central empirical boundary evidence. The full Stage 1a table
+   and detailed P1 discussion are in the appendix, while the main text retains
+   only the historical gate summary.
+
+The 16-page three-pass build has 0 errors, 0 undefined references/citations, 0
+missing figures, and 0 overfull boxes. All pages passed visual inspection after
+an appendix float-order correction. The log retains 65 underfull hbox and 8
+underfull vbox warnings, all visually audited and reported. Author identity,
+affiliation, funding, CRediT roles, conflicts, and public archive URLs remain
+explicit author-controlled placeholders.
+
+# CURRENT KBS STATUS: AUTHOR METADATA READY V1 (2026-07-12)
+
+GPT accepted the submission candidate scientifically and authorized only a final
+author-metadata readiness correction. The manuscript source remains
+`istf_kbs_jacobian_coverage_submission_candidate_v1.tex`; its author-ready commit
+is `1b50e8a577995b02485764fead959bfa10ae159d`, with package-guide branch head
+`ffe74087d17c6925aaf099eedb268efb3091c09b`.
+
+The rendered `Appendix Appendix C` duplication is fixed, all five declaration
+paragraph headings render with one period, and the AI-use statement now includes
+software implementation and test development. Instructional square brackets in
+the reusable audit template were replaced by italic `Entry:` prompts. The only
+remaining PDF placeholders are author-controlled identity, affiliation, funding,
+conflict, CRediT, repository, and archive fields; one additional bracketed object
+is mathematical concatenation rather than a placeholder.
+
+The final author-ready build remains 16 pages with 0 errors, undefined
+references/citations, missing figures, or overfull boxes. It reports 64 underfull
+hbox and 8 underfull vbox warnings. Rendered-text grep and whole-document visual
+inspection both pass. No scientific content, experiment, method, threshold, or
+conclusion changed.
+
+# CURRENT KBS STATUS: VISUAL AND LAYOUT REWORK V1 (2026-07-13)
+
+The active visual-review branch is `phase8/kbs-visual-rework-v1` in both the
+method and independent manuscript repositories. It preserves the author-ready
+scientific content and all frozen numerical evidence.
+
+The four main figures were redrawn from the same frozen artifacts after a
+page-by-page comparison with four local published KBS papers. The adopted
+patterns are a dominant horizontal predictive flow for the framework figure,
+short panel titles, restrained method-consistent colors, thin paired-seed
+traces, compact local/shared legends, and a heatmap-like gate summary. Figure 1
+now separates predictive routes, the coverage declaration, and the
+claim-specific workflow; Figure 3 replaces the previous derivative cards with
+an explicit coordinate and horizon schematic. Figure captions were shortened
+without changing their evidentiary boundaries.
+
+The appendix float layout was also audited. Removing the unnecessary barrier
+after the Stage 1a wide table reduced the manuscript from 16 to 15 pages and
+eliminated one large sparse appendix page while preserving table order. A
+bottom-wide-float experiment increased the page count and whitespace and was
+rejected. The retained build has 0 errors, undefined references/citations,
+missing figures, overfull hboxes, overfull vboxes, or float-too-large warnings.
+All 15 pages were rendered and visually inspected at publication scale.
+
+No experiment, metric, seed, claim strength, author placeholder, or canonical
+manuscript was changed. The next review step is visual approval of the 15-page
+PDF and four standalone figures before any author metadata is filled.
+
+# CURRENT KBS STATUS: VISUAL AND LAYOUT REWORK V2 (2026-07-13)
+
+The active review branches are `phase8/kbs-visual-rework-v2` in the method and
+independent manuscript repositories. The review source is
+`istf_kbs_jacobian_coverage_submission_candidate_v2.tex`; v1 and the canonical
+manuscript remain unchanged.
+
+The revision addresses three presentation findings without changing scientific
+content. First, a source-verified controlled-concat architecture figure now
+anchors page 4 and separates causal prefix processing, the raw-target prediction
+path, and three derivative objects. Second, a reusable audit-workflow figure
+anchors page 8, with the replicated quantitative evidence following on page 9.
+Pages 4--9 therefore alternate figures, tables, and prose instead of presenting
+five consecutive text-only pages. Third, the Appendix B/C wide tables use
+position-controlled two-column strips, while the longer Appendix D template is
+flushed as a complete top-of-page float. The previous page-12/page-13 blank
+regions and delayed isolated-table page are absent.
+
+All six figures use a restrained grayscale, blue-gray, and muted-brick palette.
+Large saturated status blocks were replaced by white cells, outlines, marker
+shapes, and direct labels. The final direct three-pass build is 16 pages with
+0 LaTeX errors, 0 undefined references/citations, 0 missing figures, and 0
+overfull hboxes/vboxes. Every page and all six standalone PNGs were visually
+inspected at publication scale. No experiment, metric, claim boundary, seed,
+author placeholder, or frozen artifact changed.
+
+# CURRENT KBS STATUS: VISUAL NARRATIVE REWORK V3 (2026-07-14)
+
+The active review branches are `phase8/kbs-visual-narrative-rework-v3` in the
+method and independent manuscript repositories. The review source is
+`istf_kbs_jacobian_coverage_submission_candidate_v3.tex`; v2, the canonical
+`istf_kbs.tex`, and every frozen artifact remain unchanged.
+
+Figures 1--3 were rebuilt after a documented comparison with four local KBS
+papers, JRNGC, and CUTS. They now use scientific glyphs, time-series windows,
+Jacobian tensors, graph objects, and audit signatures rather than text-only
+cards. All panels are white with thin gray boundaries. Figures 4--6 use the same
+frozen values with a restrained blue/brick/gray palette and shape-based method
+encoding. High-saturation pixels occupy at most 0.004 percent of any standalone
+PNG.
+
+The page sequence is now Figure 2 on page 4, Figure 3 on page 5, a wide audit
+profile table on page 6, and Figures 4--6 on pages 7--9. Appendix D contains a
+reusable audit record and exact score-aggregation definition. Pages 12--13 are
+dense, balanced, and free of blank/float-only pages. The retained three-pass
+build is 13 pages with 0 errors, undefined references/citations, missing files,
+overfull boxes, float-too-large warnings, or unprocessed floats.
+
+No GPU, experiment, new seed, metric recalculation, claim-threshold change, or
+legacy performance revival occurred. The next step is clean-directory package
+verification and external visual review before author metadata is completed.
+
+# CURRENT KBS STATUS: TOP-JOURNAL NARRATIVE REWORK V4 (2026-07-14)
+
+The active review branches are `phase8/kbs-top-journal-narrative-v4` in the
+method and independent manuscript repositories. The review source is
+`istf_kbs_jacobian_coverage_submission_candidate_v4.tex`; v3, canonical
+`istf_kbs.tex`, and every frozen artifact remain unchanged.
+
+V4 replaces the three sequential conceptual diagrams with one integrated
+route-resolved figure, advances the first quantitative evidence to Figure 2,
+and retains four main figures total. The figure design was audited against
+Tao et al. KBS 2025 Fig. 1, Chen et al. KBS 2024 Fig. 1, JRNGC ICML 2024
+Fig. 1, and CUTS ICLR 2023 Fig. 1. The exact design map and no-copy boundary
+are documented under `paper-data/docs/`.
+
+The manuscript argument is now mechanism -> coverage declaration -> controlled
+evidence -> training-time frontier. Internal development language, P1 gradient
+replay details, repeated no-go disclaimers, and speculative optimization
+accounts were removed. Material evidence boundaries remain explicit, including
+the legacy total-objective meaning of `pred_loss`, the post-hoc score result,
+the graph--prediction frontier, and the distinction between score semantics and
+empirical advantage.
+
+The retained 12-page three-pass build has 0 LaTeX errors, 0 undefined
+references/citations, 0 missing figures, and 0 overfull hboxes. Figure 1 anchors
+page 2; pages 4--8 alternate full-width tables, quantitative figures, and prose.
+Standard `table*` floats replace unstable `strip` blocks, eliminating the page-9
+duplicate-text defect. Page 13 is eliminated; page 12 contains the balanced tail
+of the 46-item bibliography.
+
+No author metadata, GPU work, experiment, new seed, metric recalculation, or
+canonical manuscript edit occurred. The next step is clean-package verification
+and external review before deciding whether v4 replaces v3 as the author-ready
+baseline.
+
+# CURRENT KBS STATUS: SYNCHRONIZED CHINESE REVIEW MIRROR (2026-07-14)
+
+A complete Chinese proofreading mirror of the v4 manuscript is now maintained
+in the independent manuscript repository:
+
+- source: `istf_kbs_jacobian_coverage_submission_candidate_v4_zh.tex`;
+- PDF: `istf_kbs_jacobian_coverage_submission_candidate_v4_zh.pdf`;
+- QA and maintenance tools: `qa/chinese_review_v4/`.
+
+The Chinese mirror uses a simple 16-page A4 one-column layout. It translates
+all manuscript and appendix prose, captions, tables, and author-facing
+placeholders, while preserving the English-master formulas, labels, citation
+keys, numerical values, figures, audit labels, and evidence boundaries. Figure
+interiors and bibliography entries remain English to avoid divergence from the
+submission assets.
+
+The build and synchronization checks pass with zero LaTeX errors, undefined
+references/citations, warnings, or overfull hboxes. The English v4 source is the
+sole submission master. Future scientific edits must be applied to the English
+version first and synchronized to the Chinese mirror in the same writing
+session; the Chinese file must not become an independent source of claims.
+
+# CURRENT KBS STATUS: PHASE 9 ACCEPTANCE-READINESS PLANNING (2026-07-22)
+
+The user approved a prospective strengthening program after a targeted review
+of recent KBS causal-discovery papers and top-venue reliability-audit work. The
+planning branch is `phase9/kbs-acceptance-readiness-v1`; v4 English/Chinese
+manuscripts and all Phase 8 frozen artifacts remain unchanged.
+
+The proposed plan defines two internal states. `KBS_SUBMISSION_READY` requires
+theory, an executable audit, prospective cross-architecture controls, external
+known-graph and real-case validation, and reproducibility gates.
+`KBS_STRONG_READY` additionally requires the claim-specific diagnostics to show
+prospective validity and the fixed full-auxiliary-penalty mitigation to
+generalize without unacceptable pure-MSE cost. Neither state guarantees an
+editorial outcome.
+
+The exact documentation is under
+`paper-data/docs/phase9_kbs_readiness/`. The plan uses fresh Phase 9 seed
+namespaces, keeps Phase 7 seeds 4--8 closed, does not revive CP-depthwise or the
+failed Phase 8 repair, and treats DREAM3 as a known-graph in-silico benchmark and
+MoCap as a real no-ground-truth audit case. Implementation, run-matrix release,
+GPU work, and manuscript revision require a separate advisor approval.
+
+# CURRENT KBS STATUS: PHASE 9 RTX 4090 BOUNDED ROUND 1 (2026-07-25)
+
+The first bounded development round is complete on branch
+`phase9/4090-bounded-enhancement-v1`. The English v4 manuscript, synchronized
+Chinese review mirror, canonical `istf_kbs.tex`, and all frozen artifacts remain
+unchanged.
+
+Two method lines are closed:
+
+1. A constrained adaptive FIR produced a development-only AUROC gain in the
+   stationary nonlinear D2 cell at 2,000 iterations, but neither the static nor
+   contextual version produced stable non-stationary gains. The contextual
+   candidate was below baseline in both bounded 2,000-iteration
+   non-stationary cells. This does not support reviving filtering as the paper's
+   positive method contribution.
+2. Prediction-guarded full-prefix regularization lowered pure prediction MSE
+   but materially reduced graph recovery. Protecting only the historical term
+   remained close to the standard repair and did not establish a better
+   frontier. This does not close the Phase 8 repair trade-off.
+
+The audit-generalization line remains scientifically promising but is not yet
+paper evidence. Across development-only NetSim and MoCap slices, both Mamba and
+an active causal TCN auxiliary route showed nontrivial missing-route mass,
+partial-versus-total score disagreement, positive fixed-target `mask_c`
+effects, and high cross-source coordinate entropy. The same-window
+H=32/64/128 audit left nominal-lag scores unchanged and found that H=64 captured
+nearly all measured H=128 attribution mass, while attribution beyond H=128
+remains unassessed.
+
+Manuscript constraints:
+
+- Do not add the adaptive/contextual FIR or gradient-projection results as
+  positive method evidence.
+- Do not describe NetSim as a successful graph-recovery benchmark; its
+  development baseline was only random-to-moderate.
+- MoCap supports only route-use and score-semantics diagnostics because no
+  accepted direct graph ground truth is available.
+- Do not claim architecture universality from this round. The defensible
+  prospective target is a bounded cross-architecture result after an
+  advisor-approved protocol and fresh formal runs.
+- Preserve the current `HORIZON-TRUNCATED` label because no derivative mass
+  beyond H=128 was computed.
+
+The authoritative development summary is
+`docs/phase9_4090_round1/PHASE9_4090_ROUND1_REPORT.md`. Before any manuscript
+revision, freeze a small prospective audit-only protocol with held-out
+subjects/segments and method initializations; retain the current rows as
+development data only.
+
+# CURRENT KBS STATUS: AUDIT-GENERALITY PREREGISTRATION V1 (2026-07-25)
+
+A planning-only two-stage validation is frozen under
+`paper-data/docs/phase9_audit_validation_v1/`. The manuscript and Chinese
+review mirror remain unchanged.
+
+Stage A would use four hash-selected held-out NetSim subjects, two
+nonoverlapping MoCap segments, baseline JRNGC, Mamba concat, causal TCN concat,
+and three fresh training replicates. It is an internal RTX 4090 go/no-go stage,
+not manuscript confirmation evidence. Stage B uses four separately sealed
+NetSim subjects, the same MoCap segments, two fresh replicates, and AutoDL only
+after Stage A and advisor approval.
+
+The preregistered claim target is narrow: reproducible omitted-route
+attribution, fixed-target auxiliary-route use, partial-versus-total nominal
+score disagreement, source-coordinate mixing, and bounded temporal support
+across two auxiliary architectures and two data domains. It does not reopen
+the stopped filtering/repair methods and cannot support superiority, universal
+architecture validity, full-prefix completeness, or graph truth on MoCap.
+
+No manuscript change is allowed until both stages pass. If only one
+architecture passes, the result is explicitly `PARTIAL_GENERALITY`; if H=64
+fails the H=128 adequacy gate, execution stops rather than silently changing
+the horizon.
+
+# CURRENT KBS STATUS: STAGE A PASSED, STAGE B RELEASE PENDING (2026-07-26)
+
+Stage A returned `UNLOCK_STAGE_B` after 56/56 clean CUDA records and an
+independent byte-identical reaggregation. Both Mamba and causal TCN passed the
+frozen generality and horizon gates across all six data units. This is a clear
+positive go/no-go result for the audit-generality direction, but it remains
+non-confirmatory by design.
+
+The manuscript and Chinese mirror remain frozen. Stage A must not be presented
+as final manuscript evidence. The NetSim baseline known-graph operating point
+was weak (median AUROC 0.514), so the current positive result concerns route
+coverage, fixed-target route use, coordinate mixing, and partial-versus-total
+score disagreement rather than improved graph recovery.
+
+Stage B retains the preselected subjects 16, 0, 30, and 10, the two frozen
+MoCap segments, the same three methods, and two fresh replicates. No method,
+threshold, horizon, intervention, or training field changed after Stage A was
+observed. If Stage B returns `CONFIRMED_AUDIT_GENERALITY`, the strongest
+eligible claim remains the bounded statement in the preregistration; it does
+not establish a successful repair method, full-prefix attribution, or causal
+ground truth for MoCap.
+
+# CURRENT KBS STATUS: STAGE B CONFIRMED (2026-07-26)
+
+Stage B completed 36/36 frozen AutoDL records and returned
+`CONFIRMED_AUDIT_GENERALITY`. The result passed the release lock, smoke gate,
+semantic checks, deterministic metadata checks, artifact-integrity audit, and
+independent local reaggregation. It is the first confirmatory evidence eligible
+for the Route-B manuscript mainline.
+
+Allowed central empirical claim:
+
+> Under a preregistered bounded raw-chain audit, omitted-route attribution,
+> fixed-target auxiliary-route use, and partial-versus-total score disagreement
+> were reproduced across held-out NetSim subjects, nonoverlapping MoCap
+> segments, and two causal auxiliary preprocessors.
+
+Required boundaries:
+
+- Present this as audit-framework generality, not graph-performance
+  superiority or a successful repair.
+- State that the held-out NetSim baseline operating point was weak (median
+  AUROC 0.495); graph-performance success was not a gate and was not obtained.
+- Use MoCap only for route-use and score-semantics evidence because it has no
+  accepted direct graph ground truth.
+- Do not claim attribution completeness beyond H=128.
+- Keep the failed CP-depthwise and Phase 8 repair lines closed.
+- Do not revive legacy ISTF-Mamba benchmark or operating-regime claims.
+- Do not present the two architectures or two domains as universal coverage.
+
+The canonical English manuscript and Chinese review mirror remain unchanged.
+The next writing session should first update the claim-evidence matrix and
+traceability table, then revise the audit-generality Results/Discussion
+sections from the frozen Stage A/Stage B artifacts.
+
+# CURRENT KBS STATUS: ROUTE-B SUBMISSION CANDIDATE V5 (2026-07-26)
+
+A new independent manuscript worktree now contains the first complete Route-B
+submission candidate:
+
+- English source:
+  `E:\GUOJI\elsarticle_phase9_stageb\istf_kbs_jacobian_coverage_submission_candidate_v5.tex`;
+- English PDF:
+  `E:\GUOJI\elsarticle_phase9_stageb\istf_kbs_jacobian_coverage_submission_candidate_v5.pdf`;
+- Chinese review source/PDF:
+  `istf_kbs_jacobian_coverage_submission_candidate_v5_zh.tex/.pdf`.
+
+The v5 title is:
+
+> Jacobian Coverage Audits for Reliable Neural Granger Causality
+
+The paper is no longer an ISTF performance paper. Its argument is:
+
+1. a declared graph derivative can omit an architecture-declared predictive
+   route;
+2. score routes, penalty routes, coordinate identity, and attribution horizon
+   must be audited independently;
+3. controlled Phase 8 diagnostics reproduce prediction--knowledge decoupling;
+4. preregistered Stage B confirmation reproduces bounded audit signatures
+   across Mamba/TCN preprocessors and NetSim/MoCap held-out units;
+5. semantic repair remains a boundary because CP-depthwise failed performance
+   and novelty gates, while full-prefix regularization traced a steep
+   graph--prediction frontier.
+
+The English manuscript has eight first-level sections, four main figures, one
+appendix diagnostic figure, and four bounded theoretical propositions. It
+retains the following hard boundaries:
+
+- Stage B confirms audit signatures, not graph-recovery performance;
+- MoCap has no accepted direct graph ground truth;
+- H=64/H=128 stability does not assess mass before H=128;
+- the full-prefix repair is not a successful method contribution;
+- legacy ISTF-Mamba is a score-semantics diagnostic only;
+- the framework does not establish causal identifiability.
+
+All five figures are stored in independent self-contained directories with
+source data, backend-specific editable source, PDF/SVG/PNG exports, validation
+JSON, and complete SHA256 manifests. Figure 1 remains an editable Draw.io
+mechanism schematic. Figures 2--4 and Appendix Fig. E.1 are generated directly
+from frozen CSV/JSON inputs by Python/matplotlib; their superseded Draw.io
+versions are archival only. The restrained white/charcoal, muted-blue,
+muted-rust, and muted-teal visual system replaces the prior saturated
+multi-color presentation.
+
+Current English build status:
+
+- 14 pages;
+- 0 LaTeX errors;
+- 0 undefined references/citations;
+- 0 missing figures;
+- 0 overfull hboxes;
+- all five included figure PDFs are single-page vector exports.
+
+The prior large blank areas on pages 12--13 are removed. Quantitative visual
+anchors now appear on pages 6, 8, and 10, with the conceptual framework on page
+3 and the score-semantics appendix figure on page 13. The Chinese mirror is a
+19-page single-column proofreading aid; its formatting is intentionally not a
+submission constraint.
+
+The v4 English/Chinese sources and canonical `istf_kbs.tex` remain frozen.
+V5 must pass final self-review, clean-package verification, commit/push, and
+author metadata replacement before it can become the submission master.
+
+# MANUSCRIPT REPOSITORY ORGANIZATION (2026-07-26)
+
+The latest Route-B candidate has passed its existing self-review and is now the
+canonical manuscript in the Phase 9 manuscript worktree:
+
+- English source/PDF:
+  `E:\GUOJI\elsarticle_phase9_stageb\istf_kbs.tex/.pdf`;
+- Chinese review source/PDF:
+  `E:\GUOJI\elsarticle_phase9_stageb\review\chinese\istf_kbs_zh.tex/.pdf`;
+- integrated English/Chinese appendix sources:
+  `E:\GUOJI\elsarticle_phase9_stageb\supplement\appendix_en.tex` and
+  `appendix_zh.tex`;
+- Appendix Fig. E.1 assets:
+  `E:\GUOJI\elsarticle_phase9_stageb\figures\phase9_submission\figE1_score_semantics\`.
+
+Superseded manuscript, figure, source-data, table, planning, and QA versions
+are grouped under `E:\GUOJI\elsarticle_phase9_stageb\archive\` and are no
+longer active build inputs. The canonical build entry point is
+`scripts/build_manuscripts.ps1`. The organization pass changed paths and build
+structure only; it did not change scientific values, claims, or frozen
+evidence. The subsequent figure-number/backend correction replaced all four
+quantitative Draw.io figures with Python/matplotlib outputs generated from the
+same frozen data, renamed the integrated score-semantics asset to Fig. E.1,
+and synchronized the Chinese appendix order. The corresponding current
+manuscript commit is `9b90823a715729dd396f1cd40d70148c0c9cc590` on
+`phase9/stageb-manuscript-integration-v1`.
+
+# NUMERIC AUDIT STATUS (2026-07-31)
+
+The current English manuscript completed a full frozen-evidence numeric audit.
+The 16-sheet master workbook is:
+
+`E:\GUOJI\outputs\kbs_numeric_audit_20260731\KBS_NUMERIC_MASTER_AUDIT_20260731.xlsx`
+
+All 141 hand-mapped manuscript/configuration claims agree with their
+authoritative sources: 43 exactly and 98 at the manuscript's declared display
+precision. There are zero substantive mismatches and zero workbook formula
+errors. The audit also inventories the complete Stage B formal run ledger,
+Stage 1a data-seed units, repair frontier, and authoritative scalar JSON
+fields.
+
+This audit does not expand the permitted narrative. Full-auxiliary
+`pred_loss`, legacy ISTF-Mamba, Stage 1a, Stage B, P1 A3, and the Phase 8
+repair frontier retain their previously frozen semantic boundaries. Future
+manuscript number changes should be made from the authoritative source first
+and then rechecked with
+`E:\GUOJI\elsarticle_phase9_stageb\qa\current\numeric_audit\`.
 
 # CURRENT ROUTE-B KBS STATUS: PHASE 9 SUBMISSION QA (2026-07-31)
 
@@ -586,7 +1073,8 @@ The active manuscript is
 *Jacobian Coverage Audits for Reliable Neural Granger Causality*. The current
 branch is `phase9/stageb-manuscript-integration-v1`; manuscript/figure commit
 `be38ae4c81ddda2d0032b99896096d7b007b39cc` and numerical-audit commit
-`ac66a4f18404a17daf4596ecbb248c8c2bd3c225` are pushed to the KBS repository.
+`ac66a4f18404a17daf4596ecbb248c8c2bd3c225` were pushed to the KBS repository
+at this checkpoint.
 
 The Route-B narrative is frozen around four claims:
 
@@ -602,7 +1090,7 @@ The Route-B narrative is frozen around four claims:
 
 The abstract, introduction, background/related work, mechanism, audit
 framework, controlled evidence, held-out boundary, discussion, and conclusion
-were checked against four local KBS peers. Main figure style mappings are:
+were checked against four local KBS peers. Main figure style mappings were:
 
 - Fig. 1: Tao et al., KBS 327 (2025) 114145, Fig. 1;
 - Fig. 2: Tao et al., KBS 327 (2025) 114145, Fig. 2;
@@ -610,30 +1098,20 @@ were checked against four local KBS peers. Main figure style mappings are:
 
 Only layout grammar was inherited; no peer data, labels, or scientific content
 was copied. Fig. 1 remains Draw.io; every numerical figure is generated from
-frozen data by Python. The final three-pass builds are 14 English pages and 20
-Chinese review pages, each with zero errors, undefined references, missing
-figures, and overfull boxes. Full-page visual inspection found no overlap,
-clipping, coordinate overflow, or anomalous float ordering. The previous
-sparse reference transition was removed without changing template font or page
-geometry.
+frozen data by Python. The three-pass builds at this checkpoint were 14
+English pages and 20 Chinese review pages, each with zero errors, undefined
+references, missing figures, and overfull boxes.
 
-The former Fig. 4f gate panel was removed from the image. Fig. 4 now contains
-five continuous numeric panels, while main-text Table 4 reports the frozen
-gate matrix using explicit `Pass`/`Fail` text. The English and Chinese
-manuscripts use synchronized table sources; no gate state, numeric result, or
+The former Fig. 4f gate panel was removed from the image. Fig. 4 contains five
+continuous numeric panels, while main-text Table 4 reports the frozen gate
+matrix using explicit `Pass`/`Fail` text. No gate state, numeric result, or
 scientific conclusion changed.
-
-Current remaining submission tasks are limited to confirmed author/affiliation
-metadata, contribution/funding/competing-interest declarations, public or
-review-access code/data records, final reference-metadata verification, and a
-self-contained clean-extraction submission archive. Do not resume Stage 1b or
-claim that the current repair improves graph recovery.
 
 # CURRENT ROUTE-B KBS STATUS: EXEMPLAR-GUIDED FRONT-MATTER REWRITE (2026-08-05)
 
-The active manuscript remains
+The active manuscript remained
 `E:\GUOJI\elsarticle_phase9_stageb\istf_kbs.tex` on branch
-`phase9/stageb-manuscript-integration-v1`. The latest pushed commits are
+`phase9/stageb-manuscript-integration-v1`. Pushed commits were
 `f0ce08238dffdb5a7aab5ab8ecec6c0986c4a1bd` for the manuscript rewrite and
 `5aeae5d341553cfb2f41e02120f9339bf3486c3b` for the refreshed numerical
 audit.
@@ -641,52 +1119,39 @@ audit.
 Among the four local KBS references, the selected structural writing exemplar
 is Chen, Wu, and Jin, *Causal structure learning for high-dimensional
 non-stationary time series*, KBS 295 (2024) 111868. The Abstract and
-Introduction now follow its functional progression while retaining the
-Route-B evidence hierarchy and bounded audit thesis. No wording, peer result,
-or scientific content was copied. The selection rationale and adaptation
-boundary are recorded in `docs/KBS_WRITING_TEMPLATE_SELECTION.md`.
+Introduction were rewritten using its functional progression while retaining
+the Route-B evidence hierarchy and bounded audit thesis. No wording, peer
+result, or scientific content was copied. The selection rationale and
+adaptation boundary are recorded in `docs/KBS_WRITING_TEMPLATE_SELECTION.md`
+in the manuscript repository.
 
-The English Abstract now follows task/value -> concrete coverage failure ->
-audit design -> validation -> decisive quantitative evidence -> bounded
-conclusion. The Introduction follows task -> classical/neural evolution ->
-technical reliability gap -> related-work gap -> three audit challenges ->
-framework -> evidence preview -> contributions -> organization. The Chinese
-review PDF is synchronized for line-by-line content checking.
-
-Current builds are 15 English pages and 21 Chinese review pages with zero
-LaTeX errors, undefined references/citations, missing figures, or overfull
-boxes. The refreshed 17-sheet numerical audit covers 167 mapped claims (51
-exact and 116 display-rounding matches) with zero substantive mismatch or
-formula error. The Route-B scientific boundaries, frozen evidence, and repair
-no-go conclusions are unchanged.
-
-Current next step:
-- Review the Chinese Abstract and Introduction for author-intended emphasis;
-  after approval, extend the same KBS paragraph logic to Results and Discussion
-  without changing numerical evidence or conclusion strength.
+This first exemplar-guided pass was subsequently corrected because it retained
+enumerated evidence in the Abstract. The high-fidelity 2026-08-06 checkpoint
+below is the current version.
 
 # CURRENT ROUTE-B KBS STATUS: HIGH-FIDELITY EXEMPLAR ALIGNMENT (2026-08-06)
 
-The initial 2026-08-05 front-matter rewrite was corrected after direct
-comparison with Chen et al., KBS 295 (2024) 111868. The active Abstract now
-contains no enumerated metrics, matching the selected article's method-led
-style. The Introduction now follows the peer article's full rhetorical
+Direct comparison with Chen et al., KBS 295 (2024) 111868 led to a corrected
+metric-free Abstract. The Introduction follows the peer article's rhetorical
 progression: context, method taxonomy, differentiable entry point, detailed
 limitations, three explicit challenges, corresponding framework, three
 contributions, and paper organization.
 
-The final prose remains scientifically original. A normalized first-two-page
+The prose remains scientifically original. A normalized first-two-page
 comparison found no shared contiguous English sequence of eight or more words.
 The Route-B evidence hierarchy, failed repair gate, and claim boundaries are
 unchanged. Pushed KBS commits are `35c6e13` for the high-fidelity prose rewrite
-and `d63bc31` for synchronized PDFs and QA.
+and `d63bc31` for synchronized PDFs, figures, QA, and the numerical audit.
 
 Current builds are 15 English pages and 21 Chinese pages with zero LaTeX
 errors, undefined references/citations, missing figures, or overfull boxes.
-The current numerical workbook audits 153 quantitative claims (51 exact and
-102 display-rounding matches) with zero substantive mismatch or formula error.
+The current 17-sheet numerical workbook audits 153 quantitative claims (51
+exact and 102 display-rounding matches) with zero substantive mismatch or
+formula error; its SHA256 is
+`D6A1100BCAB2F41B0F3B99AA1770708D77A7C3B2F9D876E668AE406E587901C4`.
 
 Current next step:
-- Review the metric-free Chinese Abstract and the restructured Chinese
-  Introduction. Only after approval should the selected peer's transition and
-  paragraph grammar be extended to the remaining manuscript sections.
+- Review the metric-free Chinese Abstract and restructured Chinese
+  Introduction before extending the selected peer's paragraph and transition
+  grammar to the remaining manuscript sections. Do not alter frozen evidence
+  or conclusion strength.

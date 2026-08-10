@@ -1,0 +1,6 @@
+dimension,status
+score_route_completeness,PARTIALLY COVERED
+penalty_route_completeness,PARTIALLY COVERED
+score_penalty_alignment,COVERED
+coordinate_validity,COVERED
+horizon_validity,HORIZON-TRUNCATED

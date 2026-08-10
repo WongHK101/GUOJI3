@@ -1,0 +1,64 @@
+{
+  "audit_profile": {
+    "coordinate_validity": "COVERED",
+    "horizon_validity": "HORIZON-TRUNCATED",
+    "penalty_route_completeness": "PARTIALLY COVERED",
+    "score_penalty_alignment": "COVERED",
+    "score_route_completeness": "PARTIALLY COVERED"
+  },
+  "coverage_declaration": {
+    "architecture": "Illustrative concat auxiliary predictor",
+    "attribution_horizon": 64,
+    "coordinate_identity_valid": true,
+    "coordinate_mapping": "Raw score columns retain original source identities.",
+    "graph_claim": "Nominal raw-variable directed Granger-predictive graph",
+    "omitted_mass_beyond_horizon_assessed": false,
+    "penalty_variables": [
+      "raw_history"
+    ],
+    "predictive_routes": [
+      {
+        "description": "Raw history enters the predictor directly.",
+        "enters_prediction": true,
+        "exemption_reason": null,
+        "interpreted_as_graph_knowledge": true,
+        "penalty_covered": true,
+        "penalty_exempt": false,
+        "route_id": "raw_route",
+        "score_covered": true
+      },
+      {
+        "description": "A causal transform of raw history enters by concatenation.",
+        "enters_prediction": true,
+        "exemption_reason": null,
+        "interpreted_as_graph_knowledge": true,
+        "penalty_covered": false,
+        "penalty_exempt": false,
+        "route_id": "auxiliary_route",
+        "score_covered": false
+      }
+    ],
+    "primary_score_horizon": 1,
+    "required_support_horizon": null,
+    "score_penalty_coordinate_compatible": true,
+    "score_penalty_horizon_relation": "The partial score and penalty use the same raw nominal support.",
+    "score_variables": [
+      "raw_history"
+    ]
+  },
+  "diagnostic_not_guarantee": true,
+  "diagnostics": {
+    "documentation_fixture": true,
+    "partial_total_max_abs_difference": 0.3,
+    "scientific_evidence": false
+  },
+  "provenance": {
+    "generator": "generate_example.py",
+    "scope": "non-evidentiary documentation fixture"
+  },
+  "schema_version": "jacobian-coverage-audit/1.0",
+  "score_object_files": {
+    "partial_nominal": "partial_nominal_example.npy",
+    "total_nominal": "total_nominal_example.npy"
+  }
+}

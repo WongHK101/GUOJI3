@@ -1,0 +1,75 @@
+{
+  "status": "planning_only_not_authorized",
+  "selection_timestamp": "2026-07-25T08:30:00+08:00",
+  "selection_scope": "identifiers and file hashes only; arrays and graph metrics were not inspected",
+  "netsim_selection": {
+    "eligible_identifiers": "0..47; Phase 9 development subjects 48 and 49 excluded",
+    "selection_algorithm": "sort ascending SHA256('phase9-audit-formal-v1|netsim-subject|<integer_id>')",
+    "stage_a_first_four": [
+      {
+        "subject": 19,
+        "selection_hash": "03d5e9fdba4a8439727e6395ad45dfaabc4d485583875ff4bfd0dadb69b02c51",
+        "file_sha256": "c6b00399c649d93419d07c7c285359d4ab23d68e983f7f831073ae3e1245618b"
+      },
+      {
+        "subject": 8,
+        "selection_hash": "041eb816f109b2e96cae0942ae7c5121f41e2c5b4e48c6a1ad304e585a62739d",
+        "file_sha256": "83d2c22a19379ce680c37125eace30f1920556249a60aa23a275a2a7b7f8ef75"
+      },
+      {
+        "subject": 44,
+        "selection_hash": "04dc59ba464d968b17a91870e2d1b1e16b762325e2c3f7c5ecae12dbdb681892",
+        "file_sha256": "3b0b7eecf62a0aeb6fd8ae35b29e9c1f758a7bcd0fcfabbd907be7e7422c21e5"
+      },
+      {
+        "subject": 3,
+        "selection_hash": "06ff72482c9ca492be8f97b0aecde46e4b8ddcaad9f021f88135076775a1ae8e",
+        "file_sha256": "e6b8510c548f6bb2fe5c93dbe40d2c6073dd964ffb282a911adf4ad88c71341a"
+      }
+    ],
+    "stage_b_next_four_sealed": [
+      {
+        "subject": 16,
+        "selection_hash": "1c0d2ef2ceaef7677619cae9b27e28433d904934cbf61c3f660837eda272ed08",
+        "file_sha256": "0b6cd30fc985dd5d13569bc34110defdf9c44ddf6254e401e0b5961ba3b0bf7b"
+      },
+      {
+        "subject": 0,
+        "selection_hash": "31bdef38fee116032e15db73da4885eb03f6f15e4b143b99ee85ef15f1fae493",
+        "file_sha256": "8e21ec143fdcb163ab986d2b7edc14468829765bb7429aedb8e30dd6eaa6c33d"
+      },
+      {
+        "subject": 30,
+        "selection_hash": "3239a30ec60a170cc414b506718368d3c49af7e4d5d4698c82d78ef649d6d07e",
+        "file_sha256": "03f4f4748d1c31a0d4988244e57026bc52778b64f4b21d6dbb2ff3c0782eb820"
+      },
+      {
+        "subject": 10,
+        "selection_hash": "3bc8e4e552a7fdc7e694513f13f33622cf56be23633ab331f22940143201601a",
+        "file_sha256": "29c2b14450eb37f6d3aa2b02b5fed9da3759bd0cd97e9f4da16b0fb0a9a3a837"
+      }
+    ]
+  },
+  "mocap_stage_a_and_b_segments": [
+    {
+      "data_unit": "mocap_run_holdout",
+      "source_sha256": "cc180d486832fbeb08a7be8de69494dccdc31615e0155022c96aef674fe17569",
+      "segment_start_inclusive": 728,
+      "segment_stop_exclusive": 1228,
+      "development_overlap": false,
+      "development_segment": [0, 600]
+    },
+    {
+      "data_unit": "mocap_salsa_holdout",
+      "source_sha256": "9f368e638d2c22327d8b67901c6eaab1a46ee44b249dc88faa49f220ab28dd39",
+      "segment_start_inclusive": 3000,
+      "segment_stop_exclusive": 3500,
+      "development_overlap": false,
+      "development_segment": [1000, 1600]
+    }
+  ],
+  "phase7_seed_boundary": {
+    "seeds_4_to_8_opened": false,
+    "stage1b_started": false
+  }
+}
