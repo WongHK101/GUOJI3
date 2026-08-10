@@ -148,6 +148,11 @@ python -m pytest -q \
   tests/test_phase9_audit_stageb.py
 ```
 
+The root `pytest.ini` restricts default discovery to `tests/`. This prevents
+historical executable experiment scripts named `experiments/test_*.py` from
+being imported as unit tests, so `python -m pytest -q` runs the maintained
+suite directly.
+
 Generate the small non-evidentiary audit-format example with:
 
 ```bash
