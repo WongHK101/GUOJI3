@@ -1,165 +1,198 @@
-# ISTF-Mamba: Input-Space Temporal Filtering for JRNGC
+# Jacobian Coverage Audits for Reliable Neural Granger Causality
 
-Structural shortcut diagnosis and repair for Jacobian-regularized neural Granger causality.
+This repository supports a reliability study of graph knowledge extracted by
+Jacobian-regularized neural Granger-causality models. The current work is an
+**audit and score-semantics project**, not an ISTF-Mamba performance paper.
 
-## Overview
+The central question is whether the derivative reported as a Granger graph
+covers the predictive routes, source-variable coordinates, and temporal
+support actually used by the model. Auxiliary inputs and transformed histories
+can improve prediction while bypassing or changing the Jacobian object used as
+graph knowledge. The project therefore separates:
 
-Jacobian-regularized neural Granger causality (JRNGC) discovers causal graphs by penalizing the input-output Jacobian of a prediction MLP. We identify a critical architectural vulnerability: when auxiliary temporal channels (concat, FiLM) are introduced to handle non-stationarity, gradient descent routes predictions through **unpenalized side channels**, suppressing the Jacobian entries that constitute the GC measurement signal.
+- score-route completeness;
+- penalty-route completeness;
+- score--penalty alignment;
+- source-coordinate validity;
+- attribution-horizon validity.
 
-**Input-Space Temporal Filtering (ISTF)** repairs this by confining all temporal processing to the original *d*-dimensional input space, eliminating unpenalized pathways. The architecture uses two core structural constraints:
+These checks diagnose the declared graph object. They do not certify causal
+identifiability, causal sufficiency, or absence of hidden confounding.
 
-1. **Input-space confinement** — all temporal processing stays in the original variable space
-2. **Orthogonality-based drift control** — explicit penalty on filter drift from identity
+## Current Status
 
-Near-identity initialization (zero output projection, residual scale ε=0.1) is used as a conservative implementation choice, not a standalone constraint.
+Status date: **2026-08-10**.
 
-## Key Results
+The latest formal source is available on GitHub, but it is intentionally kept
+on a frozen Phase 9 branch rather than silently replacing historical release
+commits on the default branch.
 
-Final inferential benchmark (4 datasets, ≥5 paired seeds, Holm-Bonferroni corrected):
+| Role | Repository / branch | Immutable reference |
+| --- | --- | --- |
+| Current code and manuscript-support assets | [`GUOJI3`, `phase9/stageb-manuscript-support-v1`](https://github.com/WongHK101/GUOJI3/tree/phase9/stageb-manuscript-support-v1) | `ff2079fa1346c092c0e50990fd846f9291d99af0` |
+| Phase 9 Stage A execution release | `GUOJI3` | `7d73125ece4e98962a237a8dd1adb1ae119ada50` |
+| Phase 9 Stage B execution release | `GUOJI3` | `0397e8af27c4f396d7713b129e0d7307da732681` |
+| Current KBS manuscript | [`KBS`, `phase9/stageb-manuscript-integration-v1`](https://github.com/WongHK101/KBS/tree/phase9/stageb-manuscript-integration-v1) | `d63bc31709d0fe16e9ca8860f139639f8353f223` |
 
-| Dataset | Seeds | Baseline AUROC | ISTF-Mamba AUROC | Δ | Interpretation |
-|---------|-------|---------------|-----------------|---|----------------|
-| CT_medical | 10 | 0.458 +/- 0.024 | 0.500 +/- 0.022 | +0.042 | 5/7 metrics Holm-significant |
-| Lorenz_F40 | 10 | 0.938 +/- 0.012 | 0.939 +/- 0.014 | +0.001 | 0/7 metrics significant (neutral) |
-| VAR_d50 | 10 | 0.715 +/- 0.034 | 0.678 +/- 0.034 | -0.036 | AUROC directional only; AUPRC/F1 significantly worse |
-| NSVAR_d10 | 5 | 0.930 +/- 0.024 | 0.946 +/- 0.028 | +0.016 | Degenerate on most metrics |
+The default `main` branch remains the project index and historical integration
+branch. For scientific reproduction, use the exact commit associated with the
+artifact or protocol being inspected.
 
-ISTF-Mamba is not a universal booster — it is a structural safeguard whose benefit depends on whether the dataset regime creates incentives for auxiliary-channel shortcut learning.
+## Scientific Position
 
-## Repository Structure
+### Supported by the current evidence
 
-```
-mamba_enhanced/
-├── src/
-│   ├── mamba_jrngc_pilot.py          # Core: all model definitions + training + metrics
-│   │   ├── MambaPreprocessor         #   Aux channel (used by Concat/FiLM)
-│   │   ├── MambaJRNGC                #   Concat architecture (shortcut-vulnerable)
-│   │   ├── FiLMJRNGC                 #   FiLM architecture (shortcut-vulnerable)
-│   │   ├── MambaFilterJRNGC          #   ISTF architecture (ours, filter_type="mamba")
-│   │   ├── TCNFilterJRNGC            #   ISTF architecture (ours, filter_type="tcn")
-│   │   ├── BaselineJRNGC             #   Original JRNGC (no temporal context)
-│   │   ├── train_model()             #   Unified training loop
-│   │   └── compute_metrics()         #   AUROC/AUPRC/SHD/nSHD/MCC evaluation
-│   ├── minimal_mamba.py              # MambaBlock + SelectiveSSM (pure PyTorch)
-│   ├── nonstationary_var.py          # Non-stationary VAR data generator
-│   ├── config.py                     # Path resolution, argument parser, device selection
-│   ├── schema.py                     # Result schema definitions
-│   ├── factorial_data.py             # Factorial experiment data
-│   └── __init__.py
-│
-├── experiments/                       # All experiment scripts (run from repo root)
-│   ├── test_mask_shuffle.py          # Shortcut diagnostic: mask/shuffle intervention
-│   ├── test_shortcut_diagnostics.py  # Shortcut diagnostic suite
-│   ├── test_mask_supplement.py       # Three-way mask intervention
-│   ├── run_statistical_tests.py      # Holm-Bonferroni paired tests (7 metrics × 4 datasets)
-│   ├── generate_appendix_tables.py   # LaTeX appendix tables from canonical JSON
-│   ├── generate_eligibility_table.py # Dataset eligibility classification
-│   ├── gen_paper_main_figures.py     # Paper figure generation
-│   ├── backfill_canonical_v2.py      # Canonical rerun with deterministic seeding + GC scores
-│   ├── backfill_topology_metrics.py  # Topology metric backfill (legacy)
-│   ├── compute_metrics_from_scores.py # Recompute metrics from saved GC score matrices
-│   ├── consolidate_all.py            # Aggregate all JSON results
-│   ├── run_ct_medical_10seed.py      # CT_medical 10-seed full run
-│   ├── run_neural_gc_baseline.py     # Neural GC baseline (cMLP, cLSTM)
-│   ├── run_pcmci_baseline.py         # PCMCI+ baseline comparison
-│   ├── test_causaltime.py            # CausalTime benchmark (medical/pm25/traffic)
-│   ├── test_dream3_backfill.py       # DREAM3 gene regulation benchmark
-│   ├── test_fmri_3subj.py            # fMRI neuroimaging benchmark
-│   ├── test_tcn_backfill.py          # TCN filter ablation across configs
-│   ├── test_interaction_ablation.py  # 2×2 factorial ablation
-│   ├── test_theory_verification.py   # Theorem numerical verification
-│   ├── test_concat_full_penalty.py   # Auxiliary-channel penalty control
-│   ├── factorial_diagnostics.py      # Factorial experiment diagnostics
-│   ├── factorial_stat_tests.py       # Factorial statistical tests
-│   ├── reproduce_factorial_full.py   # Full factorial reproduction
-│   ├── risk_mitigation_20260515/     # Risk-mitigation experiments (5 scripts)
-│   └── ...                           # Additional experiment scripts
-│
-├── tests/
-│   ├── test_core.py                  # Unit tests for core modules
-│   └── __init__.py
-│
-├── paper-data-prefreeze-20260512/    # Frozen paper data assets
-├── results/                           # Experiment outputs (raw/ tracked, others ignored)
-├── README.md                         # This file
-└── .gitignore
-```
+- An auxiliary predictive route omitted from an x-only Jacobian score and
+  penalty creates a structural route-coverage vulnerability.
+- Partial derivatives and total raw-chain derivatives can represent different
+  graph objects.
+- Controlled concat studies reproduce prediction--knowledge decoupling,
+  coefficient-fidelity loss, and mitigation after expanding auxiliary-route
+  coverage.
+- Preregistered Phase 9 validation confirms bounded omitted-route and
+  partial-versus-total score signatures across Mamba and causal-TCN
+  preprocessors and across held-out NetSim and motion-capture data units.
+- A separately frozen known-graph Lorenz-96 study shows that the audit signal
+  is not restricted to a weak-baseline operating point.
 
-## Getting Started
+### Explicit boundaries
 
-### Environment
+- The preregistered Stage 1a coordinate-preserving depthwise repair passed its
+  semantic checks but failed performance and novelty gates. Stage 1b was not
+  started.
+- Phase 8 coverage-aligned full-prefix regularization exposed a
+  graph--prediction trade-off; no tested strength passed the joint gate.
+- Legacy cross-channel ISTF-Mamba results may illustrate filtered-coordinate
+  versus raw-chain score disagreement, but they are not valid evidence of
+  graph-recovery superiority or Mamba effectiveness.
+- Phase 9 Stage B supports bounded audit generality only. It does not establish
+  universal architecture coverage, full-prefix completeness, or improved
+  causal-graph recovery.
+
+## Use the Frozen Source
+
+Clone the repository and check out the current manuscript-support snapshot:
 
 ```bash
-conda create -n jrngc_bw python=3.10
-conda activate jrngc_bw
-pip install torch numpy scipy scikit-learn
+git clone https://github.com/WongHK101/GUOJI3.git
+cd GUOJI3
+git checkout ff2079fa1346c092c0e50990fd846f9291d99af0
+git status --porcelain
 ```
 
-### Data
+The last command must return no output before a release-locked reproduction.
+Do not substitute the current default branch for an execution-release commit.
 
-Datasets must be placed under `data/` (not tracked in git). Required structure:
-- `data/var/` — Stationary VAR (from JRNGC repo)
-- `data/lorenz/` — Lorenz-96 (from JRNGC repo)
-- `data/nonstationary_var/` — Non-stationary VAR (generated by `nonstationary_var.py`)
-- `data/causaltime/` — CausalTime medical/traffic/pm25
-- JRNGC datasets expected at `../JRNGC/data/`
+## Repository Map at the Phase 9 Snapshot
 
-### Running Experiments
+```text
+src/
+  jacobian_coverage_audit.py       Machine-readable audit schema and profiles
+  phase9_audit_generalization.py  Raw-chain and intervention audit utilities
+  phase8_coverage.py              Partial/total derivative evaluation support
+  mamba_jrngc_pilot.py            Legacy baseline and concat model definitions
+  repaired_istf.py                Repaired-method and metric adapters
 
-All experiment scripts live in `experiments/` and should be run from the repo root:
+experiments/
+  phase9_audit_stagea.py          Release-locked RTX 4090 Stage A runner
+  aggregate_phase9_audit_stagea.py
+  phase9_audit_stageb.py          Release-locked AutoDL Stage B runner
+  aggregate_phase9_audit_stageb.py
+
+configs/
+  phase9_audit_stagea_v1.json
+  phase9_audit_stageb_v1.json
+
+paper-data/docs/
+  phase9_audit_validation_v1/     Preregistration, matrices, gates, protocol
+  phase9_stageb_manuscript/       Claim/evidence and theory/tool contracts
+
+tests/
+  test_jacobian_coverage_audit.py
+  test_phase9_audit_generalization.py
+  test_phase9_audit_stagea.py
+  test_phase9_audit_stageb.py
+```
+
+The complete evidence and writing indexes are maintained in:
+
+- [`paper-data/README-data.md`](https://github.com/WongHK101/GUOJI3/blob/phase9/stageb-manuscript-support-v1/paper-data/README-data.md);
+- [`paper-data/README-paper.md`](https://github.com/WongHK101/GUOJI3/blob/phase9/stageb-manuscript-support-v1/paper-data/README-paper.md).
+
+## Environment and Local Checks
+
+The release code targets Python 3.10 and uses PyTorch, NumPy, SciPy,
+scikit-learn, and pytest. CUDA is required only for the formal GPU protocols.
+A minimal CPU environment is:
 
 ```bash
-cd mamba_enhanced
-
-# Shortcut diagnostic (~20 min)
-python experiments/test_mask_shuffle.py
-
-# CT_medical 10-seed run
-python experiments/run_ct_medical_10seed.py
-
-# Full canonical backfill (all 90 baseline+mamba entries, ~1.5h GPU)
-python experiments/backfill_canonical_v2.py
-
-# Statistical tests on results
-python experiments/run_statistical_tests.py
-
-# Generate appendix tables
-python experiments/generate_appendix_tables.py
+conda create -n jrngc_audit python=3.10
+conda activate jrngc_audit
+pip install torch numpy scipy scikit-learn pytest
 ```
 
-### Model Training API
+Run the core audit and Phase 9 protocol tests from the repository root:
 
-```python
-from src.mamba_jrngc_pilot import MambaFilterJRNGC, train_model, compute_metrics
-
-model = MambaFilterJRNGC(
-    d=10, lag=7, layers=5, hidden=50,
-    jacobian_lam=0.01, d_state=4, ortho_lam=0.05,
-    residual_scale=0.1, filter_type="mamba"  # or "tcn"
-)
-model, loss = train_model(model, x, max_iter=5000, lr=1e-3)
-gc_matrix = model.get_gc_matrix(x)
-metrics = compute_metrics(gc_true, gc_matrix)
+```bash
+python -m pytest -q \
+  tests/test_jacobian_coverage_audit.py \
+  tests/test_phase9_audit_generalization.py \
+  tests/test_phase9_audit_stagea.py \
+  tests/test_phase9_audit_stageb.py
 ```
 
-## Parameter Reference
+Generate the small non-evidentiary audit-format example with:
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `d_state` | 4 | Mamba SSM state dimension (CT_medical uses 8 as pre-specified exception) |
-| `d_cond` | 4 | Auxiliary channel dimension (Concat/FiLM only) |
-| `jacobian_lam` | 0.01 | Jacobian L1 penalty weight |
-| `ortho_lam` | 0.05 | Orthogonality regularization weight |
-| `residual_scale` | 0.1 | Filter residual scale ε |
-| `layers` | 5 | MLP depth |
-| `hidden` | 50 | MLP hidden dimension |
-| `max_iter` | 2000–5000 | Training iterations |
-| `lr` | 1e-3 | Learning rate (Adam) |
+```bash
+python paper-data/docs/phase9_stageb_manuscript/example_audit/generate_example.py
+```
 
-## Maintenance Notes
+The generated example is an interface fixture, not a scientific result.
 
-- This README should be updated whenever new experiments are added or key results change.
-- Result JSON files in `results/raw/` are committed for traceability; regenerate after re-running experiments.
-- Paper LaTeX source is maintained separately in `IEEE-Transactions-LaTeX2e-templates-and-instructions/istf_jrngc.tex`.
-- Paper data asset index: `paper-data-prefreeze-20260512/` (frozen canonical results).
-- Cloud runner scripts are on AutoDL server at `/root/autodl-tmp/GUOJI/mamba_enhanced/`.
+## Formal Reproduction
+
+The formal Phase 9 runners require more than a command line: they enforce exact
+source commits, release tokens, frozen matrices, dataset SHA256 values,
+deterministic settings, and prior-stage decisions. Do not construct replacement
+tokens or matrices for convenience.
+
+Use these documents in order:
+
+1. [`PHASE9_AUDIT_VALIDATION_PREREGISTRATION.md`](https://github.com/WongHK101/GUOJI3/blob/phase9/stageb-manuscript-support-v1/paper-data/docs/phase9_audit_validation_v1/PHASE9_AUDIT_VALIDATION_PREREGISTRATION.md)
+2. [`PHASE9_AUDIT_CLAIM_GATE_MATRIX.md`](https://github.com/WongHK101/GUOJI3/blob/phase9/stageb-manuscript-support-v1/paper-data/docs/phase9_audit_validation_v1/PHASE9_AUDIT_CLAIM_GATE_MATRIX.md)
+3. [`PHASE9_STAGEB_RELEASE_PROTOCOL.md`](https://github.com/WongHK101/GUOJI3/blob/phase9/stageb-manuscript-support-v1/paper-data/docs/phase9_audit_validation_v1/PHASE9_STAGEB_RELEASE_PROTOCOL.md)
+4. [`EVIDENCE_TRACEABILITY.md`](https://github.com/WongHK101/GUOJI3/blob/phase9/stageb-manuscript-support-v1/paper-data/docs/phase9_stageb_manuscript/EVIDENCE_TRACEABILITY.md)
+
+Formal datasets, checkpoints, and result roots are intentionally not stored in
+Git. Their immutable archive paths and hashes are recorded in the evidence
+index and traceability documents.
+
+## Manuscript
+
+The active manuscript is **Jacobian Coverage Audits for Reliable Neural
+Granger Causality** in the separate
+[`WongHK101/KBS`](https://github.com/WongHK101/KBS) repository. The current
+English source, synchronized Chinese review edition, figures, appendix, and QA
+assets are on branch `phase9/stageb-manuscript-integration-v1`.
+
+The manuscript treats the audit framework as the contribution and reports
+repair attempts as boundaries. It does not claim that ISTF, Mamba, TCN, or
+full-prefix regularization universally improves graph recovery.
+
+## Historical Material
+
+The previous ISTF-Mamba performance-oriented README is preserved at
+[`docs/LEGACY_ISTF_README.md`](docs/LEGACY_ISTF_README.md) for provenance. It
+is not the current project description. Other historical result tables and
+scripts remain useful for traceability but must be interpreted through the
+current evidence boundaries.
+
+## Maintenance Rules
+
+- Do not overwrite frozen result roots or release manifests.
+- Do not reinterpret development runs as confirmatory evidence.
+- Keep score coordinates, target/source orientation, diagonal policy, and
+  attribution horizon explicit in every derived result.
+- Update `paper-data/README-data.md` when evidence is added or deprecated.
+- Update `paper-data/README-paper.md` after each manuscript-writing session.
+- Keep manuscript changes in the KBS repository and code changes in GUOJI3.
