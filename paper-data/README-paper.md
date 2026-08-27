@@ -1155,3 +1155,39 @@ Current next step:
   Introduction before extending the selected peer's paragraph and transition
   grammar to the remaining manuscript sections. Do not alter frozen evidence
   or conclusion strength.
+
+# CURRENT ROUTE-B KBS STATUS: SUBMISSION CLOSURE (2026-08-27)
+
+The English manuscript, Chinese proofreading mirror, submission assets,
+reference metadata, defensive-language audit, numerical workbook, and clean
+build have completed scientific and technical closure. The active manuscript
+title remains *Jacobian Coverage Audits for Reliable Neural Granger
+Causality*. The final scientific-input commit is `ede6e338`; numeric-audit
+commit `1da9a5a`; closure-report commit `8cc2907`.
+
+The final narrative is observation-led and retains one local boundary where
+required by theorem scope, metric provenance, or a preregistered negative
+result. It does not use legacy ISTF-Mamba, CP-depthwise, or the full-prefix
+repair as positive performance evidence. An exact ten-word n-gram comparison
+of the active Abstract and Introduction against four local KBS exemplars found
+zero shared sequences.
+
+Submission-closure checks:
+
+- English: 17 pages, three pdfLaTeX passes, zero errors, undefined
+  references/citations, missing figures, or overfull boxes;
+- Chinese: 22 pages, three XeLaTeX passes, the same zero-warning criteria;
+- numeric audit: 153/153 claims aligned, with 51 exact and 102 accepted
+  display-rounding matches;
+- references: 47/47 citation and bibliography keys aligned, 28 DOI fields
+  resolved to matching records;
+- highlights: five bullets, each 60--79 characters;
+- figure backend: Draw.io for the conceptual schematic and Python/matplotlib
+  for every quantitative figure.
+
+Current state is `ready_with_author_checks`, not yet portal-submittable. Before
+submission, the authors must finalize identities/order/ORCIDs/affiliations,
+correspondence, funding, CRediT, competing interests, licenses, exclusive
+submission approval, and signed-out verification of the two tagged GitHub
+releases. No new experiment or scientific rewrite is part of that remaining
+closure.

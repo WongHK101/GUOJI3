@@ -21,7 +21,7 @@ identifiability, causal sufficiency, or absence of hidden confounding.
 
 ## Current Status
 
-Status date: **2026-08-10**.
+Status date: **2026-08-27**.
 
 The default `main` branch integrates the audited Phase 8/9 source and current
 project documentation. Frozen execution and manuscript-support commits remain
@@ -30,13 +30,18 @@ available as immutable provenance references.
 | Role | Repository / branch | Reference |
 | --- | --- | --- |
 | Integrated project source | [`GUOJI3`, `main`](https://github.com/WongHK101/GUOJI3) | Includes the frozen Phase 9 snapshot below |
+| Submission code release | [`GUOJI3`, `kbs-submission-v1-code`](https://github.com/WongHK101/GUOJI3/tree/kbs-submission-v1-code) | Documentation and maintained source used by the submission package |
 | Phase 9 manuscript-support snapshot | [`GUOJI3`, `phase9/stageb-manuscript-support-v1`](https://github.com/WongHK101/GUOJI3/tree/phase9/stageb-manuscript-support-v1) | `ff2079fa1346c092c0e50990fd846f9291d99af0` |
 | Phase 9 Stage A execution release | `GUOJI3` | `7d73125ece4e98962a237a8dd1adb1ae119ada50` |
 | Phase 9 Stage B execution release | `GUOJI3` | `0397e8af27c4f396d7713b129e0d7307da732681` |
-| Current KBS manuscript | [`KBS`, `phase9/stageb-manuscript-integration-v1`](https://github.com/WongHK101/KBS/tree/phase9/stageb-manuscript-integration-v1) | `d63bc31709d0fe16e9ca8860f139639f8353f223` |
+| Current KBS manuscript | [`KBS`, `kbs-submission-v1`](https://github.com/WongHK101/KBS/tree/kbs-submission-v1) | `8cc29079c493a1f12c25728f85f4edd9e2d3a9d1` |
 
 Use `main` for the integrated project tree. For scientific reproduction, use
 the exact commit associated with the artifact or protocol being inspected.
+The manuscript is classified as `ready_with_author_checks`: its scientific and
+technical closure has passed, while author identity, funding, contribution,
+conflict, license, and final approval fields must be completed before portal
+submission.
 
 ## Scientific Position
 

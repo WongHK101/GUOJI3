@@ -508,9 +508,9 @@ python experiments/generate_eligibility_table.py
 - d_cond sweep: `E:\GUOJI\mamba_enhanced\diagnostic_results\exp2_dcond_sweep.json`
 - mask/shuffle: `E:\GUOJI\mamba_enhanced\diagnostic_results\mask_shuffle_results.json`; `E:\GUOJI\mamba_enhanced\results\raw\mask_supplement_results.json`
 - coefficient recovery: `E:\GUOJI\mamba_enhanced\diagnostic_results\exp4_coefficient_recovery.json`
-- full auxiliary-Jacobian penalty: `E:\GUOJI\mamba_enhanced\risk_mitigation_results\full_aux_jacobian_penalty.json`; `E:\GUOJI\mamba_enhanced\risk_mitigation_results\full_aux_jacobian_penalty.csv`
+- full auxiliary-Jacobian penalty: archived without content change at `E:\GUOJI\archive\mamba_enhanced_nontracked_20260810_191008\payload\risk_mitigation_results\full_aux_jacobian_penalty.json`; `E:\GUOJI\archive\mamba_enhanced_nontracked_20260810_191008\payload\risk_mitigation_results\full_aux_jacobian_penalty.csv`
 - root-cause synthetic: pending semantics/provenance audit; appendix candidate only.
-- legacy ISTF-Mamba: semantic-failure diagnostic only, sourced from `E:\GUOJI\mamba_enhanced\paper-data\p0_jacobian_semantics_audit_2026-07-06.md` and `E:\GUOJI\mamba_enhanced\results\p0_audit\`.
+- legacy ISTF-Mamba: semantic-failure diagnostic only, sourced from `E:\GUOJI\mamba_enhanced\paper-data\p0_jacobian_semantics_audit_2026-07-06.md` and the archived payload `E:\GUOJI\archive\mamba_enhanced_nontracked_20260810_191008\payload\results\p0_audit\`.
 - Stage 1a: `E:\GUOJI\kbs_review_packages\phase7_stage1a_901_go_nogo_v1.zip`
 - P1: `E:\GUOJI\kbs_review_packages\phase7_stage1a_bounded_failure_analysis_v1.zip`
 
@@ -533,8 +533,8 @@ assets do not contain new experimental results.
   - diagnostic_results/exp2_dcond_sweep.json
   - results/raw/mask_supplement_results.json
   - diagnostic_results/exp4_coefficient_recovery.json
-  - risk_mitigation_results/full_aux_jacobian_penalty.json
-  - results/p0_audit/p0_jacobian_semantics_d6_iter120_refactor_seed0.json
+  - `E:\GUOJI\archive\mamba_enhanced_nontracked_20260810_191008\payload\risk_mitigation_results\full_aux_jacobian_penalty.json`
+  - `E:\GUOJI\archive\mamba_enhanced_nontracked_20260810_191008\payload\results\p0_audit\p0_jacobian_semantics_d6_iter120_refactor_seed0.json`
 - Source and claim traceability: paper-data/docs/DRAFT_V1_EVIDENCE_TRACEABILITY.md.
 
 Restrictions:
@@ -554,9 +554,9 @@ The V2 evidence set is limited to: single-run controlled concat diagnostics
 `results/raw/mask_supplement_results.json`,
 `diagnostic_results/exp4_coefficient_recovery.json`); the five-seed
 full-auxiliary-penalty diagnostic
-(`risk_mitigation_results/full_aux_jacobian_penalty.{json,csv}`); five fixed P0
+(`E:\GUOJI\archive\mamba_enhanced_nontracked_20260810_191008\payload\risk_mitigation_results\full_aux_jacobian_penalty.{json,csv}`); five fixed P0
 semantic diagnostics
-(`results/p0_audit/p0_jacobian_semantics_d6_iter120_refactor_seed{0,1,2,3,4}.json`);
+(`E:\GUOJI\archive\mamba_enhanced_nontracked_20260810_191008\payload\results\p0_audit\p0_jacobian_semantics_d6_iter120_refactor_seed{0,1,2,3,4}.json`);
 the official Stage 1a boundary artifact
 (`E:\GUOJI\kbs_review_packages\phase7_stage1a_901_go_nogo_v1.zip`); and the
 bounded P1 postmortem
@@ -580,7 +580,7 @@ The V2.1 frozen evidence inventory is fixed by
 `paper-data/docs/DRAFT_V2_1_EVIDENCE_EXTRACTS_INDEX.md` and
 `DRAFT_V2_1_EVIDENCE_TRACEABILITY.md`. It adds one bounded, read-only five-seed
 concat post-hoc Jacobian artifact:
-`risk_mitigation_results/concat_posthoc_jacobian.json`, with provenance script
+`E:\GUOJI\archive\mamba_enhanced_nontracked_20260810_191008\payload\risk_mitigation_results\concat_posthoc_jacobian.json`, with provenance script
 `experiments/risk_mitigation_20260515/run_concat_posthoc_jacobian.py`. It is
 usable only as an auxiliary-route usage diagnostic, never as a graph-score,
 conditional-Granger, or performance result. All other assets retain the V2
@@ -1160,3 +1160,41 @@ the Route-B evidence hierarchy. No experiment was run during these writing,
 figure, and audit passes. Lorenz-96 remains positive evidence for the bounded
 audit phenomenon under a strong known-graph baseline, not positive
 repair-method evidence.
+
+# KBS SUBMISSION CLOSURE ASSETS (2026-08-27)
+
+The active manuscript repository is `E:\GUOJI\elsarticle_phase9_stageb`.
+Scientific manuscript inputs were finalized in commit
+`ede6e3384013816a8fc7774209a4dcfb2dd5a231`; the refreshed numeric workbook was
+committed in `1da9a5a3679f46acb57566d9aede7c6bdb86c417`; the closure report was
+added in `8cc29079c493a1f12c25728f85f4edd9e2d3a9d1`.
+
+Current audit assets:
+
+- English source/PDF: `istf_kbs.tex`, `istf_kbs.pdf`;
+- Chinese proofreading source/PDF:
+  `review/chinese/istf_kbs_zh.tex`, `review/chinese/istf_kbs_zh.pdf`;
+- closure report: `qa/current/SUBMISSION_CLOSURE_REPORT.md`;
+- KBS requirements: `submission_assets/KBS_SUBMISSION_REQUIREMENTS_CHECKLIST.md`;
+- defensive-language audit: `qa/current/DEFENSIVE_LANGUAGE_AUDIT.md`;
+- reference audit: `qa/current/REFERENCE_METADATA_AUDIT.md`;
+- repository workbook:
+  `qa/current/numeric_audit/KBS_NUMERIC_MASTER_AUDIT_20260806.xlsx`;
+- external workbook:
+  `E:\GUOJI\outputs\kbs_numeric_audit_20260806\KBS_NUMERIC_MASTER_AUDIT_20260806.xlsx`.
+
+The final workbook copies share SHA256
+`3973784B91CCDBEAAF5E4616961F14BCDB641B2D78EC09DA760306560BFF9107`.
+They audit manuscript source commit
+`ede6e3384013816a8fc7774209a4dcfb2dd5a231`: 153 mapped claims, 51 exact
+matches, 102 accepted display-rounding matches, zero substantive mismatches,
+and zero spreadsheet formula errors. Historical nontracked full-auxiliary and
+P0 evidence was moved to the archive paths recorded above; SHA parity with the
+review copies was checked before rebuilding the workbook.
+
+The clean tracked-source build contains 17 English and 22 Chinese pages, with
+zero LaTeX errors, undefined references/citations, missing figures, or overfull
+boxes. The release tags are `kbs-submission-v1-code` for `GUOJI3` and
+`kbs-submission-v1` for `KBS`. Final readiness is
+`ready_with_author_checks`; author metadata and approvals remain outside the
+scientific data closure.
