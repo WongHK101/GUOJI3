@@ -1191,3 +1191,44 @@ correspondence, funding, CRediT, competing interests, licenses, exclusive
 submission approval, and signed-out verification of the two tagged GitHub
 releases. No new experiment or scientific rewrite is part of that remaining
 closure.
+
+# CURRENT ROUTE-B KBS STATUS: SUBMISSION CLOSURE V2 (2026-09-01)
+
+The active Route-B manuscript remains *Jacobian Coverage Audits for Reliable
+Neural Granger Causality*. The final closure commit is
+`95063eb35b5d63492cecfcea5f122e817663f8d3`, and the annotated
+`kbs-submission-v2` tag resolves to that commit.
+
+This closure added four evidence-clarity elements without changing the
+scientific results: the verified JGC precursor; an explicit JGC/JRNGC
+distinction; a compact executable Jacobian coverage-audit algorithm; and
+Appendix Table F.9, which reports the frozen Stage B acceptance criteria,
+outcomes, and a setting-specific Lorenz-96 worked example. The active text uses
+`pre-specified, release-locked` and does not present the protocols as a
+prospective registration.
+
+Current closure checks:
+
+- English: 18 pages and three pdfLaTeX passes, with zero errors, undefined
+  references/citations, missing figures, overfull hboxes, or overfull vboxes;
+- Chinese proofreading mirror: 23 pages and three XeLaTeX passes with the same
+  zero-blocking criteria;
+- bibliography parity: 48 English/Chinese citation keys and 48 records in the
+  same order, including 29 DOI fields;
+- Stage B gate/worked-example audit: 26/26 checks passed;
+- submission directory: 69 upload/internal files with all SHA256 entries
+  revalidated;
+- code delivery: supplementary `code.zip` only, clean-extraction validated;
+  no current-account external repository URL appears in upload-facing files.
+
+The manuscript is `ready_with_author_checks`, not fully portal-ready. Remaining
+inputs are author identities/order/ORCIDs/affiliations, correspondence, funding,
+competing interests, CRediT roles, cover-letter approval, all-author approval,
+and author approval to upload `code.zip`. A future public link from a separate,
+clean repository may be added as an optional availability update; it is not a
+dependency of the present submission package.
+
+Current next step:
+- Resolve the author-controlled metadata and declarations, propagate them once
+  across the English manuscript and submission documents, and perform one final
+  clean build plus cross-file identity check before portal upload.

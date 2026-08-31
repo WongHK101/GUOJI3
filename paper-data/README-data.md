@@ -1198,3 +1198,45 @@ boxes. The release tags are `kbs-submission-v1-code` for `GUOJI3` and
 `kbs-submission-v1` for `KBS`. Final readiness is
 `ready_with_author_checks`; author metadata and approvals remain outside the
 scientific data closure.
+
+# KBS SUBMISSION CLOSURE V2 ASSETS (2026-09-01)
+
+The active manuscript release is commit
+`95063eb35b5d63492cecfcea5f122e817663f8d3` on branch
+`phase9/stageb-manuscript-integration-v1`, with annotated tag
+`kbs-submission-v2`. The tagged English/Chinese builds contain 18 and 23 pages,
+respectively, and both pass three compilation passes with zero LaTeX errors,
+undefined references/citations, missing figures, overfull hboxes, or overfull
+vboxes.
+
+The portal-material root is:
+
+`E:\GUOJI\投稿系统提交材料`
+
+Current supplementary code archive:
+
+- path: `07_代码与数据_Code_Data\code.zip`;
+- SHA256:
+  `9c6dfb60c3acfa35a669027761bf17a751b0c3c54dc366e462cbf67ce40138f0`;
+- content: 234 files, including 118 curated research-code files, frozen
+  provenance/configuration records, figure sources, and source data;
+- validation: 233/233 internal manifest entries passed after clean
+  extraction;
+- exclusions: no checkpoints, scientific result outputs, server identifiers,
+  credentials, or current-account GitHub URL.
+
+Current self-contained LaTeX archive:
+
+- path:
+  `08_LaTeX源文件_LaTeX_Source\KBS_LaTeX_Source_kbs-submission-v2.zip`;
+- SHA256:
+  `f8848c6d8b21b84a639937d9bbf7442ef0f38bf9a486d02ca371f83b16c8a6d8`;
+- validation: 113/113 internal manifest entries passed, and clean extraction
+  reproduced the 18-page English PDF in three passes with zero blocking
+  diagnostics.
+
+The submission root inventory currently contains 69 files with a UTF-8 path
+inventory and a fully revalidated SHA256 manifest. The manuscript availability
+statement intentionally names only supplementary `code.zip`; no external code
+repository is part of the current submission package. Historical v1 archives
+are internal-only and must not be uploaded.
