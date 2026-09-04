@@ -1056,10 +1056,13 @@ The canonical figure directory is:
 
 It contains the editable `.drawio` source, PDF/SVG/PNG exports, design and
 source manifests, validation JSON, grayscale/thumbnail checks, and English and
-Chinese manuscript-page renders. All arrowed flow connectors are orthogonal;
-diagonal lines are limited to non-arrow neural connections. The palette is
-restricted to muted teal, muted rose, charcoal, and neutral gray. Tight
-geometric cropping leaves approximately 13.4% outer-layout whitespace, with no
-background recoloring used to disguise empty space. The active English and
-Chinese manuscripts remain 18 and 23 pages, respectively, and both passed
-clean three-pass builds and the submission-closure audit after the replacement.
+Chinese manuscript-page renders. A second author-directed refinement enlarged
+the raw-history and direct/auxiliary blocks, removed the ambiguous black route
+junction, and replaced the generic neural-node icon with an explicit
+`W_X/W_C -> Sigma -> sigma -> W_o` predictor chain. All connector segments are
+now horizontal or vertical. The palette is restricted to muted teal, muted
+rose, charcoal, and neutral gray. Tight geometric cropping leaves approximately
+14.5% outer-layout whitespace, with no background recoloring used to disguise
+empty space. The active English and Chinese manuscripts remain 18 and 23 pages,
+respectively, and both passed clean three-pass builds and the
+submission-closure audit after the replacement.
