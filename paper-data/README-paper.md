@@ -1263,6 +1263,13 @@ Current closure checks:
 - scientific values and frozen evidence: unchanged.
 
 Current next step:
-- Refresh the upload-facing manuscript files and self-contained LaTeX source
-  archive from commit `79c599515381f39ab86585d7e3cdf0b59f9f7691`, then perform
-  one final inventory and clean-extraction build before portal upload.
+- Upload the finalized files listed in
+  `E:\GUOJI\投稿系统提交材料\00_投稿前必读\README_投稿前必读.md`.
+  The upload-facing LaTeX archive is
+  `KBS_LaTeX_Source_kbs-submission-v7.zip`, SHA256
+  `0850f1eda6f9b807e6c438b3c2205764dee040b4e12b39086a53c44b7448fd16`.
+  Its 140/140 internal hashes and clean-extraction three-pass build passed.
+  The synchronized submission inventory contains 99 listed files and passed
+  full hash revalidation. Manuscript source commit is
+  `79c599515381f39ab86585d7e3cdf0b59f9f7691`; the subsequent QA-record commit
+  is `f8992bf85f50fcd4850a6d8d4286cd8b75fcd5ad`.
