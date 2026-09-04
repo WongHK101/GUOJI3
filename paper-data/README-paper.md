@@ -1039,12 +1039,16 @@ manuscript number changes should be made from the authoritative source first
 and then rechecked with
 `E:\GUOJI\elsarticle_phase9_stageb\qa\current\numeric_audit\`.
 
-# FIGURE 1 REDESIGN STATUS (2026-09-04)
+# FIGURE 1 FINAL REDESIGN STATUS (2026-09-04)
 
-The active KBS Figure 1 was rebuilt as a Draw.io-native, three-panel
-route-coverage argument after a visual audit of 10 related top-venue papers.
-The redesign changes presentation only: it introduces no numerical result and
-does not alter the manuscript caption or scientific claim boundaries.
+The first three-panel redraw was rejected during author visual review and is
+superseded. The active KBS Figure 1 is now a Draw.io-native, single-scene
+mechanism diagram informed by a visual audit of 10 related top-venue papers.
+It follows the continuous visual chain raw history -> direct/auxiliary
+operators -> neural predictor -> Jacobian decomposition -> graph-readout
+mismatch. Explanatory prose and the former audit ledger were removed from the
+artwork. The redesign changes presentation only and introduces no empirical
+number or new scientific result.
 
 The canonical figure directory is:
 
@@ -1052,6 +1056,10 @@ The canonical figure directory is:
 
 It contains the editable `.drawio` source, PDF/SVG/PNG exports, design and
 source manifests, validation JSON, grayscale/thumbnail checks, and English and
-Chinese manuscript-page renders. The active English and Chinese manuscripts
-remain 18 and 23 pages, respectively, and both passed clean three-pass builds
-and the submission-closure audit after the replacement.
+Chinese manuscript-page renders. All arrowed flow connectors are orthogonal;
+diagonal lines are limited to non-arrow neural connections. The palette is
+restricted to muted teal, muted rose, charcoal, and neutral gray. Tight
+geometric cropping leaves approximately 13.4% outer-layout whitespace, with no
+background recoloring used to disguise empty space. The active English and
+Chinese manuscripts remain 18 and 23 pages, respectively, and both passed
+clean three-pass builds and the submission-closure audit after the replacement.
