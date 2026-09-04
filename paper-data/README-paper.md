@@ -1227,7 +1227,7 @@ seed, method, figure datum, or frozen artifact changed.
 
 The final manuscript source state is commit
 `240ee771155edb91dc64d83f60c2c013e9a8f527`; the subsequent documentation-only
-closure record is commit `613e9f08f6d90bcbde97fcbc6d9531d5ff3abbea` on
+closure record is commit `6b3888d799bf9f0c0a27d50a58f51ff71f0756ad` on
 `phase9/stageb-manuscript-integration-v1`. English and Chinese review builds
 remain 18 and 23 pages, respectively, with zero LaTeX errors, undefined
 references/citations, missing figures, overfull boxes, or rerun warnings.
