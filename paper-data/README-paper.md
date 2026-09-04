@@ -1234,7 +1234,7 @@ references/citations, missing figures, overfull boxes, or rerun warnings.
 
 The upload-facing self-contained source package is
 `KBS_LaTeX_Source_kbs-submission-v6.zip`, SHA256
-`64481cb686b48d072127bd066f537c6646a84dc21241687fe729989f493c1471`.
+`942b62f184bf5e1fdfa7ac8366ebadba08a100be320d1a96836ce29e915fee07`.
 Its 140-entry internal manifest and independent clean-extraction three-pass
 compile passed. The supplementary `code.zip` SHA256 is
 `9c6dfb60c3acfa35a669027761bf17a751b0c3c54dc366e462cbf67ce40138f0`;
