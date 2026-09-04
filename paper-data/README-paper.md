@@ -1156,3 +1156,29 @@ the same 18-page English manuscript in a clean extraction. The superseded v2
 ZIP was moved to the internal, non-upload archive. Author metadata remains the
 only intentionally pending manuscript field; no scientific value, claim, or
 caption changed in this pass.
+
+# AUTHOR METADATA AND DECLARATION STATUS (2026-09-04)
+
+The confirmed seven-author order, four-affiliation mapping, corresponding
+author, email, postal address, NSFC Grant No. 62662008, and approved
+competing-interest statement are now integrated in the active English and
+Chinese manuscripts. The English funding statement uses only the verified
+funder and grant number because an official English project title was not
+provided; the Chinese review copy retains the supplied Chinese project title.
+
+A record-based CRediT allocation has been inserted as an author-review draft.
+The named-tool AI declaration retains OpenAI ChatGPT and OpenAI Codex in order
+to satisfy current Elsevier disclosure requirements and separates manuscript
+preparation from research-process assistance. Final role-by-role CRediT and AI
+wording approval remains author controlled. Originality and exclusive
+submission also remain to be confirmed in the cover letter.
+
+The clean three-pass builds are now 18 English pages and 24 Chinese review
+pages, with zero errors, undefined references/citations, missing figures,
+overfull boxes, or rerun warnings. The manuscript update is commit
+`212e10444cada030c0cfddb32ff84541bc8fef23` on
+`phase9/stageb-manuscript-integration-v1`. The synchronized source package is
+`KBS_LaTeX_Source_kbs-submission-v4.zip` with SHA256
+`f981dd341c3ec624f1eda2ea14f89e5388b83c050c0c47fd48fbcd400fe6de61`;
+its 140-entry manifest and clean-extraction compile passed. No scientific
+number, claim, method, experiment, or frozen artifact changed.
