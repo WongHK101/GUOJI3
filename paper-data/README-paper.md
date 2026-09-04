@@ -1186,3 +1186,31 @@ overfull boxes, or rerun warnings. The manuscript update is commit
 `7e09328b9024321601c5f9b28027fd0a3defc5f3f9cc8baacd40b320bd94514b`;
 its 140-entry manifest and clean-extraction compile passed. No scientific
 number, claim, method, experiment, or frozen artifact changed.
+
+# AUTHOR-APPROVED AI DECLARATION NARROWING (2026-09-04)
+
+The author directed that AI-tool details be removed from the scientific text,
+Figure 1 caption, and reproducibility appendices. The only manuscript
+disclosure now appears in the dedicated declaration before the references and
+states that OpenAI GPT-5.6 was used for manuscript compliance checks and
+language polishing, followed by the standard author-review and responsibility
+sentence. The Chinese review copy carries the corresponding Chinese wording.
+This entry supersedes the broader disclosure status recorded immediately
+above; historical records are retained only for provenance.
+
+English and Chinese manuscripts were rebuilt in three passes and now contain
+18 and 23 pages, respectively, with zero LaTeX errors, undefined
+references/citations, missing figures, overfull boxes, or rerun warnings. A
+source/PDF search found exactly one `OpenAI GPT-5.6` occurrence per manuscript
+and no superseded ChatGPT, Codex, Claude, DeepSeek, or `gpt-5.6-sol` terms in
+the active manuscript sources. Figure 1 page 3 and the English/Chinese
+declaration pages were rendered and inspected.
+
+The manuscript change is commit
+`f76b4f5bd8dc37bb1b24d5d2ba0daf380efd6b56` on
+`phase9/stageb-manuscript-integration-v1`. The upload-facing self-contained
+source package is `KBS_LaTeX_Source_kbs-submission-v5.zip`, SHA256
+`a1fa4bd85383ac7813db6b28761e76b6743056c3a515c68f2d77ac3556e5bb60`.
+Its 140-entry internal manifest and clean-extraction three-pass compilation
+passed. No scientific content, result, figure geometry, experiment, or frozen
+artifact changed.
