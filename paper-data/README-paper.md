@@ -1086,3 +1086,24 @@ overlap. Draw.io validation has zero errors/warnings, and the English/Chinese
 three-pass builds remain 18/23 pages with zero errors, undefined references,
 missing figures, or overfull boxes. Portal submission copies remain unchanged
 until author visual approval.
+
+# FIGURE 1 NEURAL-PREDICTOR GLYPH (2026-09-04)
+
+Following the author's request to make the predictor read more clearly as a
+neural model, the central `f_theta` region now retains `W_X` and `W_C` as
+route-specific maps into two compact shared-neuron layers and an output map
+`W_o`. The three displayed nodes per layer are schematic and are not a claim
+about the implemented layer width. The outer author-adjusted composition,
+Jacobian decomposition, route-readout contrast, and restrained palette remain
+unchanged.
+
+All directional flow arrows remain horizontal or vertical. Only the 18 thin,
+arrowless neural synapses are diagonal. The exact prior source is archived as
+`provenance/pre_neural_predictor_layout.drawio`, and the redesign scope and QA
+are recorded in `provenance/neural_predictor_redesign.json`. English and
+Chinese captions were synchronized, and clean three-pass builds remain 18 and
+23 pages with no errors, undefined references/citations, missing figures, or
+overfull boxes. No scientific result changed; portal submission copies remain
+pending author approval. The manuscript/figure revision is committed and
+pushed as `5ee1ee02fe5d52a259ec6fe75d8b6fd7f9658d86` on
+`phase9/stageb-manuscript-integration-v1`.
