@@ -1273,3 +1273,43 @@ Current next step:
   full hash revalidation. Manuscript source commit is
   `79c599515381f39ab86585d7e3cdf0b59f9f7691`; the subsequent QA-record commit
   is `f8992bf85f50fcd4850a6d8d4286cd8b75fcd5ad`.
+
+# CURRENT ROUTE-B KBS STATUS: FINAL EDITORIAL CLOSURE (2026-09-05)
+
+The upload-facing manuscript has completed final editorial and submission
+closure. The scientific results, figures, and experiment artifacts were not
+changed. Manuscript source commit
+`3217b6535fde105b0fefd80c68248280aed4a6c5` records the editorial revision;
+QA/archive commit `a833f8edb5f8748e19a8861cc942d655afb8c4ce`
+records the final validated deliverables.
+
+Final corrections include:
+
+- Stage B now distinguishes four separately held-out NetSim subjects from the
+  two predefined MoCap segments rerun with fresh training seeds;
+- Table 4 explains that `lambda=3e-4` failed both the per-seed MSE cap
+  (`20.262% > 20%`) and the mean baseline-relative AUROC floor
+  (`-0.110548 < -0.10`);
+- all 48 references are ordered by first citation in both language versions;
+- appendix table numbering is synchronized as B.1, C.1, D.1, F.1, and F.2;
+- abbreviations and comparator names are defined at first use.
+
+Final validation state:
+
+- English manuscript: 18 pages, three pdfLaTeX passes, zero errors, undefined
+  references/citations, missing figures, overfull boxes, duplicate anchors, or
+  rerun warnings;
+- Chinese proofreading mirror: 23 pages, three XeLaTeX passes with the same
+  zero-blocking criteria;
+- numeric audit: 153/153 claims passed provenance and rounding checks;
+- submission inventory: 101/101 SHA256 entries passed;
+- LaTeX source archive: `KBS_LaTeX_Source_kbs-submission-v8.zip`, 144/144
+  internal hashes passed, SHA256
+  `beac4e3cb198c7629ba85136b04e1d04aad01872f69fd9aad4f60be961089b8b`;
+- code archive: `code.zip`, 264/264 internal hashes passed, SHA256
+  `477e50a18f9ed11bcb2d031d7bb79f9bcf6c8b1d5dd1367ba121c8415957f139`.
+
+The synchronized upload package is at
+`E:\GUOJI\投稿系统提交材料`. The manuscript is submission-ready subject only
+to portal-side metadata fields or confirmations requested by Editorial
+Manager.
