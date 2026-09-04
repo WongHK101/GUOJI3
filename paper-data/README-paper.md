@@ -1066,3 +1066,23 @@ rose, charcoal, and neutral gray. Tight geometric cropping leaves approximately
 empty space. The active English and Chinese manuscripts remain 18 and 23 pages,
 respectively, and both passed clean three-pass builds and the
 submission-closure audit after the replacement.
+
+# FIGURE 1 AUTHOR-LAYOUT TYPOGRAPHY PASS (2026-09-04)
+
+The author subsequently adjusted the active Draw.io layout manually. That
+saved geometry is now the canonical Figure 1 source and supersedes the exact
+layout coordinates described in the preceding redesign note. The follow-up
+pass changed typography only: labels below the manuscript-scale readability
+floor were raised to 18--22 Draw.io font units while titles retained their
+existing hierarchy. No scientific content, caption, frozen evidence, module
+position, or visible route geometry changed.
+
+The figure directory now includes `scripts/export_existing_drawio.mjs`, which
+validates and exports the manually maintained `.drawio` without reconstructing
+its geometry. The prior programmatic builder is retained for provenance but is
+not the routine export path. English page 3, Chinese page 3, a 900-pixel
+thumbnail, grayscale render, and vector PDF were rechecked with no clipping or
+overlap. Draw.io validation has zero errors/warnings, and the English/Chinese
+three-pass builds remain 18/23 pages with zero errors, undefined references,
+missing figures, or overfull boxes. Portal submission copies remain unchanged
+until author visual approval.
