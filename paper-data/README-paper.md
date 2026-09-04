@@ -1169,16 +1169,20 @@ provided; the Chinese review copy retains the supplied Chinese project title.
 A record-based CRediT allocation has been inserted as an author-review draft.
 The named-tool AI declaration retains OpenAI ChatGPT and OpenAI Codex in order
 to satisfy current Elsevier disclosure requirements and separates manuscript
-preparation from research-process assistance. Final role-by-role CRediT and AI
-wording approval remains author controlled. Originality and exclusive
-submission also remain to be confirmed in the cover letter.
+preparation from research-process assistance. Figure 1 records the Codex model
+identifier `gpt-5.6-sol`. Project records also contain an earlier Claude Code
+session and `deepseek-v4-*` configuration labels; authors must determine
+whether those tools contributed retained material and extend the disclosure if
+applicable. Final role-by-role CRediT and complete AI-inventory approval remain
+author controlled. Originality and exclusive submission also remain to be
+confirmed in the cover letter.
 
 The clean three-pass builds are now 18 English pages and 24 Chinese review
 pages, with zero errors, undefined references/citations, missing figures,
 overfull boxes, or rerun warnings. The manuscript update is commit
-`212e10444cada030c0cfddb32ff84541bc8fef23` on
+`a11f23036442b4e4f7580f69a71384058c0f7816` on
 `phase9/stageb-manuscript-integration-v1`. The synchronized source package is
 `KBS_LaTeX_Source_kbs-submission-v4.zip` with SHA256
-`f981dd341c3ec624f1eda2ea14f89e5388b83c050c0c47fd48fbcd400fe6de61`;
+`7e09328b9024321601c5f9b28027fd0a3defc5f3f9cc8baacd40b320bd94514b`;
 its 140-entry manifest and clean-extraction compile passed. No scientific
 number, claim, method, experiment, or frozen artifact changed.
