@@ -1038,3 +1038,20 @@ repair frontier retain their previously frozen semantic boundaries. Future
 manuscript number changes should be made from the authoritative source first
 and then rechecked with
 `E:\GUOJI\elsarticle_phase9_stageb\qa\current\numeric_audit\`.
+
+# FIGURE 1 REDESIGN STATUS (2026-09-04)
+
+The active KBS Figure 1 was rebuilt as a Draw.io-native, three-panel
+route-coverage argument after a visual audit of 10 related top-venue papers.
+The redesign changes presentation only: it introduces no numerical result and
+does not alter the manuscript caption or scientific claim boundaries.
+
+The canonical figure directory is:
+
+`E:\GUOJI\elsarticle_phase9_stageb\figures\phase9_submission\fig1_route_coverage_framework\`
+
+It contains the editable `.drawio` source, PDF/SVG/PNG exports, design and
+source manifests, validation JSON, grayscale/thumbnail checks, and English and
+Chinese manuscript-page renders. The active English and Chinese manuscripts
+remain 18 and 23 pages, respectively, and both passed clean three-pass builds
+and the submission-closure audit after the replacement.
