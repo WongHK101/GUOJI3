@@ -1127,3 +1127,32 @@ overfull boxes. No scientific result changed; portal submission copies remain
 pending author approval. The manuscript/figure revision is committed and
 pushed as `5ee1ee02fe5d52a259ec6fe75d8b6fd7f9658d86` on
 `phase9/stageb-manuscript-integration-v1`.
+
+# FIGURE 1 FINAL AUTHOR REFINEMENT AND SUBMISSION SYNC (2026-09-04)
+
+The author's latest saved Draw.io revision is now the canonical Figure 1. The
+exact source was archived as
+`provenance/user_revision_20260904_144902.drawio` with SHA256
+`8c85bad3819d558577ec3f2b8c31126d1dab33ed2143a3c0b1dfd9d861ea09c1`;
+the canonical source has the same hash, so no geometry or style was altered by
+Codex during this integration. Draw.io validation reports 186 cells, 152
+vertices, 32 edges, zero errors/warnings, and no raster or reference-overlay
+content. The final 3200 x 1174 export has 18.64% outer-layout whitespace under
+the frozen 2%-fuzz content-bound audit.
+
+English and Chinese three-pass builds remain 18 and 23 pages, respectively,
+with zero errors, undefined references/citations, missing figures, overfull
+boxes, or rerun warnings. The manuscript update and asset-index refresh were
+committed and pushed as `8c7a4d3d760ac315b662011905a142c4b41e8f66` and
+`f5c24eda2a4d118797466ed68a8af05e278ca4b7` on
+`phase9/stageb-manuscript-integration-v1`.
+
+The accepted files were synchronized to
+`E:\GUOJI\投稿系统提交材料\`. The upload-facing LaTeX package is
+`08_LaTeX源文件_LaTeX_Source\KBS_LaTeX_Source_kbs-submission-v3.zip`
+(SHA256 `4dc75bbfc9df2a06123a0c499707058f7d5f82414f2c1b794827d23bb6f922a2`).
+It contains 141 files, passes its 140-entry internal manifest, and compiles to
+the same 18-page English manuscript in a clean extraction. The superseded v2
+ZIP was moved to the internal, non-upload archive. Author metadata remains the
+only intentionally pending manuscript field; no scientific value, claim, or
+caption changed in this pass.
