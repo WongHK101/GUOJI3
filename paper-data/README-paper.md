@@ -1232,3 +1232,37 @@ Current next step:
 - Resolve the author-controlled metadata and declarations, propagate them once
   across the English manuscript and submission documents, and perform one final
   clean build plus cross-file identity check before portal upload.
+
+# CURRENT ROUTE-B KBS STATUS: NARRATIVE POLISH CLOSURE (2026-09-05)
+
+The English manuscript and Chinese proofreading mirror received a bounded
+narrative-polish pass at manuscript commit
+`79c599515381f39ab86585d7e3cdf0b59f9f7691`. No numerical result, experiment,
+figure source, method definition, or claim direction changed.
+
+The revision rebuilt the Discussion around the relation to JGC/JRNGC,
+shortcut learning, attribution reliability, repair implications, and study
+boundaries. It removed process-heavy `release-locked`, `pre-specified`, and
+`frozen` language from the scientific narrative, consolidated five short
+controlled-results subsections into two evidence modules, and compressed
+generic propositions into concise interpretive conditions while retaining the
+auxiliary-route shortcut proposition and five-part coverage declaration.
+Over-strong language about locating training failure, resolving coordinate
+drift, and mapping a universal frontier was replaced by evidence-bounded
+wording.
+
+Current closure checks:
+
+- English: 17 pages, three pdfLaTeX passes, zero errors, undefined
+  references/citations, missing figures, or overfull boxes;
+- Chinese proofreading mirror: 23 pages, three XeLaTeX passes with the same
+  zero-blocking criteria;
+- Abstract: 194 words, no citations, and no metric list;
+- citation parity: 48 English/Chinese keys and 48 bibliography entries in the
+  same order;
+- scientific values and frozen evidence: unchanged.
+
+Current next step:
+- Refresh the upload-facing manuscript files and self-contained LaTeX source
+  archive from commit `79c599515381f39ab86585d7e3cdf0b59f9f7691`, then perform
+  one final inventory and clean-extraction build before portal upload.
