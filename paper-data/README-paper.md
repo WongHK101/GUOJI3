@@ -1214,3 +1214,31 @@ source package is `KBS_LaTeX_Source_kbs-submission-v5.zip`, SHA256
 Its 140-entry internal manifest and clean-extraction three-pass compilation
 passed. No scientific content, result, figure geometry, experiment, or frozen
 artifact changed.
+
+# FINAL AUTHOR APPROVAL AND UPLOAD RELEASE (2026-09-04)
+
+All authors approved the final manuscript, author order, affiliation mapping,
+Ningjiang Chen as corresponding author, role-by-role CRediT allocation,
+funding, competing interests, the narrow OpenAI GPT-5.6 declaration,
+originality, no prior publication, and exclusive submission. This entry
+supersedes every earlier author-pending status while retaining those entries as
+historical provenance. No scientific claim, result, experiment, threshold,
+seed, method, figure datum, or frozen artifact changed.
+
+The final manuscript source state is commit
+`240ee771155edb91dc64d83f60c2c013e9a8f527`; the subsequent documentation-only
+closure record is commit `613e9f08f6d90bcbde97fcbc6d9531d5ff3abbea` on
+`phase9/stageb-manuscript-integration-v1`. English and Chinese review builds
+remain 18 and 23 pages, respectively, with zero LaTeX errors, undefined
+references/citations, missing figures, overfull boxes, or rerun warnings.
+
+The upload-facing self-contained source package is
+`KBS_LaTeX_Source_kbs-submission-v6.zip`, SHA256
+`64481cb686b48d072127bd066f537c6646a84dc21241687fe729989f493c1471`.
+Its 140-entry internal manifest and independent clean-extraction three-pass
+compile passed. The supplementary `code.zip` SHA256 is
+`9c6dfb60c3acfa35a669027761bf17a751b0c3c54dc366e462cbf67ce40138f0`;
+all 233 internal manifest entries passed after clean extraction. The submission
+directory status is `ready_for_upload`; only live-portal entry, ORCID entry if
+available, optional reviewer suggestions when requested, and file upload
+remain.
