@@ -1018,6 +1018,26 @@ and synchronized the Chinese appendix order. The corresponding current
 manuscript commit is `9b90823a715729dd396f1cd40d70148c0c9cc590` on
 `phase9/stageb-manuscript-integration-v1`.
 
+# FIGURE 1 AUTHOR REVISION INTEGRATION (2026-09-04)
+
+The author's subsequent Draw.io revision is now the canonical Figure 1. It
+adds a dashed raw-history boundary, rounded direct/auxiliary blocks, a pale
+amber predictor field, and revised spacing while retaining the shared-neuron
+predictor and the same route-coverage argument. The exact author-saved source
+is archived as `provenance/user_revision_20260904_142256.drawio`.
+
+A validation-only repair converted the `route_aux` edge from mixed attached
+and absolute endpoint metadata to equivalent absolute endpoints; it does not
+alter the rendered geometry. Draw.io validation reports zero errors/warnings.
+Standalone, grayscale, 900-pixel, English page-3, and Chinese page-3 renders
+show no clipping or overlap, and the outer-layout whitespace audit is 17.43%.
+The unchanged caption remains semantically aligned. English and Chinese clean
+builds remain 18/23 pages with no errors, undefined references/citations,
+missing figures, or overfull boxes. The integrated manuscript/figure revision
+is committed and pushed as
+`dd2a6f30e99df73cc00d829316720c7ef4f8a142` on
+`phase9/stageb-manuscript-integration-v1`.
+
 # NUMERIC AUDIT STATUS (2026-07-31)
 
 The current English manuscript completed a full frozen-evidence numeric audit.
