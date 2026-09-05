@@ -1313,3 +1313,37 @@ The synchronized upload package is at
 `E:\GUOJI\投稿系统提交材料`. The manuscript is submission-ready subject only
 to portal-side metadata fields or confirmations requested by Editorial
 Manager.
+
+# CURRENT ROUTE-B KBS STATUS: INDEPENDENT EDITORIAL REVIEW (2026-09-05 08:40 +08:00)
+
+At the user's request, the 18-page English manuscript at
+`a833f8edb5f8748e19a8861cc942d655afb8c4ce` was reviewed independently again.
+No manuscript, Chinese mirror, existing figure, scientific result, or
+upload-facing file was changed. The previous compilation and numeric checks
+remain archival facts, not proof of optimal writing or journal acceptance.
+
+The review identifies eight bounded editorial issues. The concrete technical
+correction is Appendix D's description of H=32 as a nominal horizon: Stage 1a
+uses K=3 nominal graph scoring with H=32 attribution for baseline/CP/FIR, and
+H=64 for the EMA full-H reference. Other recommendations concern repeated
+Introduction challenges, excessive formalization of a basic chain-rule
+identity, workflow/algorithm duplication, dense Results eligibility prose,
+repeated defensive limits, Abstract jargon, and Discussion structure.
+Necessary score, target, domain, and failed-gate qualifications must remain.
+
+Review report:
+`E:\GUOJI\elsarticle_phase9_stageb\review\candidates\20260905_route_audit\MANUSCRIPT_INDEPENDENT_REVIEW.md`.
+
+A new Figure 1 is an independent, unselected candidate at:
+`E:\GUOJI\elsarticle_phase9_stageb\review\candidates\20260905_route_audit\fig1_jacobian_readout`.
+It uses editable draw.io neural layers, operators, signed Jacobian matrices,
+and two nominal-lag graph readouts. All matrices and curves are schematic,
+not new experimental evidence. Source, PNG/SVG/PDF exports, design data, and
+visual-validation records are stored together. The old Figure 1 is intact.
+
+Current next step:
+- Obtain the user's choice on the candidate and specific editorial changes.
+  After approval, make one bounded English/Chinese/caption revision and
+  resynchronize the submission package. Do not upload this candidate as an
+  accepted manuscript figure yet. No further experiment is needed for the
+  writing issues identified in this review.

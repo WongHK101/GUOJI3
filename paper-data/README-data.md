@@ -1240,3 +1240,24 @@ inventory and a fully revalidated SHA256 manifest. The manuscript availability
 statement intentionally names only supplementary `code.zip`; no external code
 repository is part of the current submission package. Historical v1 archives
 are internal-only and must not be uploaded.
+
+# INDEPENDENT FIGURE CANDIDATE: SCHEMATIC ASSETS (2026-09-05 08:40 +08:00)
+
+Candidate-only directory:
+`E:\GUOJI\elsarticle_phase9_stageb\review\candidates\20260905_route_audit\fig1_jacobian_readout`.
+
+The directory contains editable draw.io source, vector PDF/SVG and PNG
+exports, construction scripts, and three source records:
+
+- `data/schematic_jacobians.json`: signed analytical local matrices and
+  illustrative off-diagonal graph edges; not experimental measurements.
+- `data/design_spec.json`: dimensions, color roles, object counts, and visual
+  encoding.
+- `data/source_notes.json`: manuscript-semantic references and local visual
+  references; no copied external image asset.
+
+The illustrated fixture uses three raw variables, two auxiliary coordinates,
+and K=1. It includes cancellation in the chain-rule product and does not label
+either score graph as ground truth. This asset must not enter a numeric
+results table, empirical master workbook, or performance claim. It does not
+supersede any canonical experimental data or active figure until user review.
