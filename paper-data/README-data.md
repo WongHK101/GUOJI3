@@ -1261,3 +1261,32 @@ and K=1. It includes cancellation in the chain-rule product and does not label
 either score graph as ground truth. This asset must not enter a numeric
 results table, empirical master workbook, or performance claim. It does not
 supersede any canonical experimental data or active figure until user review.
+
+# APPROVED FIGURE AND SUBMISSION ASSETS (2026-09-05 11:43 +08:00)
+
+The user approved the candidate described above. The active Figure 1 now lives
+at `E:\GUOJI\elsarticle_phase9_stageb\figures\phase9_submission\fig1_route_coverage_framework`.
+The selected Draw.io/PDF/PNG/SVG/preview exports are unchanged from the candidate.
+Its signed matrices remain schematic, not new experimental measurements.
+The old source/history is retained in `archive/figures/fig1_pre_route_jacobian_20260905/`.
+
+- Active Figure 1 PDF SHA256:
+  `f133aeda337b514af854fc774b719e0b231dc0abb08a02d4428e5b4bb603932d`.
+- Final package-source commit: `1c264dfc25bd012d07726a2f2ef73862dab160b0`.
+- LaTeX v9 package SHA256:
+  `137d0a6df1247df91209650ea766c4558c2e901f2fa97e20100feff33ddbdc51`.
+- Current code ZIP SHA256:
+  `571ffc2dbe770c16c829f9bc2d0e61583035f0e6c41ef1aa1a43f2d5a4761ecf`.
+- Current 17-sheet numerical master SHA256:
+  `2ca1fd3cbeec1d64ab646cc4cd6744b045532c4702a5a20deecbfcfdd76e4075`.
+
+The workbook remains at
+`E:\GUOJI\outputs\kbs_numeric_audit_20260806\KBS_NUMERIC_MASTER_AUDIT_20260806.xlsx`,
+with identical repository and internal-portal copies. Its 153 claims match
+frozen evidence; the refresh changes locations, provenance, and previously
+corrected labels, not experimental values or workbook styles. The Lorenz table
+generator and provenance were synchronized to the approved caption; input CSV,
+configuration, formal summary, and numeric table body remain unchanged.
+
+No scientific dataset, frozen result, checkpoint, or sealed seed was added,
+removed, regenerated, or inspected in this editorial session.

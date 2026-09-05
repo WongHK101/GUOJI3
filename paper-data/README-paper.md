@@ -1347,3 +1347,41 @@ Current next step:
   resynchronize the submission package. Do not upload this candidate as an
   accepted manuscript figure yet. No further experiment is needed for the
   writing issues identified in this review.
+
+# CURRENT ROUTE-B KBS STATUS: APPROVED FIGURE AND EDITORIAL REVISION (2026-09-05 11:43 +08:00)
+
+The user approved the independent Figure 1 and all eight bounded writing
+corrections. These have now been applied to the English manuscript and Chinese
+mirror in `E:\GUOJI\elsarticle_phase9_stageb`. The prior pending-candidate
+status above is historical and no longer governs the active submission.
+
+- Text/figure adoption commit: `aa1c440e21ce29ac0d3b8459d11f911a82fad176`.
+- Final package-source commit: `1c264dfc25bd012d07726a2f2ef73862dab160b0`.
+- Current English/Chinese PDFs: 17/23 pages, three-pass builds, no errors,
+  undefined references, missing figures, or overfull boxes; all pages inspected.
+- Figure 1 is the user-approved candidate, with unchanged selected exports.
+  The prior 49 tracked figure files and user edits are preserved under
+  `archive/figures/fig1_pre_route_jacobian_20260905/`.
+- The abstract, Introduction, framework, Results, Discussion, and Conclusion
+  were edited to remove repetition and unnecessary defensive narration.
+  Core proposition and empirical limits remain. Appendix D now separates
+  K=3 nominal scoring from H=32 attribution and the EMA H=64 reference.
+- Full unchanged repair eligibility criteria are in Appendix F. The main text
+  retains `20.262% > 20%` and `-0.110548 < -0.10`; no joint repair success is claimed.
+- Numerical master: 153 matched claims, 51 exact and 102 display-rounding
+  matches; no metric values changed. Source locations and hashes are refreshed.
+- Final LaTeX v9 ZIP: 114/114 hashes and clean-extraction three-pass compile
+  passed; SHA256 `137d0a6df1247df91209650ea766c4558c2e901f2fa97e20100feff33ddbdc51`.
+- Final `code.zip`: 234/234 hashes plus nested figure/table/index checks
+  passed; SHA256 `571ffc2dbe770c16c829f9bc2d0e61583035f0e6c41ef1aa1a43f2d5a4761ecf`.
+  All 118 curated research-code files are unchanged.
+
+The synchronized upload root is `E:\GUOJI\投稿系统提交材料`; old v8 packages
+and QA are internal-only archives. Current change/QA details are in
+`qa/current/EDITORIAL_REVISION_V9.md`. The final extracted English PDF is
+text- and pixel-identical to the active PDF. No experiment, GPU, checkpoint,
+sealed-seed output inspection, or scientific-design change was involved.
+
+Next step: author reads the integrated figure/caption and revised prose, then
+uses the current portal-directory files for submission. This is technical and
+editorial closure, not a guarantee of best possible writing or acceptance.
