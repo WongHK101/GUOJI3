@@ -1385,3 +1385,43 @@ sealed-seed output inspection, or scientific-design change was involved.
 Next step: author reads the integrated figure/caption and revised prose, then
 uses the current portal-directory files for submission. This is technical and
 editorial closure, not a guarantee of best possible writing or acceptance.
+
+# CURRENT ROUTE-B KBS STATUS: PUBLICATION QA v10 (2026-09-06 09:01 +08:00)
+
+This entry supersedes the dated v9 delivery status. The active manuscript
+remains `E:\GUOJI\elsarticle_phase9_stageb\istf_kbs.tex`, not the historical
+TNNLS manuscript or the older `elsarticle` worktree.
+
+- Removed the optional proof-end QED square; corrected surplus Table 1 row
+  breaks, the inline algorithm's stretched spacing, the p13 float barrier,
+  duplicated paragraph punctuation, and final reference-column balance.
+- Corrected Figure 4(d)'s clipped errorbar: the largest mean + population SD
+  is 0.3335568383, so the y-axis upper bound changed from 0.31 to 0.34.
+  Added the repair-strength key and separated panel labels from axis text.
+- Corrected Figure 3/4/E.1 caption semantics. Figure 4 names the displayed
+  comparator subset; equal-lambda remains in the study/gates, not the plot.
+- Removed repeated Results roadmaps and process self-certification, separated
+  score and penalty declarations, and clarified Lorenz aggregate wording.
+  Necessary scientific limits, failure values, and decisions are unchanged.
+- Content commit: `0de3fe281967c759bf90b0914ae86c9899efde78`.
+- Archive-source commit: `510b4642b565168755ae1f216f64fcfa7ab94e14`.
+- Final QA/portal commit: `60f6987975175eab2f181ccde9d195176a741621`, pushed
+  to the existing manuscript branch. No merge or model-code change occurred.
+- English/Chinese: 17/23 pages; three-pass builds, zero errors, undefined
+  refs, missing figures, or overfull boxes; all pages inspected.
+- Numerical audit: 153/153 matches; Stage B gate-table audit: 26/26.
+  All frozen numerical inputs and Figure 1/2/3 exports remain unchanged.
+- LaTeX v10: 114/114 hashes, clean three-pass build, all 17 English pages
+  text- and pixel-identical to the active PDF. Code v10: 234/234 hashes;
+  all 118 research-code files byte-identical to v9.
+- Portal root `E:\GUOJI\投稿系统提交材料`: 224/224 inventory entries verified.
+  Old v9 packages and rendered QA are retained in internal-only archives.
+
+Details: `qa/current/EDITORIAL_REVISION_V10.md` and
+`qa/current/publication_v10_release_validation.json` in the manuscript repo.
+The numerical master was refreshed for line locations and source metadata,
+not experimental values or styles. No GPU, training, checkpoint replay, or
+sealed-seed output inspection was performed.
+
+Next step: inspect English p4/p5/p13 and Figure 4, then upload the v10 portal
+files. No additional experiment or broad scientific revision is proposed.

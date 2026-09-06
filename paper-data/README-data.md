@@ -1290,3 +1290,32 @@ configuration, formal summary, and numeric table body remain unchanged.
 
 No scientific dataset, frozen result, checkpoint, or sealed seed was added,
 removed, regenerated, or inspected in this editorial session.
+
+# PUBLICATION ASSET REFRESH v10 (2026-09-06 09:01 +08:00)
+
+No new scientific data. Figure 4 and E.1 publication exports were rebuilt
+from unchanged frozen data; all Figure 1/2/3 exports remain byte-identical.
+The Figure 4(d) coefficient-gain errorbar exceeded the former 0.31 axis
+maximum; 0.34 now displays its complete mean + SD of 0.3335568383.
+
+- Figure 4: `E:\GUOJI\elsarticle_phase9_stageb\figures\phase9_submission\fig4_graph_prediction_frontier`.
+- Figure E.1: `E:\GUOJI\elsarticle_phase9_stageb\figures\phase9_submission\figE1_score_semantics`.
+- Content commit: `0de3fe281967c759bf90b0914ae86c9899efde78`.
+- Package-source commit: `510b4642b565168755ae1f216f64fcfa7ab94e14`.
+- LaTeX v10: `E:\GUOJI\kbs_review_packages\KBS_LaTeX_Source_kbs-submission-v10.zip`;
+  SHA256 `9bf7ba410feeb8de33950752c81540d9a413f57b6e74277b1818a08c980a5a37`.
+- Code v10: `E:\GUOJI\kbs_review_packages\KBS_Supplementary_Code_kbs-submission-v10.zip`;
+  SHA256 `6374fcc4df11d1570a81c30efdc252d8118d9795375e6e815038a9b538086838`.
+- Current numerical master remains
+  `E:\GUOJI\outputs\kbs_numeric_audit_20260806\KBS_NUMERIC_MASTER_AUDIT_20260806.xlsx`;
+  SHA256 `6edfec5286e40ecef1999272b908b0e9ac021bf4e73d4cb21c7a73b0517f248f`.
+
+Workbook changes are limited to 160 manuscript-location cells and eight
+timestamp/commit/file-size/hash cells; all experimental cells, formulas,
+sheet structure, and styles are unchanged. All 153 claims match the frozen
+sources. Repository, delivery, and internal-portal workbook copies are identical.
+
+Top-level and nested figure/table manifests passed. The code archive retains
+the same 118 research-code files. Portal inventory has 224 verified files;
+v9 artifacts remain in internal-only archives. None of these asset changes
+alters any method, seed namespace, threshold, statistical unit, or conclusion.
