@@ -1425,3 +1425,35 @@ sealed-seed output inspection was performed.
 
 Next step: inspect English p4/p5/p13 and Figure 4, then upload the v10 portal
 files. No additional experiment or broad scientific revision is proposed.
+
+# CURRENT ROUTE-B KBS STATUS: AUTHOR DELIVERY v11 (2026-09-06 11:29 +08:00)
+
+This entry supersedes the v10 delivery instructions. The user accepted the
+publication QA and requested removal of selected end matter from the current
+English/Chinese manuscript and all active submission copies. The author will
+handle final publisher requirements; no pending marker for this task remains.
+Historical records and frozen archives are preserved, not rewritten.
+
+- Active manuscript: `E:\GUOJI\elsarticle_phase9_stageb\istf_kbs.tex`.
+- Content commit: `bd95dadeb54df47c54bd0c80802430db12f825a9`.
+- Archive-source commit: `70a30fff1184fa2334d859d16be593d01642c4ac`.
+- Final QA/portal commit: `f5c0fd66c72cbb83b6572afb52636f7dd0b6ef30`, pushed.
+- English/Chinese builds: 17/23 pages, three passes each; zero errors,
+  undefined references, missing figures, or overfull boxes.
+- Scientific text, figures, references, author metadata, and experimental
+  values are unchanged. English pages 1--15 and Chinese pages 1--19 match
+  v10 pixel-for-pixel; all six reflowed end-matter/reference pages inspected.
+- Numeric audit: 153/153 matches; Stage B table: 26/26; figure audit passed.
+  Two run-count claims now use unique sentence anchors. Only three workbook
+  source-line cells and six version/hash/size/timestamp cells changed.
+- LaTeX v11: 114/114 internal hashes and clean three-pass build passed;
+  rebuilt English PDF matches all 17 active pages in text and pixels.
+- Code ZIP retains v10 bytes; 234/234 hashes and nested manifests passed.
+- Portal root `E:\GUOJI\投稿系统提交材料`: 287/287 inventory files verified.
+  Current document/ZIP scan has no residual removed end matter. Historical
+  versions are clearly separated in the internal archive directories.
+
+Status: `ready_for_delivery`. No new research or writing backlog is required
+for this handoff. Next step: corresponding author completes portal entry and
+upload using the v11 folder; subsequent edits should address specific editor
+requests, not reopen experiments or the manuscript narrative by default.

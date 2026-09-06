@@ -1319,3 +1319,30 @@ Top-level and nested figure/table manifests passed. The code archive retains
 the same 118 research-code files. Portal inventory has 224 verified files;
 v9 artifacts remain in internal-only archives. None of these asset changes
 alters any method, seed namespace, threshold, statistical unit, or conclusion.
+
+# TECHNICAL DELIVERY ASSETS v11 (2026-09-06 11:29 +08:00)
+
+No scientific dataset, figure data, checkpoint, seed, or result changed.
+The English/Chinese sources only lose one four-line end-matter section each.
+All 110 tracked figure, supplement, and source-data assets match accepted v10.
+
+- Content commit: `bd95dadeb54df47c54bd0c80802430db12f825a9`.
+- Package-source commit: `70a30fff1184fa2334d859d16be593d01642c4ac`.
+- LaTeX v11: `E:\GUOJI\kbs_review_packages\KBS_LaTeX_Source_kbs-submission-v11.zip`;
+  SHA256 `05c18e65c543a89817d2e473680597b6f2cb7d1e88a6162d5011dd33074edd0b`.
+- Code archive remains v10, SHA256
+  `6374fcc4df11d1570a81c30efdc252d8118d9795375e6e815038a9b538086838`.
+- Current numeric master:
+  `E:\GUOJI\outputs\kbs_numeric_audit_20260806\KBS_NUMERIC_MASTER_AUDIT_20260806.xlsx`;
+  SHA256 `c642d4b842c23ab271ff9e844b638e858db8e3815c9596ca03c58090ab3ed129`.
+
+All 153 mapped claims still match. The two run-count provenance locators now
+match their unique sentences instead of incidental citation digits. Three
+source-line cells and six metadata cells changed; all experimental cells,
+formulas, sheet structure, and formatting are unchanged. All three workbook
+copies are identical. The source ZIP passes 114 internal hashes and clean
+three-pass compilation; the unchanged code ZIP passes 234 internal hashes.
+
+Portal inventory: 287 verified files, including explicitly internal historical
+archives. Current delivery and final checks are documented in
+`E:\GUOJI\elsarticle_phase9_stageb\qa\current\DELIVERY_READINESS_V11.md`.
