@@ -1346,3 +1346,31 @@ three-pass compilation; the unchanged code ZIP passes 234 internal hashes.
 Portal inventory: 287 verified files, including explicitly internal historical
 archives. Current delivery and final checks are documented in
 `E:\GUOJI\elsarticle_phase9_stageb\qa\current\DELIVERY_READINESS_V11.md`.
+
+# SUPPLEMENTARY CODE PORTABILITY CLOSURE (2026-09-07)
+
+The submission code attachment is now
+`E:\GUOJI\kbs_review_packages\KBS_Supplementary_Code_kbs-submission-v12_1.zip`,
+SHA256 `a846e5e4ad985ce956bf7bb5144295dabbc0d41ad42428c7e1f817cc5e74485b`.
+The portal copy is `E:\GUOJI\投稿系统提交材料\07_代码与数据_Code_Data\code.zip`.
+Packaging source commit: `6ebf77c02536037fa9d02264763313169b8ba217` in the
+KBS manuscript repository. Research snapshot remains
+`33356a2acfbf71dce6ef8c734a871acd4534fd36`; all 118 curated research files
+and 107 packaged figure/source-data files are byte-identical to the old ZIP.
+
+The archive now contains the required MIT-licensed JRNGC metric dependency,
+fully pinned CPU/plot environments, and a hash-checked standalone reviewer
+entry. Two new Python 3.10.19 environments passed installation, 38 tests,
+6 deterministic CPU toy runs, 4 numeric-figure regenerations, and 20/36-row
+Lorenz/Stage B dry plans without Git or the external JRNGC checkout.
+No full experiment, GPU run, sealed-seed access, or frozen-result change occurred.
+
+Local QA root: `E:\GUOJI\outputs\code_reproducibility_v12_20260907\final_clean`.
+NetSim format-only reconstruction reproduced the four frozen subject hashes;
+both processed MoCap downloads also match their frozen hashes. Data sources,
+conversion instructions, file hashes, and third-party restrictions are in
+the archive's `THIRD_PARTY_DATA.md`. These files are not redistributed.
+
+Manuscripts, accepted LaTeX v11 ZIP, and the numeric master workbook retain
+their v11 bytes and scientific content. Current closure report:
+`E:\GUOJI\elsarticle_phase9_stageb\qa\current\CODE_ARCHIVE_VALIDATION.md`.

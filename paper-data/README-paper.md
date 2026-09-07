@@ -1457,3 +1457,24 @@ Status: `ready_for_delivery`. No new research or writing backlog is required
 for this handoff. Next step: corresponding author completes portal entry and
 upload using the v11 folder; subsequent edits should address specific editor
 requests, not reopen experiments or the manuscript narrative by default.
+
+# CODE ATTACHMENT REPRODUCIBILITY CLOSURE (2026-09-07)
+
+Accepted the external suggestion to make `code.zip` runnable outside the
+original Git workspace. This is a software-delivery correction, not a new
+scientific or writing stage. The current attachment is code v12.1, package
+SHA256 `a846e5e4ad985ce956bf7bb5144295dabbc0d41ad42428c7e1f817cc5e74485b`.
+Its packaging source commit is `6ebf77c02536037fa9d02264763313169b8ba217`.
+
+Added vendored metric dependencies/license, complete CPU/plot version locks,
+and standalone hash validation. Fresh installations without Git passed
+38 tests, 6 short CPU examples, 4 figure regenerations, external-data hash
+checks, and frozen run-matrix dry validation. Original formal release guards
+remain unchanged; the independent entry never labels new output as an
+original formal result. Full GPU retraining was not performed.
+
+The English/Chinese manuscripts, figure sources, accepted LaTeX v11 archive,
+experimental values, and numeric workbook are unchanged. No writing session,
+new method, Stage 1b, or sealed-seed analysis was opened. The portal code
+attachment and delivery checks are updated; technical status remains
+`ready_for_delivery`. See `elsarticle_phase9_stageb/qa/current/DELIVERY_READINESS_V12.md`.
