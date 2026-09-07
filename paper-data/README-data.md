@@ -1374,3 +1374,37 @@ the archive's `THIRD_PARTY_DATA.md`. These files are not redistributed.
 Manuscripts, accepted LaTeX v11 ZIP, and the numeric master workbook retain
 their v11 bytes and scientific content. Current closure report:
 `E:\GUOJI\elsarticle_phase9_stageb\qa\current\CODE_ARCHIVE_VALIDATION.md`.
+
+# CURRENT PUBLICATION EXPORT v13.1 (2026-09-07 14:06 +08:00)
+
+The current portal is `E:\GUOJI\投稿系统提交材料`. It contains only 37 current
+material files, including inventories. The prior 297-file portal, old ZIPs,
+Chinese review copy, and internal QA are preserved byte-for-byte outside it:
+`E:\GUOJI\投稿内部归档\20260907_提交包清理前`.
+
+- Code archive: `E:\GUOJI\kbs_review_packages\KBS_Supplementary_Code_kbs-submission-v13_1.zip`;
+  SHA256 `cf083e86847c62229dd9244baecbf93561c473e95d28fc10d4d2e4b8aaaefa9c`.
+- LaTeX archive: `E:\GUOJI\kbs_review_packages\KBS_LaTeX_Source_kbs-submission-v13_1.zip`;
+  SHA256 `1e2ea38de21e375540f6e91dd27e06918be0d2541c700669e5eabb4bafbb4886`.
+- Archive-source commit: `e0eea9bfed6511204b120f74096d8e39fe6bd033`.
+- Frozen scientific source: `33356a2acfbf71dce6ef8c734a871acd4534fd36`.
+
+Publication allowlists remove unrelated working documents and machine-dependent
+design helpers. Original and exported file hashes are mapped explicitly. Of
+100 included research files, 89 are byte-identical, three have comment/docstring
+changes only with equal executable AST, and eight are publication-document exports.
+Frozen configurations, numerical inputs, formal results and negative evidence are
+unchanged. The missing audit-contract test source is now included. Third-party
+data attribution/licenses and real commit provenance remain intact.
+
+Fresh code validation passes 38 tests plus eight audit-contract tests, six CPU
+toy runs, four numeric figure regenerations, 18 CSVs/191 rows and 20/36 dry plans.
+The two final packages pass all top-level and nested hashes; clean three-pass
+LaTeX compilation is 17 pages with no errors, undefined refs, missing figures or
+overfull boxes. The final portal scan covers 365 files including nested ZIP
+members and finds zero unapproved residue records.
+
+This is an export/packaging change, not a data or experiment change. No GPU or
+sealed-seed access occurred. The numeric master retains SHA256
+`c642d4b842c23ab271ff9e844b638e858db8e3815c9596ca03c58090ab3ed129`.
+Internal report: `E:\GUOJI\elsarticle_phase9_stageb\qa\current\PUBLICATION_CLEANUP_V13.md`.

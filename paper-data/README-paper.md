@@ -1478,3 +1478,35 @@ experimental values, and numeric workbook are unchanged. No writing session,
 new method, Stage 1b, or sealed-seed analysis was opened. The portal code
 attachment and delivery checks are updated; technical status remains
 `ready_for_delivery`. See `elsarticle_phase9_stageb/qa/current/DELIVERY_READINESS_V12.md`.
+
+# CURRENT DELIVERY: CLEAN PUBLICATION COPIES v13.1 (2026-09-07 14:06 +08:00)
+
+User approved a publication-export cleanup. No manuscript argument, experimental
+number, graph claim, author contribution, or frozen scientific result changed.
+The canonical English/Chinese sources and numeric workbook retain their hashes.
+The new public PDF differs visually only in the automatically updated build date;
+all other text and page pixels, including Figure 1, match the accepted version.
+
+The current attachments are code v13.1 and LaTeX v13.1, both built from KBS
+commit `e0eea9bfed6511204b120f74096d8e39fe6bd033`. Publication-only metadata,
+docstrings and documentation exports are mapped to the frozen source hashes.
+Internal correspondence, submission strategy, obsolete workflow directions,
+candidate-figure metadata, machine paths and hostname are excluded from delivery.
+Necessary negative evidence, protocols, seed provenance and third-party attribution
+are retained. No anonymity claim is made for the named-author paper.
+
+`E:\GUOJI\投稿系统提交材料` now contains only current materials. Its original
+297 files were preserved outside it in
+`E:\GUOJI\投稿内部归档\20260907_提交包清理前`. Chinese proofreading remains
+available at `E:\GUOJI\elsarticle_phase9_stageb\review\chinese\istf_kbs_zh.pdf`.
+Internal QA and installation logs must not be copied into submission attachments.
+
+Final checks pass: deep nested-content/metadata scan, all manifests, clean LaTeX
+build, two fresh dependency environments, 38 standard tests, eight audit-contract
+tests, six packaging tests, six CPU toy examples and four numeric figures. No GPU,
+full training, checkpoint replay or Phase 7 seeds 4--8 inspection was performed.
+See `elsarticle_phase9_stageb/qa/current/PUBLICATION_CLEANUP_V13.md`.
+
+Status remains `ready_for_delivery`. Next step: use only the current portal
+attachments, retain internal archives separately, and address specific subsequent
+editorial requests rather than reopen the scientific narrative.
