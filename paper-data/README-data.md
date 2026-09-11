@@ -1408,3 +1408,35 @@ This is an export/packaging change, not a data or experiment change. No GPU or
 sealed-seed access occurred. The numeric master retains SHA256
 `c642d4b842c23ab271ff9e844b638e858db8e3815c9596ca03c58090ab3ed129`.
 Internal report: `E:\GUOJI\elsarticle_phase9_stageb\qa\current\PUBLICATION_CLEANUP_V13.md`.
+
+# CURRENT APPROVED PUBLICATION ASSETS v14.1 (2026-09-12 01:23 +08:00)
+
+The bounded scientific/editorial revision has independent APPROVE status.
+Approved manuscript and archive-source commit:
+`fe3688f8cb199dcedbff7b063fb5d0c041bc05f8` in the KBS manuscript repository.
+The frozen research snapshot remains `33356a2acfbf71dce6ef8c734a871acd4534fd36`.
+All 60 protected source files remain unchanged; no new research data or runs.
+
+- Code v14.1: `E:\GUOJI\kbs_review_packages\KBS_Supplementary_Code_kbs-submission-v14_1.zip`;
+  SHA256 `3c4371ebf3699a761e95486f1291a6d6cadf6dfc6b86458e058db5a3aa47e1c1`.
+- LaTeX v14.1: `E:\GUOJI\kbs_review_packages\KBS_LaTeX_Source_kbs-submission-v14_1.zip`;
+  SHA256 `a5ce3dc3d2aafb4640b9b79a33bc477ca7336eae718fa6f0d668283a95e815de`.
+- Submission PDF SHA256:
+  `9fdbae0346f0a1e2569996ca76615425465cfcc3a26f888da4c4f39855cd01ed`.
+- Current internal numeric master:
+  `E:\GUOJI\outputs\submission_revision_v14_20260912\KBS_NUMERIC_MASTER_v14.xlsx`;
+  SHA256 `87d7eda16e5941dae7b16403d72598353786e774dbd46a5f5075111299af7710`.
+
+Corrections affect displayed scope and scientific interpretation, not frozen
+outcomes: four-NetSim medians 0.431/0.769 versus six-unit 0.480/0.779; restored
+Lorenz criteria and diagnostics in Table F.2; 0.0835 correctly identified as
+out-of-nominal temporal mass. Figure 3 entropy now has the full 0--1 axis.
+The workbook preserves 17 original sheets and 14,633 populated cells with only
+bounded explanatory changes. Its old match rows are a historical numeric-only
+snapshot, not evidence that every earlier semantic label was correct.
+
+The approved portal `E:\GUOJI\投稿系统提交材料` contains 37 files. The 38 prior
+files are preserved at `E:\GUOJI\投稿内部归档\20260912_v13_1_修订前`.
+Independent review memo: `outputs/submission_revision_v14_20260912/REVIEW_ROUND2.md`.
+Final sync, privacy, complete archive checks and clean reproduction receipts
+are in the same output directory. No internal QA or workbook is submitted.

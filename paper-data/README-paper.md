@@ -1549,3 +1549,43 @@ Review status: `open_scientific_review_findings`. Short-term action is to prepar
 traceable corrections to confirmed errors and claim wording; decide with the
 external adviser whether stronger generalization claims warrant a separately
 agreed evaluation protocol before any new formal experiments.
+
+# SCIENTIFIC REVIEW CLOSED: v14.1 APPROVED (2026-09-12 01:23 +08:00)
+
+The user authorized the bounded revision and repeated independent review until
+approval. Review task 01a08df9-78a5-7d81-b809-42d14b6059a7 returned APPROVE for
+manuscript/package commit `fe3688f8cb199dcedbff7b063fb5d0c041bc05f8`.
+This supersedes the open-review status above; it does not assert journal
+acceptance or change scientific conclusions.
+
+The accepted revision corrects factual scope, Table F.2 Lorenz conditions,
+paired initialization, the temporal meaning of 0.0835, finite TCN support,
+the Lorenz sampling grid, historical protocol descriptions, AUPRC/oracle-k,
+dispersion types and exact D2 gates. It distinguishes in-sample fit from
+forecast testing, derivative sensitivity from statistical GC, and model-route
+ablations from causal interventions. Citation [43] is placed correctly, all
+48 reference identities remain, and duplicated wording/reference prefixes
+are removed. No experimental threshold or numerical result was changed.
+
+Two review rounds are archived in
+`E:\GUOJI\outputs\submission_revision_v14_20260912\REVIEW_ROUND1.md` and
+`REVIEW_ROUND2.md`. The second review closes all remaining findings, including
+population versus sample SD, precise FIR/EMA gates, Chinese bibliography
+quotes and repeated Appendix prefixes. English is 18 pages; Chinese is 24.
+Both pass three-pass compilation with no errors, undefined references or
+overfull boxes. The readable float-only page is not a blocking warning.
+
+Approved materials were moved byte-for-byte to `E:\GUOJI\投稿系统提交材料` and
+rechecked. Code and LaTeX are v14.1; the numeric master is v14. Previous portal
+files are preserved outside the upload directory. Public source documentation
+contains the TCN interpretation; original evaluators and frozen labels remain
+unchanged. No new training, GPU use, method redesign or sealed Phase 7 seed
+inspection occurred. Fresh CPU/figure environments passed the documented
+portable commands, and unchanged computation files permit those checks to
+carry forward to the hash-verified v14.1 package.
+
+Status: `ready_for_delivery_with_independent_review_approval`.
+Use the portal's current files and keep review memos, historical versions and
+the Chinese proofreading copy outside the journal attachment set. Further
+changes should respond to specific editorial requests rather than reopen the
+accepted narrative. Internal closure: `elsarticle_phase9_stageb/qa/current/REVISION_V14.md`.
