@@ -1510,3 +1510,42 @@ See `elsarticle_phase9_stageb/qa/current/PUBLICATION_CLEANUP_V13.md`.
 Status remains `ready_for_delivery`. Next step: use only the current portal
 attachments, retain internal archives separately, and address specific subsequent
 editorial requests rather than reopen the scientific narrative.
+
+# USER-REQUESTED SCIENTIFIC MANUSCRIPT AUDIT (2026-09-11 09:36 +08:00)
+
+The user explicitly requested a fresh A--K review of the current manuscript,
+including scientific content, definitions, statistics, figures, citations,
+writing and layout. This request reopens review of the scientific narrative;
+the September 7 delivery checks certify packaging, not resolution of the
+findings below.
+
+Reviewed the current 17-page portal PDF, canonical English source and appendix,
+v13.1 code archive, frozen CSV/configuration records and necessary historical
+aggregates. Independently recalculated the main quantitative figures, Lorenz,
+the full auxiliary-penalty table and the CP-depthwise table. Located real records
+for all 48 references; this is not a full-text claim audit of all 48 papers.
+Three clean LaTeX passes succeeded with no undefined references or overfull
+boxes; balance and hyperref warnings and visual layout issues remain.
+
+Open factual findings include: the reported 0.0835 cross-variable leakage is
+actually temporal mass outside the nominal window; Table F.2 incorrectly says
+several Lorenz diagnostics were not gates; predictor initialization parity only
+compares the two auxiliary models; Pearson medians mix six-unit and four-NetSim
+scopes; the finite-support TCN needs a scope-specific horizon label. Further
+review concerns are in-sample MSE wording, ODE coupling versus sampled Granger
+adjacency, incomplete legacy-study protocols, novelty positioning and citation
+[43]. KBS-specific format certification remains pending because the official
+guide could not be fully accessed; the older Next-journals guide is not a
+substitute.
+
+Detailed report: `E:\GUOJI\outputs\manuscript_review_20260911\MANUSCRIPT_REVIEW_A_K.md`.
+Reference ledger: `E:\GUOJI\outputs\manuscript_review_20260911\REFERENCE_LEDGER_48.md`.
+Validation and independent numerical JSONs are retained in the same local folder.
+No manuscript, figure, formal data, submission attachment or server state was
+changed. No training or sealed-seed analysis was performed. Findings are review
+recommendations, not an author-approved change to scientific conclusions.
+
+Review status: `open_scientific_review_findings`. Short-term action is to prepare
+traceable corrections to confirmed errors and claim wording; decide with the
+external adviser whether stronger generalization claims warrant a separately
+agreed evaluation protocol before any new formal experiments.
