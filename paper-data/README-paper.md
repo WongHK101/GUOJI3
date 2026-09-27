@@ -1589,3 +1589,24 @@ Use the portal's current files and keep review memos, historical versions and
 the Chinese proofreading copy outside the journal attachment set. Further
 changes should respond to specific editorial requests rather than reopen the
 accepted narrative. Internal closure: `elsarticle_phase9_stageb/qa/current/REVISION_V14.md`.
+
+# STUDENT HANDOFF PREPARED (2026-09-27 19:48 +08:00)
+
+The user requested a separate student handoff supplement, without repeating
+the submission package. Created
+`E:\GUOJI\学生交接\KBS_学生交接补充包_20260927.zip` with a portable numeric
+workbook, unchanged Chinese PDF, concise scientific-scope/source guides,
+prior-review summary, task/change-record template and forwarding message.
+Source documents: `elsarticle_phase9_stageb/qa/current/student_handoff_20260927/`.
+
+The student's scope is organization, language, consistency, layout and
+submission preparation. Numerical/semantic changes, protocol alterations,
+author/funding changes and final submission require supervisor confirmation.
+No new training or server access is requested. The guidance requires a short
+understanding and issue list first, then a tracked revision, complete sources,
+new PDF and build checks. Internal materials must not enter journal attachments.
+
+The approved v14.1 manuscript, code, figures and portal remain unchanged.
+This handoff does not itself renew scientific review or certify future edited
+versions. Validation receipt and exact package hashes are in the data index
+and `qa/current/STUDENT_HANDOFF_20260927.md`.

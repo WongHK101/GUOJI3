@@ -1440,3 +1440,23 @@ files are preserved at `E:\GUOJI\投稿内部归档\20260912_v13_1_修订前`.
 Independent review memo: `outputs/submission_revision_v14_20260912/REVIEW_ROUND2.md`.
 Final sync, privacy, complete archive checks and clean reproduction receipts
 are in the same output directory. No internal QA or workbook is submitted.
+
+# STUDENT-ONLY PORTABLE WORKBOOK (2026-09-27 19:48 +08:00)
+
+Student handoff supplement:
+`E:\GUOJI\学生交接\KBS_学生交接补充包_20260927.zip`.
+SHA256 `6c31f81a0ad1c98754942feb5cbe25e0f8e2ab6927c1ee464697461fb5a4844c`.
+This is an internal supplement, not a replacement for the v14.1 submission
+materials or a journal attachment. No new scientific data were generated.
+
+The bundle contains `01_实验总表/KBS_NUMERIC_MASTER_v14_Student.xlsx`,
+SHA256 `5ab7813a0bad4b7add2929fe9ac0fd56c7678d36d61e0d8d07b54a60890178a9`.
+It preserves the canonical v14 workbook's 17 sheets, 5,373 numeric cells and
+925 formulas; only 1,999 source-location labels and two locator headers were
+made portable, plus unused production metadata cleanup. Public ZIP references
+were checked. `HISTORICAL_SOURCE` means not supplied, not a live file link.
+Canonical v14 workbook and all 37 submission files remain byte-identical.
+
+Validation: `E:\GUOJI\outputs\student_handoff_20260927\handoff_validation.json`.
+Do not treat this derivative's old PASS records as a new audit or replace the
+canonical data source with it. It is for supervised checking and proofreading.
