@@ -1508,3 +1508,30 @@ The v14 numeric master and student workbook remain unchanged at their prior
 paths. Their historical comparison entries are not replaced by the packaging
 checks. No new scientific data, server results or sealed-seed outputs were
 introduced or inspected.
+
+# FINAL-ENGLISH CHINESE REVIEW COPY (2026-10-21 00:04 +08:00)
+
+This is a language derivative, not a new scientific data asset.
+
+- English source: the confirmed 20 October second-return manuscript listed
+  above; its TeX/PDF hashes are unchanged.
+- Canonical Chinese source:
+  `E:\GUOJI\elsarticle_phase9_stageb\review\chinese\istf_kbs_zh.tex`.
+- Canonical Chinese PDF:
+  `E:\GUOJI\elsarticle_phase9_stageb\review\chinese\istf_kbs_zh.pdf`.
+- Author review copy:
+  `E:\GUOJI\学生交接\中文对照稿_20261020.pdf`.
+- PDF: 24 pages, 733690 bytes;
+  SHA256 `03c0faaef6f84d206608e67ac261b37dc9175d8b81de827e2551e8bd6523c467`.
+- Source/PDF commit: `a144b86`, existing KBS integration branch.
+
+Internal receipts:
+`outputs/chinese_sync_20261020/translation_parity.json` and
+`outputs/chinese_sync_20261020/pdf_validation.json`.
+Both pass. Numerical table entries, formulas, labels, citations and the five
+publication figures align with the final English. All 44 protected English,
+figure and upload-package files remain unchanged. Older Chinese files were
+backed up under the same private output directory before replacement.
+The updated Chinese PDF is outside the submission directory and existing
+transfer ZIP. No dataset, workbook, experiment output or scientific protocol
+was changed.

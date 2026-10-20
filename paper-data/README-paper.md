@@ -1655,3 +1655,34 @@ The Chinese proofreading PDF remains the earlier version and is not a
 submission attachment. No training, GPU, server or sealed-seed access occurred.
 
 Status: packaging issues closed; ready for submission-system PDF inspection.
+
+# CHINESE PROOFREADING EDITION SYNCHRONIZED (2026-10-21 00:04 +08:00)
+
+At the user's request, the Chinese edition now follows the confirmed
+20 October English manuscript, including the student's second-return edits.
+Updated the abstract, introduction, diagnostic interpretation, repair results,
+discussion, captions, funding text and bibliography. Numerical differences
+between independent studies remain explicitly distinguished. This is a
+translation update, not a revision of the approved English narrative.
+
+Canonical source and 24-page PDF:
+`E:\GUOJI\elsarticle_phase9_stageb\review\chinese\istf_kbs_zh.tex` and
+`istf_kbs_zh.pdf`. Convenient review copy:
+`E:\GUOJI\学生交接\中文对照稿_20261020.pdf`.
+The filename identifies the English source version; final checks completed
+after midnight on 21 October. Figure lettering and the 48 reference entries
+remain in English. The edition is for author proofreading, not submission.
+
+Three XeLaTeX passes and a complete page-render review passed. The 14 equation
+blocks, 49 cross-reference labels, nine tables' numerical values, citation
+occurrences and all five figure references align with the final English.
+Appendix equation numbering was corrected from the old continuous numbering
+to B.1. No missing glyphs, undefined references, overfull boxes or visible
+text/table overlap were found.
+
+Manuscript repository commit `a144b86` is pushed on the existing integration
+branch. All 44 protected files, covering the English TeX/PDF, publication
+figures, the 36-file upload directory and the dated submission ZIP, remain
+byte-identical. The existing student handoff archives are preserved.
+Internal checks are under `outputs/chinese_sync_20261020/`, not in the
+submission package. No scientific training or server access occurred.
