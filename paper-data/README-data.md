@@ -1460,3 +1460,51 @@ Canonical v14 workbook and all 37 submission files remain byte-identical.
 Validation: `E:\GUOJI\outputs\student_handoff_20260927\handoff_validation.json`.
 Do not treat this derivative's old PASS records as a new audit or replace the
 canonical data source with it. It is for supervised checking and proofreading.
+
+# SECOND-RETURN PUBLICATION PACKAGE (2026-10-20 17:15 +08:00)
+
+The active upload directory is `E:\GUOJI\投稿系统提交材料` (36 files).
+It supersedes the v14.1 portal inventory, not the frozen research outputs.
+The former 37-file portal is preserved byte-for-byte at
+`E:\GUOJI\投稿内部归档\20261020_学生第二次返回同步前`.
+All 49 files in `E:\GUOJI\学生交接\学生第二次返回` remain unchanged.
+
+Selected final manuscript:
+- TeX: `01_主稿_Main_Manuscript\Manuscript.tex`, 92662 bytes,
+  SHA256 `c9167286dac8e2505d0fc889020bd3ac9b98377f59d9ab827221b0ca5fc95f6e`.
+- PDF: `01_主稿_Main_Manuscript\Manuscript.pdf`, 587883 bytes, 18 pages,
+  SHA256 `c6edffd6eaec9027fc0a08600cf1d82e3d03c9d3e9c5064a681fec8a85ddafc1`.
+- Self-contained LaTeX archive:
+  `08_LaTeX源文件_LaTeX_Source\KBS_LaTeX_Source.zip` (13 files).
+- Code/data archive: `07_代码与数据_Code_Data\code.zip` (213 files).
+
+Packaging source: KBS commit
+`e9e6889d10c9b0d827c997dfdca7ed0522c4552c`, following `05705b1`.
+Research source remains `33356a2acfbf71dce6ef8c734a871acd4534fd36`.
+Scientific implementations, configurations, arrays, CSVs, original figures,
+dependency versions and licenses are unchanged. Public documentation and
+integrity-list names were cleaned, with functional checks preserved.
+Table/appendix excerpts now match the selected student manuscript. Ten
+internal figure-design notes and obsolete source versions are excluded.
+The genuine third-party data source remains documented.
+
+Internal receipts, not journal attachments:
+- `outputs/submission_final_20261020/final/build_report.json`
+- `outputs/submission_final_20261020/final/portal_integrity.json`
+- `outputs/submission_final_20261020/final_latex_validation/validation.json`
+- `outputs/submission_final_20261020/release_clean_code_validation/clean_validation.json`
+- `outputs/submission_final_20261020/final_code_validation/clean_validation.json`
+- `outputs/submission_final_20261020/published_privacy/residue_inventory.json`
+- `outputs/submission_final_20261020/publication_sync.json`
+
+The final archive was freshly extracted and its documented commands rerun
+using the two isolated CPU/plotting environments created this session. All
+38 tests, six toy examples, 18 table exports (191 rows), two dry run-matrix
+checks and four figure regenerations passed. No scientific training or
+unbundled-checkpoint reaggregation was performed. Figure reproduction
+preserves numerical inputs and labels, not pixel identity across renderers.
+
+The v14 numeric master and student workbook remain unchanged at their prior
+paths. Their historical comparison entries are not replaced by the packaging
+checks. No new scientific data, server results or sealed-seed outputs were
+introduced or inspected.

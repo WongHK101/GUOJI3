@@ -1610,3 +1610,48 @@ The approved v14.1 manuscript, code, figures and portal remain unchanged.
 This handoff does not itself renew scientific review or certify future edited
 versions. Validation receipt and exact package hashes are in the data index
 and `qa/current/STUDENT_HANDOFF_20260927.md`.
+
+# STUDENT SECOND RETURN: SUBMISSION PACKAGE FINALIZED (2026-10-20 17:15 +08:00)
+
+The user approved the second-return manuscript as the final editorial source
+and requested packaging only. The 18-page `Manuscript.pdf` and `Manuscript.tex`
+in `E:\GUOJI\学生交接\学生第二次返回\投稿系统提交材料\01_主稿_Main_Manuscript`
+were preserved byte-for-byte. All 49 student-return files remain unchanged.
+The prior read-only review closed the numerical, citation and scope issues;
+this session did not reopen manuscript prose or scientific conclusions.
+
+The canonical KBS repository is `E:\GUOJI\elsarticle_phase9_stageb`, branch
+`phase9/stageb-manuscript-integration-v1`. Commits `05705b1` and `e9e6889`
+integrate the exact selected manuscript and packaging changes. The source ZIP
+now contains only the selected TeX/PDF, required class/bibliography styles,
+five cited figure PDFs and concise instructions/inventory. Appendix excerpts
+and public table excerpts were regenerated from this same TeX.
+
+`E:\GUOJI\投稿系统提交材料` now contains 36 current files, including one
+`08_LaTeX源文件_LaTeX_Source\KBS_LaTeX_Source.zip` and
+`07_代码与数据_Code_Data\code.zip`. Old submission files are preserved at
+`E:\GUOJI\投稿内部归档\20261020_学生第二次返回同步前`; no student return was
+moved or edited. Internal review/production notes and obsolete versions are
+not included. Public instructions use ordinary terminology; necessary
+programmatic integrity checks remain, as explicitly authorized by the user.
+
+Fresh source extraction passes three LaTeX passes: 18 pages, zero errors,
+undefined references, missing figures or overfull boxes. Extracted text
+matches the supplied PDF after normalizing date, whitespace and ligatures.
+Two isolated Python environments were created from pinned dependencies.
+All documented portable commands passed against the final archive without
+Git or external JRNGC: 38 tests, six short CPU example runs, 18 table CSVs,
+dry interpretation of both experiment matrices, and four numerical figures.
+These are packaging/reproduction checks, not new scientific evidence.
+Regenerated figure text/data agree; renderer-level pixel/crop differences do
+not replace the unchanged approved publication figures.
+
+The final recursive attachment/metadata scan found no blocked personal paths,
+project account links, tool references or internal communication documents.
+The genuine third-party processed-data citation and frozen seed-search scope
+remain. All check reports stay under
+`E:\GUOJI\outputs\submission_final_20261020`, outside the upload directory.
+The Chinese proofreading PDF remains the earlier version and is not a
+submission attachment. No training, GPU, server or sealed-seed access occurred.
+
+Status: packaging issues closed; ready for submission-system PDF inspection.
