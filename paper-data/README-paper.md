@@ -1686,3 +1686,32 @@ figures, the 36-file upload directory and the dated submission ZIP, remain
 byte-identical. The existing student handoff archives are preserved.
 Internal checks are under `outputs/chinese_sync_20261020/`, not in the
 submission package. No scientific training or server access occurred.
+
+# INTRODUCTION SENTENCE REMOVAL AND NARRATIVE REVIEW (2026-10-26 00:01 +08:00)
+
+The user requested deletion of the introduction's final section-roadmap
+sentence and an assessment of Figure 1 placement and report-like prose.
+Only that sentence was removed from English and Chinese working manuscripts;
+Chinese review dates were updated. Commit `7bfbcb7` records the edit and rebuilt
+18-page English/24-page Chinese PDFs. No figure, result, equation, citation,
+or other scientific text was changed. The 20 October upload directory and
+its transfer ZIP remain unchanged pending the user's editorial decision.
+
+Current review copies are under
+`E:\GUOJI\学生交接\20261025_引言删句校对\`.
+Internal assessment and checks:
+`E:\GUOJI\outputs\narrative_review_20261025\NARRATIVE_REVIEW.md` and
+`revision_validation.json`. Three-pass compilation passes with no errors,
+undefined references, missing characters or overfull boxes. The English log's
+EPS-conversion-disabled and float-page notices were reviewed as nonblocking;
+all 42 pages were rendered and visually checked. All 49 cross-reference
+numbers agree between languages. The submission directory's 36 files and
+dated transfer ZIP remain byte-identical.
+
+Recommendation, not implemented: retain the early Figure 1 mechanism overview;
+it appears on English page 3 near background material. Reorganize Sections
+5-6 around scientific questions and decisive contrasts, relocate repetitive
+run-stage/configuration bookkeeping to Appendix F, and reduce repeated results
+in Discussion. Keep the mechanism/audit positioning, separate independent
+studies, preserve failed joint repair criteria and all essential limitations.
+No new experiments or broad manuscript rewrite was authorized or performed.

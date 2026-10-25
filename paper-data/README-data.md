@@ -1535,3 +1535,23 @@ backed up under the same private output directory before replacement.
 The updated Chinese PDF is outside the submission directory and existing
 transfer ZIP. No dataset, workbook, experiment output or scientific protocol
 was changed.
+
+# OCTOBER 25 EDITORIAL REVIEW COPIES (2026-10-26 00:01 +08:00)
+
+The current working manuscripts omit the introduction's final roadmap sentence
+at the user's request. Scientific contents and source data are unchanged.
+The approved submission directory/ZIP still contain the 20 October version;
+these review PDFs do not silently replace that submission archive.
+
+- Review folder: `E:\GUOJI\学生交接\20261025_引言删句校对`.
+- `English_Review.pdf`: 18 pages, 585991 bytes;
+  SHA256 `5f506447aba43e0ea49924812829dc6de727ab14963ccf5dce09af30791aa61c`.
+- `Chinese_Review.pdf`: 24 pages, 733126 bytes;
+  SHA256 `029f3df3259bff5b0d4e6f5ef364f242cdffdf7e3d264800617476ddb9aff273`.
+- Canonical source/PDF commit: `7bfbcb7` on the KBS integration branch.
+- Internal validation: `outputs/narrative_review_20261025/revision_validation.json`.
+
+The source comparison permits exactly the requested English/Chinese sentence
+deletion and Chinese review-date change. The 37 protected submission files
+are unchanged; no dataset, numeric master, experiment output or protocol was
+modified or regenerated.
