@@ -1782,3 +1782,44 @@ files remain unchanged (91 protected files). No experiments, research-code
 changes, workbook updates, server access or sealed-seed inspection occurred.
 Next: author review of Sections 5--7 and the relocated appendices, followed
 only after approval by synchronized replacement of the submission PDF/source ZIP.
+
+## 2026-10-27 21:59 +08:00 - Approved submission materials synchronized
+
+The author approved the compressed English manuscript for submission. The
+36-file directory `E:\GUOJI\投稿系统提交材料` now contains the exact accepted
+17-page PDF and TeX from manuscript commit `6b09c3e`, matching appendix/table
+excerpts, the rebuilt LaTeX source archive and the refreshed code archive.
+There were no further English or Chinese prose edits.
+
+Submission instructions and the code README now identify the current edition,
+the main-text/appendix locations and the separate upload roles. Four TeX table
+excerpts were synchronized without changing any numerical cells. Research
+models, scientific configurations, source data, publication figures, software
+dependencies and third-party acknowledgments remain unchanged. The packaging
+implementation and templates are committed and pushed as `e693ed0` on the
+existing manuscript branch.
+
+Clean extraction and three-pass source compilation produced 17 pages with
+zero errors, undefined references, missing figures, missing characters or
+overfull hboxes. Every page's extracted text and rendered pixels match the
+approved PDF. Two fresh CPU/plotting environments passed the 38 portable tests,
+six short deterministic example runs, reconstruction of 18 CSV files/191 rows,
+20-row Lorenz and 36-row Stage B plan parsing, and four numerical-figure renders.
+Git and the original external JRNGC installation were absent from the command
+PATH; no formal experiment or GPU job was run.
+
+The transfer archive is `E:\GUOJI\投稿系统提交材料_20261027.zip`. Its 36 files,
+both nested ZIPs and all inventories were checked after extraction. Privacy
+inspection found no blocked personal/development residue; verified third-party
+data attribution and necessary scientific provenance remain. Internal reports
+are outside the submission directory in `outputs/submission_refresh_20261027/`.
+
+The prior 36-file upload directory is preserved under
+`E:\GUOJI\投稿内部归档\20261027_正文压缩同步前`. Both student-return directories,
+the prior transfer ZIPs and the canonical manuscript remain byte-identical
+(101 protected files). The synchronized 24-page Chinese PDF remains an
+internal review artifact and is not included in the submission ZIP.
+
+Next: the student should use the dated transfer archive and follow its upload
+instructions, update the Cover Letter date to the actual submission date, and
+check the journal system's assembled PDF before final submission.

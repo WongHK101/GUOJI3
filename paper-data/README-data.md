@@ -1598,3 +1598,40 @@ All frozen research artifacts, the numerical master workbook, student-return
 originals and submission files remain unchanged. The submission directory and
 20 October transfer ZIP still contain the previously confirmed English version,
 not this new review edition.
+
+## 2026-10-27 21:59 +08:00 - Submission release after author approval
+
+These are packaging derivatives; no scientific data or experimental output
+was created or changed.
+
+- Active submission directory: `E:\GUOJI\投稿系统提交材料` (36 files).
+- English PDF: `01_主稿_Main_Manuscript/Manuscript.pdf`, 17 pages,
+  581041 bytes; SHA256
+  `4f9c7688c19b98a1279424eafaddaa8236f389679a920fd1dd0173fb348f3ba1`.
+- Matching source archive: `08_LaTeX源文件_LaTeX_Source/KBS_LaTeX_Source.zip`,
+  13 files, 942301 bytes; SHA256
+  `1469605fdc86c944892f79a821b63b122b36720becbca117e4506d2f12bba6ba`.
+- Supplementary code: `07_代码与数据_Code_Data/code.zip`, 213 files,
+  3732302 bytes; SHA256
+  `21aaa6d7cd9fc2ffce4402e53e12187aa8c9ada9de12243ddecf45a2540ea37f`.
+  Changes are restricted to README, four manuscript table excerpts, release
+  metadata and corresponding inventories. All table values and all research
+  code/configuration/data/figure files are unchanged.
+- Student transfer: `E:\GUOJI\投稿系统提交材料_20261027.zip`, 8139726 bytes;
+  SHA256 `ff263c228e71f11b438bad2346a1862c4b843bc7a8343e08a8cbef4a7823589f`.
+- Previous submission directory preserved at
+  `E:\GUOJI\投稿内部归档\20261027_正文压缩同步前`.
+- Approved manuscript commit `6b09c3e`; packaging commit `e693ed0`.
+- Internal evidence: `outputs/submission_refresh_20261027/`, specifically
+  `source_and_transfer_validation.json`, `publication_validation.json`,
+  `post_publication_integrity.json`,
+  `clean_code_validation/clean_validation.json`, and
+  `privacy_validation/residue_inventory.json`.
+
+Three clean LaTeX passes and all 17 rendered pages match the approved PDF.
+Portable tests (38), example commands, 18-table reconstruction, protocol plan
+parsing and four numerical-figure rebuilds pass in two new environments.
+These checks are non-evidentiary and do not rerun formal studies. The numerical
+master, frozen artifacts, original student returns and prior transfer ZIPs
+remain unchanged. The latest Chinese review PDF remains at the prior recorded
+27 October review location, outside the upload archive.
