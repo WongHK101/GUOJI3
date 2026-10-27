@@ -1555,3 +1555,25 @@ The source comparison permits exactly the requested English/Chinese sentence
 deletion and Chinese review-date change. The 37 protected submission files
 are unchanged; no dataset, numeric master, experiment output or protocol was
 modified or regenerated.
+
+# OCTOBER 27 EDITORIAL REVIEW COPIES (2026-10-27 19:42 +08:00)
+
+The latest author-review editions reflect 26 local wording changes with
+unchanged paragraph structure, scientific values, figures and protocols.
+These are editorial derivatives, not new scientific data.
+
+- Folder: `E:\GUOJI\学生交接\20261027_措辞修订校对`.
+- English review: 18 pages, 586058 bytes;
+  SHA256 `15e12cc83c188726612f172a9a0a6997f69cbb7d8c8a2627ee9228d349dde61e`.
+- Chinese review: 24 pages, 732004 bytes;
+  SHA256 `245042c68bf8825d1dc366911fff22334c3fa4ed67a2faed2e132951b3225500`.
+- `逐项修改对照.md` lists every edit group in English/Chinese, its rationale,
+  and the necessary scientific qualifications left intact.
+- Canonical manuscript source/PDF commit: `3ea9367`, pushed on the existing
+  integration branch; canonical Chinese source remains in `review/chinese/`.
+- Internal checks: `outputs/minimal_style_revision_20261027/`, including
+  revision and PDF validation reports, 42 rendered pages and visual review.
+
+The numerical master workbook, frozen experimental outputs, figures, student
+originals and the 20 October submission directory/ZIP remain unchanged. The
+new review editions do not replace the existing submission attachments.

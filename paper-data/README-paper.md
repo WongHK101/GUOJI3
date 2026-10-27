@@ -1715,3 +1715,34 @@ run-stage/configuration bookkeeping to Appendix F, and reduce repeated results
 in Discussion. Keep the mechanism/audit positioning, separate independent
 studies, preserve failed joint repair criteria and all essential limitations.
 No new experiments or broad manuscript rewrite was authorized or performed.
+
+# MINIMAL EDITORIAL REVISION (2026-10-27 19:42 +08:00)
+
+The user approved narrative improvement while explicitly requesting minimal
+edits and preservation of paragraph structure. The current working manuscript
+therefore contains 26 sentence-level edit groups rather than a section rewrite.
+Changes foreground experimental questions, replace execution-check phrasing
+with matched-design facts, remove repeated validation conclusions, and state
+necessary scope qualifications more directly. The abstract, conclusion, all
+equations, numerical results, figures and scientific thresholds are unchanged.
+Joint repair failures, the independent CP negative study, in-sample evaluation,
+and the independence of the coefficient studies remain explicit.
+
+English and Chinese PDFs are 18 and 24 pages. Both passed three compilation
+passes, complete rendered-page review, and cross-language numerical/reference
+checks (14 equation blocks, 9 tables, 49 labels, 48 bibliography entries).
+No errors, undefined references, missing glyphs or overfull boxes occurred.
+The English EPS-conversion-disabled warning is harmless because all figures
+are already PDF. Manuscript commit `3ea9367` is pushed on the existing branch.
+
+Review deliverables are under
+`E:\GUOJI\学生交接\20261027_措辞修订校对\`: English and Chinese review PDFs,
+plus `逐项修改对照.md` with all original/revised fragments and reasons, and
+the necessary qualifications retained after review. Internal verification and
+backups are under `outputs/minimal_style_revision_20261027/`.
+
+All 91 protected submission/student-original/figure files remain unchanged.
+The 20 October submission directory and transfer ZIP have not been replaced.
+No experiments, server access, new metrics or sealed seed inspection occurred.
+Next: author proofreading of the revised sentences, then an explicitly
+approved update of the submission copies and their matching source archive.
