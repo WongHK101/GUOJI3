@@ -1577,3 +1577,24 @@ These are editorial derivatives, not new scientific data.
 The numerical master workbook, frozen experimental outputs, figures, student
 originals and the 20 October submission directory/ZIP remain unchanged. The
 new review editions do not replace the existing submission attachments.
+
+## 2026-10-27 21:22 +08:00 - Compressed bilingual review editions
+
+These are editorial derivatives, not new experimental evidence.
+
+- Current folder: `E:\GUOJI\学生交接\20261027_正文压缩校对`.
+- `English_Review.pdf`: 17 pages, 581041 bytes;
+  SHA256 `4f9c7688c19b98a1279424eafaddaa8236f389679a920fd1dd0173fb348f3ba1`.
+- `Chinese_Review.pdf`: 24 pages, 729781 bytes;
+  SHA256 `9a5f759501d933ae4ec56b35eccef71c61abc4f84d2bcbcdf1eaa5df446631c6`.
+- `修改说明.md`: main-text removals/relocations and the recommended proofreading order.
+- Canonical English/Chinese sources and matching appendix excerpts are in
+  manuscript commit `6b09c3e`; publication figures and numerical table contents
+  are unchanged. Only Table 4's title was shortened to ordinary criteria wording.
+- Internal verification: `outputs/narrative_compression_20261027/`, including
+  source comparison, final diff, bilingual checks and all 41 rendered pages.
+
+All frozen research artifacts, the numerical master workbook, student-return
+originals and submission files remain unchanged. The submission directory and
+20 October transfer ZIP still contain the previously confirmed English version,
+not this new review edition.

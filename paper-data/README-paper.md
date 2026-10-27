@@ -1746,3 +1746,39 @@ The 20 October submission directory and transfer ZIP have not been replaced.
 No experiments, server access, new metrics or sealed seed inspection occurred.
 Next: author proofreading of the revised sentences, then an explicitly
 approved update of the submission copies and their matching source archive.
+
+## 2026-10-27 21:22 +08:00 - Main-text compression and appendix consolidation
+
+The author approved a further structural editorial pass on the current
+working manuscript, beyond the earlier sentence-level revision. Sections
+2--6 now retain the mechanism, mathematical definitions, experimental contrasts
+and findings; detailed audit questions, Algorithm 1 and the label glossary
+are collected in Appendix B. The legacy score diagnostic is in Appendix E,
+and model settings, checkpoint rules, cross-domain development procedures and
+the detailed repair-strength series are collected in Appendix F.
+
+Discussion interprets the evidence without repeating its numerical tables.
+Its final subsection, Limitations, consolidates the scope qualifications in
+one approximately 100-word paragraph. The abstract, conclusion, all numerical
+tables, equations, figures, scientific comparisons and criteria are unchanged.
+Repair joint-criterion failures remain in the main results and Table 4;
+the independent CP negative result remains in Appendix D.
+
+English main prose is approximately 26% shorter, excluding figures, tables,
+displayed equations and appendices. The resulting English/Chinese PDFs have
+17/24 pages. Three-pass compilation, all-page rendered review and bilingual
+verification passed: 14 equation blocks, 9 numeric tables, 50 matching labels
+and 48 bibliography entries, with no errors, undefined references, missing
+glyphs or overfull boxes. The normal float-page notices were visually checked.
+
+Canonical manuscript commit: `6b09c3e`, on the existing integration branch.
+Author review files and a Chinese change summary are under
+`E:\GUOJI\学生交接\20261027_正文压缩校对\`.
+Internal comparison, compilation and protection checks are under
+`outputs/narrative_compression_20261027/`.
+
+The submission directory, dated submission ZIP, student originals and figure
+files remain unchanged (91 protected files). No experiments, research-code
+changes, workbook updates, server access or sealed-seed inspection occurred.
+Next: author review of Sections 5--7 and the relocated appendices, followed
+only after approval by synchronized replacement of the submission PDF/source ZIP.
