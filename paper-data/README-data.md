@@ -1664,3 +1664,24 @@ cover 167 protected submission, student-original, figure and source-data files.
 Protocol S1 is an accompanying review document and has not yet been added to
 the 27 October submission code ZIP. It must accompany the next release if
 the author approves this shortened edition.
+
+## 2026-10-29 05:22 +08:00 - Chapter 4 framework candidate
+
+An independent conceptual figure candidate is stored in
+`E:\GUOJI\elsarticle_phase9_stageb\review\candidates\20261029_ch4_coverage_audit/`.
+The directory contains a native editable draw.io diagram, 3000-pixel PNG,
+1500-pixel preview, SVG, proposed caption, design specification, schematic
+matrix fixture and live draw.io scripts. All 176 objects are native shapes,
+text or connectors; no raster image is embedded in the source diagram.
+
+The fixture in `data/illustrative_matrices.json` is synthetic illustration
+material, not experimental data. It depicts the x-only concat coverage profile
+from manuscript Table 2: partial score/penalty coverage, alignment for the
+same partial object, raw-variable coordinates, and unassessed auxiliary
+history support. There are no new measured values or graph-recovery claims.
+
+The candidate has no publication figure number and is not incorporated into
+the manuscript or submission package. Existing numerical sources, the master
+workbook, original Figure 1, both manuscript languages and all upload materials
+remain unchanged. Render and geometry checks are held separately under
+`outputs/ch4_framework_candidate_20261029/`.

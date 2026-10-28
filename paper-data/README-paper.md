@@ -1861,3 +1861,24 @@ The 27 October submission release remains active and unchanged. Next: author
 review of the shortened appendices and accompanying protocol; only after
 approval update the submission PDF/source archive and code documentation,
 including the English protocol and revised appendix references.
+
+## 2026-10-29 05:22 +08:00 - Framework figure candidate for author review
+
+The author requested a draw.io candidate for Chapter 4, visually consistent
+with Figure 1 and dominated by diagrams, matrices, time support and operators.
+The candidate uses one x-only concat audit to connect predictive routes,
+separate score/penalty masks, signed missing-route derivatives, source-column
+mapping and temporal support. A compact five-item profile collects the findings.
+Shared score/penalty coverage is not equated with complete route coverage.
+
+Files are in `elsarticle_phase9_stageb/review/candidates/20261029_ch4_coverage_audit/`.
+The editable draw.io source and SVG, two PNG sizes, conceptual data and drawing
+scripts are together in this directory. The original muted Figure 1 palette,
+white background and orthogonal routing are retained. Renderer inspection found
+no flagged collisions, clipping or line crossings after local corrections.
+
+This is a candidate only. No figure number, placement or manuscript caption
+has been changed. The English/Chinese PDFs remain 15/22 pages, and the active
+27 October submission release is untouched. No experiments or server access
+were involved. Next: author review of visual density, mathematical legibility
+and the worked-example format before deciding whether to integrate the figure.
