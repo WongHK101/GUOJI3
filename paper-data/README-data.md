@@ -1719,3 +1719,31 @@ Internal checks are in `outputs/ch4_framework_integration_20261029/`.
 
 The numerical master, research results and 27 October upload directory/ZIPs
 were not modified. No experimental data were added.
+
+## 2026-10-29 06:24 +08:00 | Submission Assets Released
+
+The approved 16-page English manuscript (`6dd68fe`) and matching sources are
+published in `E:\GUOJI\投稿系统提交材料/` and its dated transfer archive
+`E:\GUOJI\投稿系统提交材料_20261029.zip` (10,196,990 bytes).
+
+The release has 40 files across upload directories. Its code ZIP contains
+226 files, including the new Figure 2 draw.io schematic, PDF/SVG/PNG exports,
+illustrative inputs and portable export helper. Source IDs of Figures 3--5
+and D.1 remain stable; their numerical exports, plotting code and data are
+unchanged. Supplementary Protocol S1 is available as PDF and Markdown in
+directory 05 and both nested source/code archives. The two-page PDF retains
+the complete approved English protocol text.
+
+Transfer checksum (internal provenance):
+`b3cebd463aeaa66ea7e6acaca46e91189afae2f14481b7bc414386615d3263e5`.
+Packaging source: `fa66c51`. Checksum inventories and publication-source maps
+were regenerated. Independent verification covers complete archive extraction,
+all six figure mappings, exact approved manuscript pages, file cleanliness,
+portable-entry checks and documented figure/table reconstruction.
+
+The previous upload tree is retained at
+`E:\GUOJI\投稿内部归档\20261029_框架图同步前`. Original student files and old
+dated ZIPs are unchanged. The numerical master and frozen experiment results
+were not edited; no scientific data or experiment was added. Full local
+verification records are in `outputs/submission_refresh_20261029/` and are
+not publication attachments.

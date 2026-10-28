@@ -1911,3 +1911,31 @@ Next: author review of the new figure's placement and captions; only after
 approval synchronize the submission PDF/source archive, include the added
 figure source and Protocol S1 in the companion materials, and update their
 figure/appendix maps together.
+
+## 2026-10-29 06:24 +08:00 | Approved Submission Synchronization
+
+The author approved manuscript commit `6dd68fe`. Its English source and
+16-page PDF now form the current submission release, including Figure 2 in
+Section 4, main-text Figures 1--5, Appendix Figure D.1 and Appendices A--E.
+No manuscript wording or scientific results changed during packaging.
+
+`E:\GUOJI\投稿系统提交材料_20261029.zip` contains the synchronized upload
+directories. Supplementary Protocol S1 is supplied as a two-page PDF and
+Markdown in directory 05, in the LaTeX source ZIP and under `protocols/` in
+the code archive. Upload the S1 PDF separately; the manuscript already includes
+its appendices. The code README, scoring protocol, figure index and evidence
+map now use the current numbering, while stable numerical source IDs remain.
+
+Packaging commit: `fa66c51`. The final source ZIP passed three-pass compilation;
+all 16 page texts and rendered pixels match the approved PDF. Final code
+validation passed 38 tests, six short CPU examples, 18 CSV/191-row exports,
+20-row Lorenz and 36-row Stage B plan checks, and four numerical figure builds.
+Two clean Python 3.10 environments were installed; Git and external JRNGC
+directories were absent from the test path. No full experiment or GPU was run.
+
+Old upload copies are preserved at
+`E:\GUOJI\投稿内部归档\20261029_框架图同步前`. Earlier dated ZIPs and both
+student-return originals remain intact. Internal checks stay in
+`outputs/submission_refresh_20261029/`, outside the submission package.
+Next: use this dated release for submission and inspect the publisher-generated
+merged PDF after assigning manuscript, source, figures, code and Protocol S1.
