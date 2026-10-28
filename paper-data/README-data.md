@@ -1635,3 +1635,32 @@ These checks are non-evidentiary and do not rerun formal studies. The numerical
 master, frozen artifacts, original student returns and prior transfer ZIPs
 remain unchanged. The latest Chinese review PDF remains at the prior recorded
 27 October review location, outside the upload archive.
+
+## 2026-10-28 20:43 +08:00 - Shortened appendix review assets
+
+These are editorial derivatives, not new research results.
+
+- Review directory: `E:\GUOJI\学生交接\20261028_附录精简校对`.
+- `English_Review.pdf`: 15 pages, 564206 bytes; SHA256
+  `4b568924adf9f4464aa93fb22acc6a3b1fcd4693620f0a7e4d742e21c7596cdf`.
+- `Chinese_Review.pdf`: 22 pages, 706822 bytes; SHA256
+  `1847152b2dee6448df352ba3f0585e6d2d5c902f643068673ffa9e9140e1c2ac`.
+- `Supplementary_Protocol_S1.md` and `补充协议S1_中文.md` preserve the
+  complete independent-filter protocol formerly printed in Appendix D,
+  now summarized in Appendix C. The criteria and numerical results are unchanged.
+- `修改说明.md` records the moves, deletions of repeated explanations,
+  new appendix/table/figure numbering and recommended proofreading order.
+- Canonical sources and matching PDFs: manuscript commit `aa3d69c`.
+  The separate appendix excerpts match the embedded English source and
+  the Chinese input. Supplementary Figure D.1 still uses the unchanged
+  physical file `Supplementary_Figure_E1.pdf`.
+- Verification: `outputs/appendix_condense_20261028/content_validation.json`
+  and `layout_validation.json`, with both three-pass logs and all 37 rendered
+  pages. All nine tables, 14 equation blocks and five figures are preserved.
+
+The numerical master, frozen experimental outputs, submission directory and
+all dated transfer archives remain unchanged. Inventory and content checks
+cover 167 protected submission, student-original, figure and source-data files.
+Protocol S1 is an accompanying review document and has not yet been added to
+the 27 October submission code ZIP. It must accompany the next release if
+the author approves this shortened edition.

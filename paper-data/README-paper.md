@@ -1823,3 +1823,41 @@ internal review artifact and is not included in the submission ZIP.
 Next: the student should use the dated transfer archive and follow its upload
 instructions, update the Cover Letter date to the actual submission date, and
 check the journal system's assembled PDF before final submission.
+
+## 2026-10-28 20:43 +08:00 - Appendix compression for author review
+
+The author approved appendix compression while requiring all experimental
+values, conclusions and reproduction information to remain available. The
+working English and Chinese manuscripts now have five appendices, A--E.
+The former route-definition appendix is merged into the audit record and
+reproduction details. Repeated audit questions, diagnostic summaries,
+repair-series narration and development-version prose are removed.
+
+The independent coordinate-preserving filter control is summarized in one
+paragraph and its unchanged table (now Appendix C). Its complete generator,
+training, analysis-unit and pre-specified decision criteria are retained in
+`supplement/protocols/coordinate_preserving_control.md`, Supplementary
+Protocol S1, with a Chinese mirror. The CP negative result, failed repair
+criteria and EMA dominance outcome are unchanged. All score-semantics panels
+remain; the supplementary figure is now D.1, with the frozen asset filename
+unchanged. The main text was not edited.
+
+The English/Chinese PDFs have 15/22 pages, down from 17/24. Three-pass
+compilation and all-page rendered inspection passed. All nine tables,
+14 displayed equations, five figure blocks, 50 labels and 48 bibliography
+entries are preserved; numerical values match cell by cell across languages.
+There are no errors, undefined references, missing glyphs or overfull boxes.
+The existing English page-8 float-page notice was visually checked.
+
+Manuscript commit `aa3d69c` is pushed on the existing integration branch.
+Review PDFs, both versions of Protocol S1 and a Chinese change summary are
+under `E:\GUOJI\学生交接\20261028_附录精简校对`.
+Internal backups and checks are under `outputs/appendix_condense_20261028/`.
+All 167 protected submission, student-original, figure and source-data files
+and their inventory are unchanged. No experiments, code changes, server
+access, workbook update or sealed-seed inspection occurred.
+
+The 27 October submission release remains active and unchanged. Next: author
+review of the shortened appendices and accompanying protocol; only after
+approval update the submission PDF/source archive and code documentation,
+including the English protocol and revised appendix references.
