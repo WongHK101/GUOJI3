@@ -1685,3 +1685,37 @@ the manuscript or submission package. Existing numerical sources, the master
 workbook, original Figure 1, both manuscript languages and all upload materials
 remain unchanged. Render and geometry checks are held separately under
 `outputs/ch4_framework_candidate_20261029/`.
+
+## 2026-10-29 06:05 +08:00 - Framework figure integrated for bilingual review
+
+The author approved the candidate. The adopted figure is stored at
+`elsarticle_phase9_stageb/figures/phase9_submission/fig2_coverage_audit_framework/`,
+with editable draw.io, SVG/PNG, conceptual data and export scripts together.
+The original candidate remains unchanged. The publication PDF is one vector
+page (180 mm wide; no raster images), copied to
+`04_图件_Figures/Figure_2.pdf` in the working manuscript repository.
+
+The former numerical Figures 2--4 are now Figures 3--5. Their publication
+PDFs are byte-identical to the prior artwork. Stable source directories and
+plotting scripts are retained, with an updated figure-number index and
+documentation inventories. Figure 1 and Appendix Figure D.1 are unchanged.
+
+Review delivery: `E:\GUOJI\学生交接\20261029_第四章框架图整合校对/`.
+
+- `English_Review.pdf`: 16 pages; new Figure 2 on page 5; SHA256
+  `706849d47eafc7e7d9ad7f6b07a5ab04f0fb05cbb93e7283bdffc4fb50aede2c`.
+- `Chinese_Review.pdf`: 22 pages; new Figure 2 on page 6; SHA256
+  `56827439d813b307ed4a523f260c1987629b4975ef1726bd33301e8d00ad902a`.
+- The independent figure PDF, unchanged English/Chinese Supplementary
+  Protocol S1 and a short Chinese change note accompany the review copies.
+
+Working manuscript commit `6dd68fe` is pushed. Three-pass compilation and
+all 38 rendered pages were checked. Exact source normalization confirms the
+only manuscript changes are the figure insertion, its caption/reference,
+renumbered image filenames and Chinese review date. Existing equations,
+numerical tables, prose and conclusions are unchanged. The 199 protected
+submission, student-original, candidate and source files remain unchanged.
+Internal checks are in `outputs/ch4_framework_integration_20261029/`.
+
+The numerical master, research results and 27 October upload directory/ZIPs
+were not modified. No experimental data were added.

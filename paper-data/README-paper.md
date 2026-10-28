@@ -1882,3 +1882,32 @@ has been changed. The English/Chinese PDFs remain 15/22 pages, and the active
 27 October submission release is untouched. No experiments or server access
 were involved. Next: author review of visual density, mathematical legibility
 and the worked-example format before deciding whether to integrate the figure.
+
+## 2026-10-29 06:05 +08:00 - Approved framework figure added to Section 4
+
+The approved draw.io schematic is now Figure 2 in Section 4, following the
+coverage declaration. One inline reference and matching English/Chinese
+captions connect the example to the five-part profile. All other main-text
+prose, formulas, numerical values and conclusions are unchanged.
+
+Main figures are now: 1, partial/total graph readouts; 2, worked coverage
+audit; 3, controlled decoupling; 4, cross-architecture/domain validation;
+5, graph-prediction frontier. Appendix Figure D.1 retains its number. All
+cross-references resolve consistently in both languages. Numerical artwork
+was renumbered, not regenerated. Source-directory identifiers remain stable.
+
+The English PDF is 16 pages, with Figure 2 on page 5; the Chinese PDF remains
+22 pages, with Figure 2 on page 6. Both passed three compilation rounds with
+no errors, undefined references, missing characters or overfull boxes. All
+38 pages were rendered and inspected, including both framework-figure pages.
+
+The source and matching PDFs are committed and pushed as `6dd68fe` on the
+existing manuscript integration branch. Review files and the unchanged
+Supplementary Protocol S1 are in
+`E:\GUOJI\学生交接\20261029_第四章框架图整合校对/`.
+
+The upload directory and all existing submission ZIPs remain unchanged.
+Next: author review of the new figure's placement and captions; only after
+approval synchronize the submission PDF/source archive, include the added
+figure source and Protocol S1 in the companion materials, and update their
+figure/appendix maps together.
