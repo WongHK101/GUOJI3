@@ -1939,3 +1939,46 @@ student-return originals remain intact. Internal checks stay in
 `outputs/submission_refresh_20261029/`, outside the submission package.
 Next: use this dated release for submission and inspect the publisher-generated
 merged PDF after assigning manuscript, source, figures, code and Protocol S1.
+
+## 2026-10-30 01:39 +08:00 | Final Authorship and Submission Review
+
+All authors approved JinCheng Liu as third author (affiliation 1). The English
+and Chinese manuscripts, CRediT statement, PDF metadata and author-information
+sheet now agree on the eight-author order. Two student wording deletions were
+accepted; the discussion retains "a separate five-seed study" to distinguish
+the coefficient and auxiliary-penalty evidence.
+
+The final technical review corrected Equation (2)'s missing mean normalization:
+the window-mean absolute-Jacobian sum is divided by d^2 K. Appendix E and the
+code scoring protocol now state the first-100-window partial penalty and the
+separately weighted raw/auxiliary block means. This matches the frozen code;
+no implementation, experimental value, table, figure or conclusion changed.
+
+Manuscript and packaging commit: `15fdaaf5042464ca3d3475ba999453da4e201925`.
+The 16-page English and 22-page Chinese PDFs passed three-pass compilation
+and page review. The source ZIP independently reproduces all 16 English page
+texts and pixels. All 48 references have publication records; 29 DOI records
+and 19 publisher/proceedings/preprint/data-site records were checked.
+
+The current upload tree is `E:\GUOJI\投稿系统提交材料/`, and the student
+transfer archive is `E:\GUOJI\投稿系统提交材料_20261030.zip`.
+The detailed A--L review and Chinese proofreading PDF are under
+`E:\GUOJI\学生交接\20261030_最终投稿质检/`, not inside the upload archive.
+The previous release is preserved in
+`E:\GUOJI\投稿内部归档\20261030_学生终稿同步前/`; student originals and
+previous dated ZIPs are unchanged.
+
+The code archive passed 38 tests, 18 CSV/191-row reconstruction, 20/36-row
+protocol parsing and four numerical-figure builds after fresh extraction.
+This rerun reused the separately installed pinned environments from 29 October;
+it did not reinstall dependencies or rerun scientific training. No GPU or
+sealed seed outputs were accessed. Numerical master and frozen artifacts remain
+unchanged. Internal verification is in `outputs/submission_final_review_20261030/`.
+
+The author explicitly chose to handle the applicable AI disclosure before
+submission; no statement was inserted. The live KBS author-guide page was
+access-blocked, while accessible Elsevier-wide file, reference and highlights
+requirements were checked. Delivery readiness is not certification that every
+author-controlled portal requirement is already complete.
+Next: upload the dated release by file type and review the portal-generated PDF;
+do not initiate further experiments or broad stylistic rewrites before submission.

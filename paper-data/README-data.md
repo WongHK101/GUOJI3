@@ -1747,3 +1747,32 @@ dated ZIPs are unchanged. The numerical master and frozen experiment results
 were not edited; no scientific data or experiment was added. Full local
 verification records are in `outputs/submission_refresh_20261029/` and are
 not publication attachments.
+
+## 2026-10-30 01:39 +08:00 | Final Submission Asset Index
+
+The current release is `E:\GUOJI\投稿系统提交材料_20261030.zip`
+(10,233,573 bytes; 40 outer files). It identifies manuscript/packaging source
+`15fdaaf5042464ca3d3475ba999453da4e201925`. Its internal transfer digest is
+`f5896d5a5c0835a634f61167c8313d7ad151ea7a56b998df210a72703854a2e9`.
+
+This is an authorship/editorial release, not a new data release. The confirmed
+third author, PDF metadata, cover letter and documentation are synchronized.
+Equation (2)'s regularizer now includes the existing d^2 K mean normalization.
+All nine table blocks, six figure blocks, scientific code, frozen configurations,
+data, plots, Protocol S1 and experimental values are unchanged. The numerical
+master workbook was therefore not regenerated.
+
+The source archive has 16 files and rebuilds the submitted 16-page PDF exactly.
+The code archive still has 226 files; only README, scoring protocol and three
+associated publication/inventory records changed. All nested inventories and
+source maps were checked. Protocol S1 is identical in directory 05, the source
+ZIP and the code ZIP.
+
+Final reports and the synchronized Chinese 22-page review copy are in
+`E:\GUOJI\学生交接\20261030_最终投稿质检/`. Full internal verification,
+reference records, independent numerical checks and all rendered pages are
+in `E:\GUOJI\outputs\submission_final_review_20261030/`.
+The previous upload folder is preserved in
+`E:\GUOJI\投稿内部归档\20261030_学生终稿同步前/`; the 29 October transfer
+ZIP and the 38-file student return remain byte-identical. No new experimental
+data, model checkpoint or seed output was generated or inspected.
